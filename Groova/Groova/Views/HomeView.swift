@@ -150,7 +150,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("All caught up", systemImage: "checkmark.seal.fill")
                 .font(.display(20)).foregroundStyle(Theme.success)
-            Text("You've finished every lesson in \(genre.name). Go for Silver and Gold on each one, keep up Daily Practice, or make something in the Studio.")
+            Text("You've finished every lesson in \(genre.name). Go for Silver and Gold on each one, keep up Daily Practice, or make something in the Sandbox.")
                 .font(.label(14, weight: .medium)).foregroundStyle(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

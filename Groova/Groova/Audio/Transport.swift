@@ -15,6 +15,10 @@ enum PlaySource: Hashable {
     case demo
     /// Reference (left ear) and the user's pattern (right ear) together.
     case compare
+    /// Sandbox: the 8-bar loop.
+    case jamLoop
+    /// Sandbox: the whole arranged song.
+    case jamSong
 }
 
 @Observable
@@ -26,6 +30,8 @@ final class Transport {
     private(set) var source: PlaySource?
     /// Section index during arrangement playback, else -1.
     private(set) var section: Int = -1
+    /// Bar of the Sandbox loop that's playing, else -1.
+    private(set) var bar: Int = -1
 
     private var timer: Timer?
     private var lastFinished = 0
@@ -64,12 +70,26 @@ final class Transport {
         }
     }
 
+    /// Sandbox playback: the loop, or the song from a section.
+    func play(jam: JamSong, source: PlaySource, bpm: Double, swing: Double, from step: Int = 0) {
+        engine.play(jam: jam, bpm: bpm, swing: swing, from: step)
+        self.source = source
+        isRunning = true
+        lastFinished = engine.transportState.finished
+        startPolling()
+    }
+
+    func liveUpdate(jam: JamSong) {
+        if isPlaying(.jamLoop) || isPlaying(.jamSong) { engine.update(jam: jam) }
+    }
+
     func stop() {
         engine.stop()
         isRunning = false
         source = nil
         step = -1
         section = -1
+        bar = -1
     }
 
     /// Push live edits while the user's own loop is playing.
@@ -90,11 +110,13 @@ final class Transport {
         let s = engine.transportState
         if s.step != step { step = s.step }
         if s.section != section { section = s.section }
+        if s.bar != bar { bar = s.bar }
         if isRunning && !s.playing {
             isRunning = false
             source = nil
             step = -1
             section = -1
+            bar = -1
         }
         if !isRunning {
             timer?.invalidate()

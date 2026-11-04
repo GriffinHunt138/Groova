@@ -58,6 +58,7 @@ nonisolated final class AudioEngine: @unchecked Sendable {
         let sampleRate = hwRate > 0 ? hwRate : (session.sampleRate > 0 ? session.sampleRate : 48_000)
         core.lock.lock()
         core.sampleRate = Float(sampleRate)
+        core.prepareFX()
         core.lock.unlock()
 
         guard let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 2) else { return }
@@ -151,6 +152,7 @@ nonisolated final class AudioEngine: @unchecked Sendable {
               overlay: Pattern? = nil, sequence: [Pattern] = [], barsPerSection: Int = 2) {
         start()
         withCore { c in
+            c.jam = nil
             c.pattern = pattern
             c.overlay = overlay
             c.sequence = sequence
@@ -163,6 +165,33 @@ nonisolated final class AudioEngine: @unchecked Sendable {
             c.chordsMuted = chordsMuted
             c.startSequencer(bars: bars)
         }
+    }
+
+    /// Sandbox: play an 8-bar loop or a whole song, optionally from a later step.
+    func play(jam: JamSong, bpm: Double, swing: Double, from step: Int = 0) {
+        start()
+        withCore { c in
+            c.jam = jam
+            c.overlay = nil
+            c.sequence = []
+            c.bpm = bpm
+            c.swing = swing
+            c.mutedDrums = []
+            c.bassMuted = false
+            c.chordsMuted = false
+            c.sidechain = 0
+            for i in c.drumLevels.indices { c.drumLevels[i] = 1 }
+            c.startSequencer(bars: nil, from: step)
+        }
+    }
+
+    /// Live edits while the Sandbox plays. Notes already sounding finish as they were.
+    func update(jam: JamSong) { withCore { $0.jam = jam } }
+
+    /// A vocal chop one-shot, for auditioning.
+    func playVox(_ midi: Int, seconds: Double = 0.3, from: Int, to: Int, settings: VoxSettings) {
+        start()
+        withCore { $0.enqueue(.vox(midi: midi, seconds: seconds, from: from, to: to, settings: settings)) }
     }
 
     func update(pattern: Pattern) { withCore { $0.pattern = pattern } }
@@ -195,10 +224,10 @@ nonisolated final class AudioEngine: @unchecked Sendable {
     func stop() { withCore { $0.stopSequencer() } }
 
     /// (current step or -1, is the sequencer running, how many limited runs have finished)
-    var transportState: (step: Int, playing: Bool, finished: Int, section: Int) {
+    var transportState: (step: Int, playing: Bool, finished: Int, section: Int, bar: Int) {
         core.lock.lock()
         defer { core.lock.unlock() }
-        return (core.currentStep, core.seqPlaying, core.finishedCount, core.currentSection)
+        return (core.currentStep, core.seqPlaying, core.finishedCount, core.currentSection, core.currentBar)
     }
 
     // MARK: Effects

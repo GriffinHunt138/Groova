@@ -94,7 +94,20 @@ nonisolated struct DrumKit: Sendable, Hashable {
 // MARK: - Voices
 
 nonisolated enum VoiceKind: Sendable {
-    case none, kick, clap, hat, openHat, perc, synth
+    case none, kick, clap, hat, openHat, perc, synth, vox
+}
+
+/// Extra state for a vocal chop voice.
+nonisolated struct VoxVoice {
+    var from: Int = 0
+    var to: Int = 0
+    var settings = VoxSettings()
+    // Fixed-size vectors, so starting a voice never allocates on the audio thread.
+    var g = SIMD4<Float>(repeating: 0)
+    var k = SIMD4<Float>(repeating: 1)
+    var s1 = SIMD4<Float>(repeating: 0)
+    var s2 = SIMD4<Float>(repeating: 0)
+    var vib: Float = 0
 }
 
 nonisolated struct Voice {
@@ -126,6 +139,12 @@ nonisolated struct Voice {
     var detuneRatio: Float = 1
     /// -1 hard left ... 0 centre ... 1 hard right.
     var pan: Float = 0
+    /// Sandbox sends, 0...1.
+    var rev: Float = 0
+    var dly: Float = 0
+    /// Sidechain depth for this voice. Below 0: use the global pump (synths only).
+    var duck: Float = -1
+    var vox = VoxVoice()
 }
 
 nonisolated enum ReverbSpace: Int, CaseIterable, Sendable {
@@ -154,6 +173,7 @@ nonisolated enum ReverbSpace: Int, CaseIterable, Sendable {
 nonisolated enum PendingEvent {
     case drum(DrumTrack, Float, DrumKit)
     case note(midi: Int, seconds: Double, patch: SynthPatch, velocity: Float, delay: Double)
+    case vox(midi: Int, seconds: Double, from: Int, to: Int, settings: VoxSettings)
 }
 
 nonisolated struct ScheduledNote {
@@ -214,6 +234,18 @@ nonisolated final class DSPCore: @unchecked Sendable {
     private let duckBuf: UnsafeMutablePointer<Float>
     private var voicePan: Float = 0
     private var voiceGain: Float = 1
+    private var voiceRev: Float = 0
+    private var voiceDly: Float = 0
+    private var voiceDuck: Float = -1
+
+    /// Sandbox playback. When set, the sequencer plays this instead of `pattern`.
+    var jam: JamSong?
+    /// Bar of the loop that's playing in Sandbox playback, else -1.
+    private(set) var currentBar = -1
+    private var fx: JamFX?
+    private var fxTail = 0
+    private let revBus: UnsafeMutablePointer<Float>
+    private let dlyBus: UnsafeMutablePointer<Float>
     private let scratchCapacity = 8192
     private let scratch: UnsafeMutablePointer<Float>
     private let rightBuf: UnsafeMutablePointer<Float>
@@ -246,6 +278,10 @@ nonisolated final class DSPCore: @unchecked Sendable {
         rightBuf.initialize(repeating: 0, count: scratchCapacity)
         duckBuf = .allocate(capacity: scratchCapacity)
         duckBuf.initialize(repeating: 1, count: scratchCapacity)
+        revBus = .allocate(capacity: scratchCapacity)
+        revBus.initialize(repeating: 0, count: scratchCapacity)
+        dlyBus = .allocate(capacity: scratchCapacity)
+        dlyBus.initialize(repeating: 0, count: scratchCapacity)
         pending.reserveCapacity(64)
         scheduled.reserveCapacity(64)
     }
@@ -254,6 +290,8 @@ nonisolated final class DSPCore: @unchecked Sendable {
         scratch.deallocate()
         rightBuf.deallocate()
         duckBuf.deallocate()
+        revBus.deallocate()
+        dlyBus.deallocate()
     }
 
     /// Renders one sound offline, for drawing it. Uses a throwaway core, never the live one.
@@ -275,11 +313,17 @@ nonisolated final class DSPCore: @unchecked Sendable {
 
     func enqueue(_ e: PendingEvent) { pending.append(e) }
 
-    func startSequencer(bars: Int?) {
+    /// Builds the Sandbox send effects ahead of time, so the audio thread never has to.
+    func prepareFX() {
+        if fx?.sampleRate != sampleRate { fx = JamFX(sampleRate: sampleRate) }
+    }
+
+    func startSequencer(bars: Int?, from first: Int = 0) {
         seqPlaying = true
-        stepIndex = 0
-        seqStart = Double(clock) + Double(sampleRate) * 0.01
-        nextStepTime = seqStart
+        stepIndex = max(0, first)
+        // Shift the start back so step `first` lands 10 ms from now, with swing still on odd steps.
+        seqStart = Double(clock) + Double(sampleRate) * 0.01 - Double(stepIndex) * samplesPerStep
+        nextStepTime = stepTime(stepIndex)
         maxSteps = bars.map { $0 * Pattern.steps } ?? 0
     }
 
@@ -287,6 +331,7 @@ nonisolated final class DSPCore: @unchecked Sendable {
         seqPlaying = false
         currentStep = -1
         currentSection = -1
+        currentBar = -1
     }
 
     private var samplesPerStep: Double { Double(sampleRate) * 60.0 / bpm / 4.0 }
@@ -315,7 +360,8 @@ nonisolated final class DSPCore: @unchecked Sendable {
     }
 
     private func renderChunk(_ out: UnsafeMutablePointer<Float>, frames: Int) {
-        for i in 0..<frames { out[i] = 0; rightBuf[i] = 0 }
+        for i in 0..<frames { out[i] = 0; rightBuf[i] = 0; revBus[i] = 0; dlyBus[i] = 0 }
+        var sent = false
 
         // Immediate events from the UI start at the top of this buffer.
         for e in pending {
@@ -330,6 +376,9 @@ nonisolated final class DSPCore: @unchecked Sendable {
                     scheduled.append(ScheduledNote(time: clock + Int64(delay * Double(sampleRate)),
                                                    midi: midi, gate: gate, patch: patch, velocity: velocity))
                 }
+            case let .vox(midi, seconds, from, to, settings):
+                startVox(midi: midi, gate: max(1, Int(seconds * Double(sampleRate))), from: from, to: to,
+                         settings: settings, velocity: 1)
             }
         }
         pending.removeAll(keepingCapacity: true)
@@ -364,22 +413,24 @@ nonisolated final class DSPCore: @unchecked Sendable {
             let n = segEnd - pos
             let ptrL = out + pos
             let ptrR = rightBuf + pos
-            // Sidechain: synths duck after every sequenced kick, then swell back.
-            let ducking = sidechain > 0.001 && duckEnv > 0.0005
+            // Sidechain: voices duck after every sequenced kick, then swell back.
+            // duckBuf holds the envelope; each voice scales it by its own depth.
+            let ducking = duckEnv > 0.0005
             if ducking {
                 let coef = coefFor(0.16)
                 for i in 0..<n {
-                    duckBuf[i] = 1 - sidechain * duckEnv
+                    duckBuf[i] = duckEnv
                     duckEnv *= coef
                 }
             }
             for v in 0..<voices.count where voices[v].kind != .none {
                 let pan = voices[v].pan
                 let isSynth = voices[v].kind == .synth
+                let depth = voices[v].duck >= 0 ? voices[v].duck : (isSynth ? sidechain : 0)
                 for i in 0..<n { scratch[i] = 0 }
                 renderVoice(&voices[v], scratch, n)
-                if ducking && isSynth {
-                    for i in 0..<n { scratch[i] *= duckBuf[i] }
+                if ducking && depth > 0.001 {
+                    for i in 0..<n { scratch[i] *= 1 - depth * duckBuf[i] }
                 }
                 let gl: Float = pan > 0 ? 1 - pan : 1
                 let gr: Float = pan < 0 ? 1 + pan : 1
@@ -387,9 +438,29 @@ nonisolated final class DSPCore: @unchecked Sendable {
                     ptrL[i] += scratch[i] * gl
                     ptrR[i] += scratch[i] * gr
                 }
+                let rev = voices[v].rev, dly = voices[v].dly
+                if rev > 0.001 {
+                    sent = true
+                    let bus = revBus + pos
+                    for i in 0..<n { bus[i] += scratch[i] * rev }
+                }
+                if dly > 0.001 {
+                    sent = true
+                    let bus = dlyBus + pos
+                    for i in 0..<n { bus[i] += scratch[i] * dly }
+                }
             }
             clock += Int64(n)
             pos = segEnd
+        }
+
+        // Sandbox sends. Keep running a few seconds after the last send so tails ring out.
+        if sent { fxTail = Int(sampleRate * 4) }
+        if fxTail > 0 {
+            if fx == nil || fx?.sampleRate != sampleRate { fx = JamFX(sampleRate: sampleRate) }
+            fx?.process(delayIn: dlyBus, reverbIn: revBus, left: out, right: rightBuf, frames: frames,
+                        delaySamples: Int(samplesPerStep * 3))
+            fxTail -= frames
         }
 
         // Master: resonant low-pass + soft clip.
@@ -427,7 +498,9 @@ nonisolated final class DSPCore: @unchecked Sendable {
         }
         let s = stepIndex % Pattern.steps
         currentStep = s
-        if !sequence.isEmpty {
+        if let jam {
+            fireJam(jam)
+        } else if !sequence.isEmpty {
             let section = (stepIndex / Pattern.steps / max(1, barsPerSection)) % sequence.count
             currentSection = section
             fire(sequence[section], step: s)
@@ -445,6 +518,40 @@ nonisolated final class DSPCore: @unchecked Sendable {
         }
         stepIndex += 1
         nextStepTime = stepTime(stepIndex)
+    }
+
+    private func fireJam(_ jam: JamSong) {
+        let (section, pos) = jam.locate(stepIndex)
+        currentSection = section
+        currentBar = pos / Pattern.steps
+        let mask = section >= 0 && section < jam.sections.count ? jam.sections[section].lanes : []
+        for (l, lane) in jam.lanes.enumerated() {
+            if !mask.isEmpty && (l >= mask.count || !mask[l]) { continue }
+            guard lane.level > 0.001, pos < lane.steps.count else { continue }
+            let events = lane.steps[pos]
+            if events.isEmpty { continue }
+            voicePan = lane.pan
+            voiceRev = lane.reverb
+            voiceDly = lane.delay
+            voiceDuck = lane.duck
+            for e in events {
+                switch e {
+                case let .drum(track, vel):
+                    startDrum(track, velocity: vel * lane.level, kit: lane.kit)
+                    if track == .kick { duckEnv = 1 }
+                case let .note(midi, steps, vel):
+                    let gate = Int(Double(steps) * samplesPerStep * 0.92)
+                    startSynth(midi: midi, gate: gate, patch: lane.patch, velocity: vel * lane.level)
+                case let .vox(midi, steps, from, to):
+                    let gate = Int(Double(steps) * samplesPerStep * 0.92)
+                    startVox(midi: midi, gate: gate, from: from, to: to, settings: lane.vox, velocity: lane.level)
+                }
+            }
+        }
+        voicePan = 0
+        voiceRev = 0
+        voiceDly = 0
+        voiceDuck = -1
     }
 
     private func fire(_ p: Pattern, step s: Int) {
@@ -532,6 +639,9 @@ nonisolated final class DSPCore: @unchecked Sendable {
         }
         v.pan = voicePan
         v.gain *= voiceGain
+        v.rev = voiceRev
+        v.dly = voiceDly
+        v.duck = voiceDuck >= 0 ? voiceDuck : 0
         let slot = allocate()
         voices[slot] = v
     }
@@ -555,6 +665,31 @@ nonisolated final class DSPCore: @unchecked Sendable {
         rng = rng &* 1_664_525 &+ 1_013_904_223
         v.pan = voicePan
         v.gain *= voiceGain
+        v.rev = voiceRev
+        v.dly = voiceDly
+        v.duck = voiceDuck
+        let slot = allocate()
+        voices[slot] = v
+    }
+
+    private func startVox(midi: Int, gate: Int, from: Int, to: Int, settings: VoxSettings, velocity: Float) {
+        var v = Voice()
+        v.kind = .vox
+        v.freq = Float(NoteName.frequency(midi))
+        v.gate = gate
+        v.attackSamples = max(1, Int(settings.attack * sampleRate))
+        v.releaseCoef = coefFor(0.07)
+        v.env = 0
+        v.gain = settings.gain * velocity
+        v.vox.from = max(0, min(Vowel.formants.count - 1, from))
+        v.vox.to = max(0, min(Vowel.formants.count - 1, to))
+        v.vox.settings = settings
+        v.phase = Float(Double(rng % 1000) / 1000)
+        rng = rng &* 1_664_525 &+ 1_013_904_223
+        v.pan = voicePan
+        v.rev = voiceRev
+        v.dly = voiceDly
+        v.duck = voiceDuck >= 0 ? voiceDuck : 0
         let slot = allocate()
         voices[slot] = v
     }
@@ -671,6 +806,51 @@ nonisolated final class DSPCore: @unchecked Sendable {
                 if p.square > 0 { osc += p.square * (v.phase < 0.5 ? 1 : -1) }
                 let lp = svfStep(osc, g: v.g, k: v.k, &v.ic1, &v.ic2).lp
                 out[i] += lp * v.env * v.gain
+                v.t += 1
+            }
+            if v.t >= v.gate && v.env < 0.0003 { v.kind = .none }
+
+        case .vox:
+            // A pulse-like source through three formant band-passes that glide between two vowels.
+            let set = v.vox.settings
+            let a = Vowel.formants[v.vox.from], b = Vowel.formants[v.vox.to]
+            let glide = max(1, Float(v.gate) * 0.6)
+            let maxFc = sr * 0.45
+            for i in 0..<n {
+                if v.t < v.attackSamples {
+                    v.env = Float(v.t) / Float(v.attackSamples)
+                } else if v.t < v.gate {
+                    v.env = 0.85 + (v.env - 0.85) * 0.9995
+                } else {
+                    v.env *= v.releaseCoef
+                }
+                if v.t & 7 == 0 {
+                    let mix = min(1, Float(v.t) / glide)
+                    let w = mix * mix * (3 - 2 * mix)
+                    for f in 0..<3 {
+                        let hz = min(maxFc, (a[f] + (b[f] - a[f]) * w) * set.formant)
+                        v.vox.g[f] = tanf(Float.pi * hz / sr)
+                        v.vox.k[f] = max(0.04, min(1.5, Vowel.bandwidth[f] * set.formant / hz))
+                    }
+                }
+                // Vibrato fades in after the first 120 ms.
+                v.vox.vib += 5.5 * inv
+                if v.vox.vib >= 1 { v.vox.vib -= 1 }
+                let fade = min(1, max(0, Float(v.t) * inv - 0.12) * 4)
+                let bend = exp2f(set.vibrato * fade * sinf(twoPi * v.vox.vib) / 12)
+                v.phase += v.freq * bend * inv
+                if v.phase >= 1 { v.phase -= 1 }
+                var src: Float = set.robot ? (v.phase < 0.5 ? 0.8 : -0.8) : (1 - 2 * v.phase)
+                src = src * (1 - set.breath * 0.7) + noise() * set.breath
+                var y: Float = 0
+                for f in 0..<3 {
+                    var z1 = v.vox.s1[f], z2 = v.vox.s2[f]
+                    let bp = svfStep(src, g: v.vox.g[f], k: v.vox.k[f], &z1, &z2).bp
+                    v.vox.s1[f] = z1
+                    v.vox.s2[f] = z2
+                    y += bp * v.vox.k[f] * Vowel.gains[f]
+                }
+                out[i] += y * v.env * v.gain * 2.4
                 v.t += 1
             }
             if v.t >= v.gate && v.env < 0.0003 { v.kind = .none }

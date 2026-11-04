@@ -173,6 +173,29 @@ struct ScoringTests {
         #expect(!back.playable.chords.isEmpty)
     }
 
+    @Test func jamRoundTripsAndPlays() throws {
+        var jam = Jam.starter(.house)
+        jam[.bass].setBars(4)
+        jam[.vox].set(.pitch, 0.75)
+        let data = try JSONEncoder().encode(jam)
+        let back = try JSONDecoder().decode(Jam.self, from: data)
+        #expect(back == jam)
+        #expect(back[.bass].bars == 4)
+
+        let loop = jam.song(arranged: false)
+        #expect(loop.lanes.count == JamLane.allCases.count)
+        #expect(loop.lanes.allSatisfy { $0.steps.count == Jam.loopBars * Pattern.steps })
+        #expect(loop.sections.isEmpty)
+        // The starter groove plays a kick on every bar of the loop.
+        let kicks = loop.lanes[JamLane.kick.rawValue].steps.filter { !$0.isEmpty }.count
+        #expect(kicks == 4 * Jam.loopBars)
+
+        let song = jam.song(arranged: true)
+        #expect(song.totalSteps == jam.songBars * Pattern.steps)
+        #expect(song.locate(song.start(of: 2)).section == 2)
+        #expect(song.locate(song.totalSteps).section == 0)
+    }
+
     @Test func levelCurve() {
         #expect(AppState.level(for: 0).level == 1)
         #expect(AppState.level(for: 100).level == 2)

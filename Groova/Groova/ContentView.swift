@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  Groova
 //
-//  Root: onboarding until a genre is chosen, then Learn / Studio / Profile tabs.
+//  Root: onboarding until a genre is chosen, then Learn / Sandbox / Profile tabs.
 //
 
 import Foundation
@@ -34,8 +34,8 @@ struct MainTabs: View {
             Tab("Learn", systemImage: "music.note.house.fill") {
                 HomeView(genre: genre)
             }
-            Tab("Studio", systemImage: "slider.horizontal.3") {
-                StudioView(genre: genre)
+            Tab("Sandbox", systemImage: "square.stack.3d.up.fill") {
+                SandboxView(genre: genre)
             }
             Tab("Profile", systemImage: "person.crop.circle.fill") {
                 ProfileView(genre: genre)
@@ -50,4 +50,5 @@ struct MainTabs: View {
     ContentView()
         .environment(AppState())
         .environment(SketchStore())
+        .environment(JamStore())
 }
