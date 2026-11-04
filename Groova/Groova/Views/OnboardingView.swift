@@ -21,7 +21,7 @@ struct OnboardingView: View {
                     .transition(.opacity.combined(with: .move(edge: .leading)))
             } else {
                 GenrePicker(choice: $choice, title: "What do you want to make?",
-                            subtitle: "Pick a sound. You can switch any time — each genre keeps its own progress.") { g in
+                            subtitle: "Pick a sound to start with. You can switch any time, and each genre keeps its own progress.") { g in
                     Transport.shared.stop()
                     Haptics.success()
                     withAnimation(.spring(response: 0.5)) { app.select(g) }
@@ -92,12 +92,19 @@ struct GenrePicker: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            HStack {
+                Text(title).font(.display(28)).foregroundStyle(Theme.text)
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 24)
+            .padding(.bottom, 14)
+            Rectangle().fill(Theme.divider).frame(height: 1)
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    Text(title).font(.display(30)).foregroundStyle(Theme.text)
-                        .padding(.top, 24)
-                    Text(subtitle).font(.label(15, weight: .medium)).foregroundStyle(Theme.textSecondary)
-                        .padding(.bottom, 8)
+                VStack(alignment: .leading, spacing: 16) {
+                    WooferCoach(line: subtitle, mood: .happy, size: 56)
+                        .padding(.top, 4)
+                        .padding(.bottom, 4)
                     ForEach(Genre.allCases) { g in
                         GenreCard(genre: g, selected: choice == g,
                                   level: app.genreProgress(g).xp > 0 ? app.level(g) : nil,
@@ -112,11 +119,12 @@ struct GenrePicker: View {
                     }
                 }
                 .padding(.horizontal, 20)
+                .padding(.top, 16)
                 .padding(.bottom, 20)
             }
             if let choice {
                 Button("Start with \(choice.name)") { onConfirm(choice) }
-                    .buttonStyle(ChunkyButtonStyle(color: choice.color))
+                    .buttonStyle(ChunkyButtonStyle(color: Theme.brand))
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -145,71 +153,82 @@ struct GenreCard: View {
     var playhead: Int
     var onPreview: () -> Void
 
+    private var shape: RoundedRectangle { RoundedRectangle(cornerRadius: 22, style: .continuous) }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(Theme.surfaceRaised)
-                    Image(systemName: genre.symbol)
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(genre.badgeColor.mix(with: .black, by: 0.15))
-                }
-                .frame(width: 52, height: 52)
-                VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 14) {
+                GenreBadge(genre: genre, size: 68)
+                VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 8) {
-                        Text(genre.name).font(.display(22)).foregroundStyle(Theme.text)
-                        if !genre.hasLessons {
-                            Text("PREVIEW").font(.label(10, weight: .heavy)).tracking(1)
-                                .foregroundStyle(Theme.textSecondary)
-                                .padding(.horizontal, 7).padding(.vertical, 3)
-                                .background(Capsule().strokeBorder(Theme.textTertiary))
-                        }
+                        Text(genre.name).font(.display(21)).foregroundStyle(Theme.text)
+                            .lineLimit(1).minimumScaleFactor(0.8)
                         if let level {
-                            Text("LV \(level)").font(.label(10, weight: .heavy)).tracking(1)
-                                .foregroundStyle(genre.color)
+                            Text("LV \(level)").font(.label(11, weight: .black)).tracking(0.6)
+                                .foregroundStyle(Theme.brand)
+                                .padding(.horizontal, 8).frame(height: 20)
+                                .background(Capsule().fill(selected ? Theme.surface : Theme.brandSoft))
+                        }
+                        if !genre.hasLessons {
+                            Text("PREVIEW").font(.label(10, weight: .black)).tracking(0.8)
+                                .foregroundStyle(Theme.textSecondary)
+                                .padding(.horizontal, 7).frame(height: 20)
+                                .background(Capsule().fill(Theme.surfaceRaised))
                         }
                     }
                     Text(genre.tagline).font(.label(14, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                        .lineSpacing(1.5)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                Spacer(minLength: 8)
-                Button(action: { Haptics.tap(); onPreview() }) {
-                    Image(systemName: playing ? "stop.fill" : "play.fill")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(playing ? Theme.onBrand : Theme.brand)
-                        .frame(width: 44, height: 44)
-                        .background(Circle().fill(playing ? Theme.brand : Theme.brandSoft))
-                        .contentTransition(.symbolEffect(.replace))
-                }
-                .buttonStyle(PressScaleStyle())
-                .accessibilityLabel(playing ? "Stop \(genre.name) preview" : "Hear \(genre.name)")
+                Spacer(minLength: 4)
+                playButton
             }
-            PatternGlyph(pattern: genre.demoPattern, color: genre.color, playhead: playing ? playhead : -1)
-                .frame(height: 46)
+            if playing {
+                PatternGlyph(pattern: genre.demoPattern, color: genre.color, playhead: playhead)
+                    .frame(height: 40)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
             HStack(spacing: 6) {
                 ForEach(genre.traits, id: \.self) { t in
                     Text(t).font(.label(12, weight: .bold))
-                        .foregroundStyle(Theme.textSecondary)
+                        .foregroundStyle(selected ? Theme.brand : Theme.textSecondary)
                         .padding(.horizontal, 10).frame(height: 26)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(Theme.surfaceRaised))
+                        .background(Capsule().fill(selected ? Theme.surface : Theme.surfaceRaised))
                 }
             }
         }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(selected ? Theme.brandSoft : Theme.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(selected ? Theme.brandBorder : Theme.stroke, lineWidth: Theme.border)
-                )
-        )
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(selected ? Theme.brandBorder : Theme.stroke)
-                .offset(y: 4)
-        )
-        .contentShape(RoundedRectangle(cornerRadius: 20))
+        .padding(16)
+        .background(shape.fill(selected ? Theme.brandSoft : Theme.surface))
+        .overlay(shape.strokeBorder(selected ? Theme.brand : Theme.stroke, lineWidth: selected ? 2.5 : Theme.border))
+        .background(shape.fill(selected ? Theme.brandLip : Theme.stroke).offset(y: 4))
+        .overlay(alignment: .topTrailing) {
+            if selected {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 11, weight: .black))
+                    .foregroundStyle(Theme.onBrand)
+                    .frame(width: 24, height: 24)
+                    .background(Circle().fill(Theme.brand))
+                    .overlay(Circle().strokeBorder(Theme.background, lineWidth: 3))
+                    .offset(x: 6, y: -6)
+                    .transition(.scale.combined(with: .opacity))
+            }
+        }
+        .contentShape(shape)
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: playing)
+    }
+
+    private var playButton: some View {
+        Button(action: { Haptics.tap(); onPreview() }) {
+            Image(systemName: playing ? "stop.fill" : "play.fill")
+                .font(.system(size: 15, weight: .black))
+                .foregroundStyle(playing ? Theme.onBrand : Theme.brand)
+                .frame(width: 44, height: 44)
+                .background(Circle().fill(playing ? Theme.brandLip : Theme.brandBorder).offset(y: 3))
+                .background(Circle().fill(playing ? Theme.brand : Theme.surface))
+                .overlay(Circle().strokeBorder(playing ? Color.clear : Theme.brandBorder, lineWidth: 2))
+                .contentTransition(.symbolEffect(.replace))
+        }
+        .buttonStyle(PressScaleStyle())
+        .accessibilityLabel(playing ? "Stop \(genre.name) preview" : "Hear \(genre.name)")
     }
 }

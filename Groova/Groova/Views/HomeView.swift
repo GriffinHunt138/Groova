@@ -117,9 +117,7 @@ struct HomeView: View {
             HStack(spacing: 18) {
                 Button { Haptics.tap(); showGenres = true } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: genre.symbol)
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(genre.color)
+                        GenreIcon(genre: genre, size: 26)
                         Text(genre.name).font(.label(16, weight: .heavy)).foregroundStyle(Theme.text)
                         Image(systemName: "chevron.down").font(.system(size: 10, weight: .black))
                             .foregroundStyle(Theme.textTertiary)

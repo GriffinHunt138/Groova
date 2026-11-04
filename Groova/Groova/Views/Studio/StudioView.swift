@@ -152,11 +152,7 @@ struct StudioView: View {
 
     private var titleRow: some View {
         HStack(spacing: 12) {
-            Image(systemName: genre.symbol)
-                .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(Theme.onBrand)
-                .frame(width: 48, height: 48)
-                .background(Circle().fill(genre.color))
+            GenreBadge(genre: genre, size: 48)
             VStack(alignment: .leading, spacing: 2) {
                 Button {
                     nameDraft = sketch.name == "Untitled loop" ? "" : sketch.name
@@ -505,11 +501,7 @@ struct SketchbookView: View {
         HStack(spacing: 14) {
             Button { Haptics.tap(); onLoad(s) } label: {
                 HStack(spacing: 14) {
-                    Image(systemName: s.genre.symbol)
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(Theme.onBrand)
-                        .frame(width: 44, height: 44)
-                        .background(Circle().fill(s.genre.color))
+                    GenreBadge(genre: s.genre, size: 44)
                     VStack(alignment: .leading, spacing: 3) {
                         HStack(spacing: 6) {
                             Text(s.name).font(.label(16, weight: .heavy)).foregroundStyle(Theme.text).lineLimit(1)
