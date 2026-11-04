@@ -23,6 +23,58 @@ nonisolated enum HouseCourse {
     static let stabLoop = Pattern(kick: [0, 4, 8, 12], clap: [4, 12], chords: [K.ch(2, .am7, 4), K.ch(10, .dm7, 4)])
     static let padLoop = Pattern(kick: [0, 8], chords: [K.ch(0, .am7, 8), K.ch(8, .fmaj7, 8)])
 
+    // MARK: Academy (Part 2)
+
+    private static func pick(_ ids: String...) -> [Lesson] { Curriculum.lessons(ids, from: Curriculum.houseUnits) }
+    private static let style = AcademyKit.house
+
+    static let academy: [Unit] = [
+        K.unit("house.a1", 1, "House Foundations", "Chicago, disco & the four-four",
+               [AcademyKit.whatMakes(style)] + pick("house.u6.l1") + [AcademyKit.anatomy(style), AcademyKit.foundationsCheck(style)]),
+        K.unit("house.a2", 2, "Drums & Groove", "Tops, shuffle & peak-time drums",
+               [tops, shuffle] + pick("house.u6.l5", "house.u1.mastery")),
+        K.unit("house.a3", 3, "Bass & Low End", "Bounce, tone, jack & acid",
+               pick("house.u1.l4", "house.u3.l2", "house.u6.l2", "house.u6.l3", "house.u6.mastery")),
+        K.unit("house.a4", 4, "Chords & Hooks", "Motifs, answers & soulful keys",
+               pick("house.u3.l3", "house.mel.l2", "house.mel.l3", "house.mel.l4", "house.u6.l4", "house.mel.mastery")),
+        K.unit("house.a5", 5, "Vocals & Sampling", "Chops, stabs & vocal hooks",
+               [AcademyKit.chopIntro(style)].compactMap { $0 } + pick("house.mel.l5", "house.u2.l3")
+                   + [AcademyKit.chopHook(style), AcademyKit.vocalMastery(style)].compactMap { $0 }),
+        K.unit("house.a6", 6, "Arrangement", "Intros, drops & breakdowns",
+               pick("house.u5.l2", "house.u5.l3", "house.u5.l4") + [AcademyKit.loopToTrack(style)] + pick("house.u5.mastery")),
+        K.unit("house.a7", 7, "Mixing & Final Project", "Polish it, then finish a track",
+               [AcademyKit.mixBalance(style), AcademyKit.mixPump(style), AcademyKit.mixSpace(style), AcademyKit.finalProject(style)]),
+    ]
+
+    static let tops = K.lesson("house.a2.tops", "Shakers & Tops", "The layer above the kick", "sparkles", .rhythm, 30, [
+        K.intro("The tops",
+                "Producers call everything above the kick and clap the tops: closed hats, open hats, shakers and rims. The kick is the same in almost every house track. The tops are where a groove gets its personality.",
+                [.hat, .openHat, .perc],
+                demo: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [1, 5, 9, 13], openHat: [2, 6, 10, 14], perc: [3, 11])),
+        K.drumCopy("Copy the tops", "Closed hats just after each kick, open hats on the offbeats, and a rim before each clap.",
+                   tracks: [.kick, .clap, .hat, .openHat, .perc], edit: [.hat, .openHat, .perc],
+                   start: Pattern(kick: [0, 4, 8, 12], clap: [4, 12]),
+                   target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [1, 5, 9, 13], openHat: [2, 6, 10, 14], perc: [3, 11])),
+        K.drumMake("Design your own tops", "The kick and clap stay. Add hats, open hats and rims until it grooves.",
+                   tracks: [.kick, .clap, .hat, .openHat, .perc], edit: [.hat, .openHat, .perc],
+                   start: Pattern(kick: [0, 4, 8, 12], clap: [4, 12]), goal: .atLeast(.hat, 4)),
+    ])
+
+    static let shuffleLoop = Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: Array(0..<16))
+
+    static let shuffle = K.lesson("house.a2.swing", "House Shuffle", "Swing, but just a touch", "metronome", .rhythm, 30, [
+        K.intro("The shuffle",
+                "Classic house was programmed on drum machines with a touch of swing on the hats. Not garage-heavy, just enough that the sixteenths lean and the groove feels human instead of robotic.",
+                [.hat], demo: shuffleLoop),
+        K.quiz("How much swing?", "None, a touch, or heavy? Listen to the hats.", [
+            K.hear([shuffleLoop], ["None", "A touch", "Heavy"], 0, swing: 0),
+            K.hear([shuffleLoop], ["None", "A touch", "Heavy"], 1, "A touch: that's the house shuffle.", swing: 0.12),
+            K.hear([shuffleLoop], ["None", "A touch", "Heavy"], 2, "Heavy swing, garage style.", swing: 0.33),
+        ]),
+        K.swingMake("Give the hats a house shuffle", "Just a touch, so the hats lean without limping.",
+                    tracks: [.kick, .clap, .hat], start: shuffleLoop, atLeast: 0.08),
+    ])
+
     static let units: [Unit] = [unit3, melodyUnit, unit5, unit6]
 
     // MARK: Unit 3 — Shape Your Sound

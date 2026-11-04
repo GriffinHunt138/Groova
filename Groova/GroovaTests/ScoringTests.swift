@@ -119,19 +119,59 @@ struct ScoringTests {
     }
 
     @Test func everyGenreHasAFullCourse() {
+        // Part 1 is shared: the same eight units, in the same order, for every genre.
+        #expect(CoreCourse.units.count == 8)
         var ids = Set<String>()
+        for unit in CoreCourse.units {
+            #expect(unit.part == .foundations)
+            #expect(unit.mastery != nil, "\(unit.id) needs a mastery challenge")
+            for lesson in unit.lessons {
+                #expect(ids.insert(lesson.id).inserted, "duplicate id \(lesson.id)")
+                #expect(Curriculum.isCore(lesson.id))
+            }
+        }
         for genre in Genre.allCases {
             let units = Curriculum.units(for: genre)
-            #expect(units.count >= 4, "\(genre)")
-            for unit in units {
-                #expect(unit.mastery != nil, "\(unit.id) needs a mastery challenge")
+            #expect(units.prefix(8).map(\.id) == CoreCourse.units.map(\.id), "\(genre)")
+            let academy = units.dropFirst(8)
+            #expect(academy.count >= 7, "\(genre)")
+            for unit in academy {
+                #expect(unit.part == .academy)
+                #expect(unit.label.hasPrefix("UNIT \(genre.academyCode)"))
+                #expect(unit.lessons.count >= 4, "\(unit.id) is too short")
+                #expect(unit.lessons.last?.isMastery == true, "\(unit.id) should end on its mastery challenge")
                 for lesson in unit.lessons {
                     #expect(!lesson.steps.isEmpty, "\(lesson.id)")
+                    #expect(!Curriculum.isCore(lesson.id), "\(lesson.id) is in both parts")
                     #expect(ids.insert(lesson.id).inserted, "duplicate id \(lesson.id)")
                 }
             }
         }
-        #expect(ids.count == 138)
+        #expect(ids.count >= 220)
+    }
+
+    @Test func listeningAndChopStepsAreSound() {
+        for genre in Genre.allCases {
+            for lesson in Curriculum.allLessons(for: genre) {
+                for step in lesson.steps {
+                    switch step {
+                    case .earChoice(let t) where t.rounds.contains(where: \.isListening):
+                        // Silver and Gold reorder the rounds, so they need at least three.
+                        #expect(t.rounds.count >= 3, "\(lesson.id)")
+                        #expect(t.rounds.allSatisfy(\.isListening), "\(lesson.id) mixes chord and loop rounds")
+                    case .chordLane(let t):
+                        if let chops = t.chops { #expect(chops.count == t.palette.count, "\(lesson.id)") }
+                    case .tempo(let t):
+                        if let target = t.target {
+                            #expect(TempoTask.range.contains(target), "\(lesson.id)")
+                            #expect(abs(t.start - target) > t.tolerance, "\(lesson.id) starts on the answer")
+                        }
+                    default:
+                        break
+                    }
+                }
+            }
+        }
     }
 
     @Test func everyLessonHasHarderLevels() {

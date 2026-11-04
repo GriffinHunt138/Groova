@@ -117,10 +117,16 @@ struct LessonPlayerView: View {
         case .mastery(let t): MasteryChallengeView(task: t, genre: genre, onComplete: advance)
         case .chordBuilder(let t): ChordBuilderStepView(task: t, genre: genre, onComplete: advance)
         case .earChoice(let t): EarChoiceStepView(task: t, genre: genre, onComplete: advance)
-        case .chordLane(let t): ChordLaneStepView(task: t, genre: genre, onComplete: advance)
+        case .chordLane(let t):
+            if t.chops != nil {
+                ChopLaneStepView(task: t, genre: genre, onComplete: advance)
+            } else {
+                ChordLaneStepView(task: t, genre: genre, onComplete: advance)
+            }
         case .soundLab(let t): SoundLabStepView(task: t, genre: genre, onComplete: advance)
         case .mixer(let t): MixerStepView(task: t, genre: genre, onComplete: advance)
         case .arrangement(let t): ArrangementStepView(task: t, genre: genre, onComplete: advance)
+        case .tempo(let t): TempoStepView(task: t, genre: genre, onComplete: advance)
         }
     }
 
@@ -224,7 +230,7 @@ struct LessonCompleteView: View {
                         banner(symbol: "arrow.up.circle.fill", text: "\(genre.name) level \(level)!", color: Theme.brand)
                     }
                     if let unit = reward.unlockedUnit {
-                        banner(symbol: "lock.open.fill", text: "Unit \(unit.number) unlocked: \(unit.title)", color: Theme.brand)
+                        banner(symbol: "lock.open.fill", text: "\(unit.shortLabel) unlocked: \(unit.title)", color: Theme.brand)
                     }
                     ForEach(reward.newAchievements) { a in
                         banner(symbol: a.symbol, text: "Achievement: \(a.title)", color: Theme.brand)

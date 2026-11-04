@@ -20,6 +20,10 @@ nonisolated enum K {
         Unit(id: id, number: number, title: title, subtitle: subtitle, lessons: lessons)
     }
 
+    static func core(_ id: String, _ number: Int, _ title: String, _ subtitle: String, _ lessons: [Lesson]) -> Unit {
+        Unit(id: id, number: number, title: title, subtitle: subtitle, lessons: lessons, part: .foundations)
+    }
+
     static func lesson(_ id: String, _ title: String, _ subtitle: String, _ symbol: String, _ skill: Skill,
                        _ xp: Int, _ steps: [LessonStep]) -> Lesson {
         Lesson(id: id, title: title, subtitle: subtitle, symbol: symbol, skill: skill, xp: xp, steps: steps)
@@ -142,6 +146,31 @@ nonisolated enum K {
 
     static func round(_ chords: [ChordShape], _ options: [String], _ answer: Int, _ explain: String = "") -> EarRound {
         EarRound(chords: chords, options: options, answer: answer, explain: explain)
+    }
+
+    /// A listening round: loops played in order, `bars` bars each.
+    static func hear(_ loops: [Pattern], _ options: [String], _ answer: Int, _ explain: String = "",
+                     bars: Int = 1, bpm: Double? = nil, swing: Double? = nil, genre: Genre? = nil) -> EarRound {
+        EarRound(chords: [], options: options, answer: answer, explain: explain, loops: loops, bars: bars, bpm: bpm,
+                 swing: swing, genre: genre)
+    }
+
+    /// Find a tempo: by number, or by ear against a reference.
+    static func tempo(_ prompt: String, _ body: String, loop: Pattern, target: Double?, start: Double = 100,
+                      byEar: Bool = false, swing: Double? = nil) -> LessonStep {
+        .tempo(TempoTask(prompt: prompt, body: body, loop: loop, target: target, start: start, byEar: byEar,
+                         swing: swing))
+    }
+
+    /// A lane of vocal chops. `target` and `start` map steps to chop indexes.
+    static func chops(_ prompt: String, _ hint: String, _ mode: TaskMode, _ chops: [VoxChop], backing: Pattern,
+                      start: [Int: Int] = [:], target: [Int: Int] = [:], length: Int = 2,
+                      vox: VoxSettings = VoxSettings()) -> LessonStep {
+        var t = ChordLaneTask(prompt: prompt, hint: hint, mode: mode, palette: chops.map(\.shape), backing: backing,
+                              start: start, target: target, stabLength: length)
+        t.chops = chops
+        t.vox = vox
+        return .chordLane(t)
     }
 
     static func lane(_ prompt: String, _ hint: String, _ mode: TaskMode, palette: [ChordShape], backing: Pattern,

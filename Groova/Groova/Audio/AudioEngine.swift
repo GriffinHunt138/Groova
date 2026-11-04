@@ -198,6 +198,9 @@ nonisolated final class AudioEngine: @unchecked Sendable {
 
     func update(swing: Double) { withCore { $0.swing = swing } }
 
+    /// Change tempo while playing, without restarting the loop.
+    func update(bpm: Double) { withCore { $0.setTempo(bpm) } }
+
     /// Swap the kit while playing (Sound Lab). New hits use the new sound.
     func update(kit: DrumKit) { withCore { $0.kit = kit } }
 

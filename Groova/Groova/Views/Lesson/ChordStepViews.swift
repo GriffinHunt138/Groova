@@ -188,13 +188,14 @@ struct EarChoiceStepView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     StepPrompt(title: task.prompt, detail: task.body,
-                               badge: "Ear training · \(round + 1) of \(task.rounds.count)")
+                               badge: "\(current.isListening ? "Listening" : "Ear training") · \(round + 1) of \(task.rounds.count)")
                     Button(action: play) {
                         VStack(spacing: 10) {
                             Image(systemName: playing ? "speaker.wave.3.fill" : "play.fill")
                                 .font(.system(size: 34, weight: .black))
                                 .symbolEffect(.variableColor.iterative, isActive: playing)
-                            Text(current.chords.allSatisfy { $0.pitches.count == 1 } ? "Play the phrase"
+                            Text(current.isListening ? (playing ? "Listening…" : "Play the loop")
+                                 : current.chords.allSatisfy { $0.pitches.count == 1 } ? "Play the phrase"
                                  : (current.chords.count > 1 ? "Play the chords" : "Play the chord"))
                                 .font(.label(15, weight: .heavy))
                         }
@@ -221,6 +222,7 @@ struct EarChoiceStepView: View {
             try? await Task.sleep(for: .milliseconds(450))
             play()
         }
+        .onDisappear { if current.isListening { Transport.shared.stop() } }
     }
 
     private func optionButton(_ i: Int, _ option: String) -> some View {
@@ -246,6 +248,10 @@ struct EarChoiceStepView: View {
     }
 
     private func play() {
+        if current.isListening {
+            playLoops()
+            return
+        }
         playing = true
         // Single notes are a melody, so they play quicker, like a phrase.
         let melodic = current.chords.allSatisfy { $0.pitches.count == 1 }
@@ -262,8 +268,26 @@ struct EarChoiceStepView: View {
         }
     }
 
+    /// Listening rounds: the loops in order, with the round's genre sounds and tempo.
+    private func playLoops() {
+        let r = current
+        let g = r.genre ?? genre
+        let bpm = r.bpm ?? g.bpm
+        let bars = max(1, r.bars) * r.loops.count
+        playing = true
+        Transport.shared.play(r.loops[0], genre: g, source: .reference, bars: bars, swing: r.swing ?? g.swing,
+                              bpm: bpm, sequence: r.loops.count > 1 ? r.loops : [], barsPerSection: max(1, r.bars))
+        let seconds = Double(bars) * 4 * 60 / bpm
+        let thisRound = round
+        Task {
+            try? await Task.sleep(for: .seconds(seconds + 0.15))
+            if round == thisRound { playing = false }
+        }
+    }
+
     private func check() {
         guard let picked else { return }
+        if current.isListening { Transport.shared.stop() }
         if picked == current.answer {
             if !missedThisRound { firstTry += 1 }
             AudioEngine.shared.playSuccess()

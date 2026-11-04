@@ -83,6 +83,11 @@ final class Transport {
         if isPlaying(.jamLoop) || isPlaying(.jamSong) { engine.update(jam: jam) }
     }
 
+    /// Push a new tempo to whatever is playing.
+    func liveUpdate(bpm: Double) {
+        if isRunning { engine.update(bpm: bpm) }
+    }
+
     func stop() {
         engine.stop()
         isRunning = false

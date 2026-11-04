@@ -18,6 +18,7 @@ struct HomeView: View {
     @State private var lockedToast: String?
 
     @State private var showPractice = false
+    @State private var testingOut = false
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -32,21 +33,17 @@ struct HomeView: View {
                     } else {
                         PreviewGenreCard(genre: genre) { showGenres = true }
                     }
-                    ForEach(Curriculum.units(for: genre)) { unit in
-                        UnitSection(unit: unit, genre: genre) { lesson, state in
-                            switch state {
-                            case .locked:
-                                Haptics.warning()
-                                withAnimation { lockedToast = unit.isComingSoon ? "This unit is still in the studio." :
-                                    (app.isUnitUnlocked(unit, in: genre) ? "Finish the lesson before this one first." :
-                                        "Pass the mastery challenge to unlock this unit.") }
-                                Task {
-                                    try? await Task.sleep(for: .seconds(2))
-                                    withAnimation { lockedToast = nil }
-                                }
-                            default:
-                                Haptics.tap()
-                                selectedLesson = lesson
+                    let units = Curriculum.units(for: genre)
+                    ForEach(Array(units.enumerated()), id: \.element.id) { i, unit in
+                        VStack(spacing: 24) {
+                            if i == 0 {
+                                PartHeader(part: .foundations, genre: genre)
+                                if showSkipCard { SkipFoundationsCard(genre: genre) }
+                            } else if unit.part == .academy && units[i - 1].part == .foundations {
+                                PartHeader(part: .academy, genre: genre)
+                            }
+                            UnitSection(unit: unit, genre: genre) { lesson, state in
+                                tap(lesson, state, in: unit)
                             }
                         }
                     }
@@ -94,7 +91,7 @@ struct HomeView: View {
                 .presentationBackground(Theme.background)
         }
         .sheet(item: $selectedLesson) { lesson in
-            LessonSheet(lesson: lesson, genre: genre) { tier in
+            LessonSheet(lesson: lesson, genre: genre, testOut: testingOut) { tier in
                 selectedLesson = nil
                 Task {
                     try? await Task.sleep(for: .milliseconds(350))
@@ -107,6 +104,35 @@ struct HomeView: View {
         }
         .fullScreenCover(item: $activeRun) { run in
             LessonPlayerView(lesson: run.lesson, genre: genre, tier: run.tier, practice: run.practice)
+        }
+    }
+
+    private var showSkipCard: Bool {
+        guard !app.skippedFoundations else { return false }
+        let core = Curriculum.units(for: genre).filter { $0.part == .foundations }
+        let done = core.flatMap(\.lessons).filter { app.isCompleted($0, in: genre) }.count
+        return done < 6 && app.frontier(genre) < core.count - 1
+    }
+
+    private func tap(_ lesson: Lesson, _ state: NodeState, in unit: Unit) {
+        switch state {
+        case .locked where app.canTestOut(lesson, in: unit, genre: genre) && !unit.isComingSoon:
+            Haptics.tap()
+            testingOut = true
+            selectedLesson = lesson
+        case .locked:
+            Haptics.warning()
+            withAnimation { lockedToast = unit.isComingSoon ? "This unit is still in the studio." :
+                (app.isUnitUnlocked(unit, in: genre) ? "Finish the lesson before this one first." :
+                    "Locked. Tap a crown to test out and skip ahead.") }
+            Task {
+                try? await Task.sleep(for: .seconds(2))
+                withAnimation { lockedToast = nil }
+            }
+        default:
+            Haptics.tap()
+            testingOut = false
+            selectedLesson = lesson
         }
     }
 
@@ -152,6 +178,66 @@ struct HomeView: View {
                 .font(.display(20)).foregroundStyle(Theme.success)
             Text("You've finished every lesson in \(genre.name). Go for Silver and Gold on each one, keep up Daily Practice, or make something in the Sandbox.")
                 .font(.label(14, weight: .medium)).foregroundStyle(Theme.textSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .card()
+    }
+}
+
+// MARK: - Parts
+
+/// Heads each half of the path: Core Foundations, then the genre's academy.
+struct PartHeader: View {
+    let part: CoursePart
+    let genre: Genre
+    @Environment(AppState.self) private var app
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(part == .foundations ? "PART 1 · CORE FOUNDATIONS" : "PART 2 · \(genre.name.uppercased()) ACADEMY")
+                .font(.label(12, weight: .black)).tracking(1.2)
+                .foregroundStyle(genre.color)
+            Text(part == .foundations
+                 ? "The skills every producer needs, whatever you make. Shared by every genre."
+                 : genre.academyFocus)
+                .font(.label(14, weight: .semibold))
+                .foregroundStyle(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if part == .foundations && app.skippedFoundations {
+                HStack(spacing: 8) {
+                    Text("Skipped. Every lesson here is still open.")
+                        .font(.label(13, weight: .bold)).foregroundStyle(Theme.textTertiary)
+                    Button("Undo") {
+                        Haptics.tap()
+                        withAnimation { app.skipFoundations(false) }
+                    }
+                    .font(.label(13, weight: .heavy))
+                    .foregroundStyle(genre.color)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 8)
+    }
+}
+
+/// For producers who already know the basics: start at the academy instead.
+struct SkipFoundationsCard: View {
+    let genre: Genre
+    @Environment(AppState.self) private var app
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Already making music?", systemImage: "forward.fill")
+                .font(.label(16, weight: .heavy)).foregroundStyle(Theme.text)
+            Text("Skip Core Foundations and start the \(genre.name) Academy. The foundation lessons stay open, so you can dip back in any time. You can also tap any crown to test out of a single unit.")
+                .font(.label(14, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Button("Skip to the \(genre.name) Academy") {
+                Haptics.success()
+                withAnimation { app.skipFoundations() }
+            }
+            .buttonStyle(ChunkyButtonStyle(color: genre.color))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .card()
@@ -315,7 +401,7 @@ struct UnitBanner: View {
         let ink: Color = unlocked ? Theme.onBrand : Theme.textTertiary
         HStack(alignment: .center, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("UNIT \(unit.number)")
+                Text(unit.label)
                     .font(.label(12, weight: .black)).tracking(1.2)
                     .foregroundStyle(ink.opacity(unlocked ? 0.7 : 1))
                 Text(unit.title)
@@ -454,7 +540,7 @@ struct PathNode: View {
             guard state == .current else { return }
             withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { bob = true }
         }
-        .accessibilityLabel("\(lesson.title), \(state == .completed ? "completed" : state == .current ? "current lesson" : "locked")")
+        .accessibilityLabel("\(lesson.title), \(state == .completed ? "completed" : state == .current ? "current lesson" : state == .open ? "open" : "locked")")
     }
 }
 
@@ -463,6 +549,7 @@ struct PathNode: View {
 struct LessonSheet: View {
     let lesson: Lesson
     let genre: Genre
+    var testOut = false
     let onStart: (LessonTier) -> Void
     @Environment(AppState.self) private var app
     @State private var tier: LessonTier = .bronze
@@ -488,7 +575,7 @@ struct LessonSheet: View {
                 Pill(symbol: lesson.skill.symbol, text: lesson.skill.name, color: lesson.skill.color)
                 Pill(symbol: "star.fill", text: "+\(AppState.xp(for: lesson, tier: tier, replay: replay)) XP",
                      color: Theme.brand)
-                if let best = app.genreProgress(genre).bestScores[lesson.id] {
+                if let best = app.bestScore(lesson, in: genre) {
                     Pill(symbol: "target", text: "\(best)%", color: Theme.successInk)
                 }
             }
@@ -522,15 +609,18 @@ struct LessonSheet: View {
 
     private func description(done: Bool, replay: Bool) -> String {
         if lesson.isMastery {
+            if testOut && !done {
+                return "Test out. Already know this? Pass this challenge and everything up to the next unit opens. Lessons you skip stay open to play any time."
+            }
             return done ? "Replay the challenge any time to keep it sharp."
-                        : "The unit challenge. Score 80% to unlock the next unit."
+                        : "The unit challenge. Pass it to unlock the next unit."
         }
         if !done { return "About \(max(2, lesson.steps.count)) minutes, all hands-on." }
         return tier.detail + (replay ? " You've earned this one, so it's a replay for half XP." : "")
     }
 
     private func buttonTitle(done: Bool, replay: Bool) -> String {
-        if !done { return lesson.isMastery ? "Start challenge" : "Start lesson" }
+        if !done { return lesson.isMastery ? (testOut ? "Test out" : "Start challenge") : "Start lesson" }
         if lesson.isMastery { return "Play again" }
         return replay ? "Replay \(tier.name)" : "Go for \(tier.name)"
     }

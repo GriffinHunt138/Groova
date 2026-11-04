@@ -19,6 +19,31 @@ nonisolated enum GarageCourse {
     static let full = Pattern(kick: [0, 10], clap: [4, 12], hat: [2, 3, 6, 7, 10, 11, 14, 15], perc: [9],
                               bass: bassline, chords: [K.ch(3, .em9, 2), K.ch(11, .am9, 2)])
 
+    // MARK: Academy (Part 2)
+
+    private static func pick(_ ids: String...) -> [Lesson] { Curriculum.lessons(ids, from: units) }
+    private static let style = AcademyKit.garage
+
+    static let academy: [Unit] = [
+        K.unit("ukg.a1", 1, "UK Garage Foundations", "London, two-step & swing",
+               [AcademyKit.whatMakes(style), AcademyKit.anatomy(style)] + pick("ukg.u1.l1") + [AcademyKit.foundationsCheck(style)]),
+        K.unit("ukg.a2", 2, "Drums & Shuffle", "Skippy hats, ghosts & late kicks",
+               pick("ukg.u1.l2", "ukg.u1.l3", "ukg.u1.l4", "ukg.u1.l5", "ukg.u1.mastery")),
+        K.unit("ukg.a3", 3, "Bouncy Bass", "Sub, skip & octaves",
+               pick("ukg.u2.l1", "ukg.u2.l2", "ukg.u2.l3", "ukg.u2.l4", "ukg.u2.l5", "ukg.u2.mastery")),
+        K.unit("ukg.a4", 4, "Garage Chords", "Ninths & swung stabs",
+               pick("ukg.u3.l1", "ukg.u3.l2", "ukg.u3.l3", "ukg.u3.l4", "ukg.u3.l5", "ukg.u3.mastery")),
+        K.unit("ukg.a5", 5, "Bass & Chords Talking", "Parts that answer each other",
+               pick("ukg.talk.l1", "ukg.talk.l2", "ukg.talk.l3", "ukg.talk.l4", "ukg.talk.mastery")),
+        K.unit("ukg.a6", 6, "Vocals & Chops", "Sliced, pitched and swung",
+               [AcademyKit.chopIntro(style), AcademyKit.chopRhythm(style), AcademyKit.chopHook(style),
+                AcademyKit.vocalMastery(style)].compactMap { $0 }),
+        K.unit("ukg.a7", 7, "Arrangement", "Speed garage, verses & the drop",
+               pick("ukg.u4.l3", "ukg.u4.l4", "ukg.u4.l5") + [AcademyKit.loopToTrack(style)] + pick("ukg.u4.mastery")),
+        K.unit("ukg.a8", 8, "Mixing & Final Project", "Punch, bounce, finished",
+               [AcademyKit.mixBalance(style), AcademyKit.mixPump(style), AcademyKit.mixSpace(style), AcademyKit.finalProject(style)]),
+    ]
+
     static let units: [Unit] = [unit1, unit2, unit3, talkUnit, unit4]
 
     // MARK: Unit 1 — The Two-Step

@@ -20,6 +20,28 @@ nonisolated enum TechnoCourse {
     static let lanes: [Instrument] = [.drum(.kick), .drum(.hat), .drum(.openHat), .drum(.perc), .bass]
     static let sections = ["Intro", "Groove", "Break", "Slam"]
 
+    // MARK: Academy (Part 2)
+
+    private static func pick(_ ids: String...) -> [Lesson] { Curriculum.lessons(ids, from: units) }
+    private static let style = AcademyKit.techno
+
+    static let academy: [Unit] = [
+        K.unit("techno.a1", 1, "Techno Foundations", "Detroit, Berlin & the machine",
+               [AcademyKit.whatMakes(style), AcademyKit.anatomy(style)] + pick("techno.u1.l1") + [AcademyKit.foundationsCheck(style)]),
+        K.unit("techno.a2", 2, "Drums & Rhythm", "Rumble, rims & hypnotic hats",
+               pick("techno.u1.l2", "techno.u1.l3", "techno.u1.l4", "techno.u1.l5", "techno.u1.mastery")),
+        K.unit("techno.a3", 3, "Bass & Acid", "Rolling bass and squelch",
+               pick("techno.u2.l1", "techno.u2.l2", "techno.u2.l3", "techno.u2.l4", "techno.u2.l5", "techno.u2.mastery")),
+        K.unit("techno.a4", 4, "Hypnotic Loops", "Polyrhythm, dub chords & space",
+               pick("techno.u3.l1", "techno.u3.l2", "techno.u3.l3", "techno.u3.l4", "techno.u3.l5", "techno.u3.mastery")),
+        K.unit("techno.a5", 5, "Riffs & Arps", "Hypnotic lead lines",
+               pick("techno.riff.l1", "techno.riff.l2", "techno.riff.l3", "techno.riff.l4", "techno.riff.mastery")),
+        K.unit("techno.a6", 6, "Long Builds", "Tension, release & the slam",
+               pick("techno.u5.l1", "techno.u5.l2", "techno.u5.l3", "techno.u5.l4", "techno.u5.l5", "techno.u5.mastery")),
+        K.unit("techno.a7", 7, "Mixing & Final Project", "Heavy, driving, finished",
+               [AcademyKit.mixBalance(style), AcademyKit.mixPump(style), AcademyKit.mixSpace(style), AcademyKit.finalProject(style)]),
+    ]
+
     static let units: [Unit] = [unit1, unit2, unit3, riffUnit, unit5]
 
     // MARK: Unit 1 — Machine Rhythm

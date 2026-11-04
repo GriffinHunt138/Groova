@@ -327,6 +327,16 @@ nonisolated final class DSPCore: @unchecked Sendable {
         maxSteps = bars.map { $0 * Pattern.steps } ?? 0
     }
 
+    /// Change tempo while playing, keeping the beat in place: the next step lands where it would have.
+    func setTempo(_ newBPM: Double) {
+        guard newBPM > 20 else { return }
+        guard seqPlaying else { bpm = newBPM; return }
+        let base = seqStart + Double(stepIndex) * samplesPerStep
+        bpm = newBPM
+        seqStart = base - Double(stepIndex) * samplesPerStep
+        nextStepTime = max(Double(clock), stepTime(stepIndex))
+    }
+
     func stopSequencer() {
         seqPlaying = false
         currentStep = -1

@@ -48,6 +48,8 @@ nonisolated struct UserProgress: Codable, Sendable {
     var dailyGoal = 50
     var practiceDay: String?
     var practiceSessions = 0
+    /// Chose to skip Core Foundations and go straight to a genre academy.
+    var skippedFoundations = false
 
     init() {}
 
@@ -67,6 +69,26 @@ nonisolated struct UserProgress: Codable, Sendable {
         dailyGoal = try c.decodeIfPresent(Int.self, forKey: .dailyGoal) ?? 50
         practiceDay = try c.decodeIfPresent(String.self, forKey: .practiceDay)
         practiceSessions = try c.decodeIfPresent(Int.self, forKey: .practiceSessions) ?? 0
+        skippedFoundations = try c.decodeIfPresent(Bool.self, forKey: .skippedFoundations) ?? false
+    }
+
+    /// Core Foundations progress is shared, so lessons finished inside a genre before the
+    /// restructure move into the shared bucket. Safe to run every launch.
+    mutating func gatherCoreProgress() {
+        var core = genres[Curriculum.coreKey] ?? GenreProgress()
+        for (key, gp) in genres where key != Curriculum.coreKey {
+            for id in gp.completed where Curriculum.isCore(id) && !core.completed.contains(id) {
+                core.completed.append(id)
+            }
+            for (id, t) in gp.tiers where Curriculum.isCore(id) { core.tiers[id] = max(core.tiers[id] ?? 0, t) }
+            for (id, b) in gp.bestScores where Curriculum.isCore(id) {
+                core.bestScores[id] = max(core.bestScores[id] ?? 0, b)
+            }
+            for (id, d) in gp.lastPlayed where Curriculum.isCore(id) {
+                core.lastPlayed[id] = max(core.lastPlayed[id] ?? d, d)
+            }
+        }
+        genres[Curriculum.coreKey] = core
     }
 }
 
@@ -121,7 +143,8 @@ nonisolated enum Achievement: String, CaseIterable, Identifiable, Sendable {
 // MARK: - Node state on the path
 
 enum NodeState: Equatable {
-    case completed, current, locked
+    /// `open`: not done yet, but in a unit you skipped past, so play it any time.
+    case completed, current, open, locked
 }
 
 struct CompletionReward {
@@ -152,6 +175,7 @@ final class AppState {
         } else {
             progress = UserProgress()
         }
+        progress.gatherCoreProgress()
     }
 
     private func save() {
@@ -170,10 +194,24 @@ final class AppState {
         save()
     }
 
+    /// XP and level for a genre.
     func genreProgress(_ g: Genre) -> GenreProgress { progress.genres[g.rawValue] ?? GenreProgress() }
 
+    /// Where a lesson's completion, levels and scores live: shared for Core Foundations, per genre otherwise.
+    private func bucket(_ lessonID: String, _ g: Genre) -> String {
+        Curriculum.isCore(lessonID) ? Curriculum.coreKey : g.rawValue
+    }
+
+    func lessonProgress(_ lessonID: String, in g: Genre) -> GenreProgress {
+        progress.genres[bucket(lessonID, g)] ?? GenreProgress()
+    }
+
     func isCompleted(_ lesson: Lesson, in g: Genre) -> Bool {
-        genreProgress(g).completed.contains(lesson.id)
+        lessonProgress(lesson.id, in: g).completed.contains(lesson.id)
+    }
+
+    func bestScore(_ lesson: Lesson, in g: Genre) -> Int? {
+        lessonProgress(lesson.id, in: g).bestScores[lesson.id]
     }
 
     // MARK: Levels
@@ -217,23 +255,52 @@ final class AppState {
 
     // MARK: Path
 
-    func unlockedUnitCount(_ g: Genre) -> Int {
+    var skippedFoundations: Bool { progress.skippedFoundations }
+
+    /// Start at the genre academy. Core Foundations lessons stay open to play any time.
+    func skipFoundations(_ skip: Bool = true) {
+        progress.skippedFoundations = skip
+        save()
+    }
+
+    /// The furthest unit you're past: its mastery is passed, or it's part of skipped foundations. -1 for none.
+    /// Passing any mastery, even one far ahead, opens everything up to the next unit.
+    func frontier(_ g: Genre) -> Int {
         let units = Curriculum.units(for: g)
-        var count = 1
-        for unit in units {
-            guard let mastery = unit.mastery else { break }
-            if isCompleted(mastery, in: g) { count += 1 } else { break }
+        var f = -1
+        for (i, unit) in units.enumerated() {
+            if let m = unit.mastery, isCompleted(m, in: g) { f = i }
         }
-        return min(count, units.count)
+        if progress.skippedFoundations {
+            f = max(f, units.filter { $0.part == .foundations }.count - 1)
+        }
+        return f
+    }
+
+    func unlockedUnitCount(_ g: Genre) -> Int {
+        min(Curriculum.units(for: g).count, frontier(g) + 2)
+    }
+
+    func unitIndex(_ unit: Unit, in g: Genre) -> Int {
+        Curriculum.units(for: g).firstIndex { $0.id == unit.id } ?? 0
     }
 
     func isUnitUnlocked(_ unit: Unit, in g: Genre) -> Bool {
-        unit.number <= unlockedUnitCount(g)
+        unitIndex(unit, in: g) < unlockedUnitCount(g)
     }
 
-    /// The first lesson not yet completed in an unlocked unit.
+    /// Units behind the frontier: you've tested out of them, so their lessons are open in any order.
+    func isUnitSkipped(_ unit: Unit, in g: Genre) -> Bool {
+        unitIndex(unit, in: g) <= frontier(g)
+    }
+
+    /// The next lesson on the path: the first one not done in the unit after the frontier,
+    /// then anything left behind it.
     func currentLesson(_ g: Genre) -> Lesson? {
-        for unit in Curriculum.units(for: g) where isUnitUnlocked(unit, in: g) {
+        let units = Curriculum.units(for: g)
+        let next = frontier(g) + 1
+        if next < units.count, let l = units[next].lessons.first(where: { !isCompleted($0, in: g) }) { return l }
+        for unit in units.prefix(unlockedUnitCount(g)) {
             if let l = unit.lessons.first(where: { !isCompleted($0, in: g) }) { return l }
         }
         return nil
@@ -242,7 +309,13 @@ final class AppState {
     func state(of lesson: Lesson, in unit: Unit, genre g: Genre) -> NodeState {
         if isCompleted(lesson, in: g) { return .completed }
         if isUnitUnlocked(unit, in: g), currentLesson(g)?.id == lesson.id { return .current }
+        if isUnitSkipped(unit, in: g) { return .open }
         return .locked
+    }
+
+    /// A locked mastery can be taken early to test out of everything before it.
+    func canTestOut(_ lesson: Lesson, in unit: Unit, genre g: Genre) -> Bool {
+        lesson.isMastery && !isCompleted(lesson, in: g) && state(of: lesson, in: unit, genre: g) == .locked
     }
 
     func skillXP(_ s: Skill) -> Int { progress.skillXP[s.rawValue] ?? 0 }
@@ -253,7 +326,7 @@ final class AppState {
 
     /// Highest level passed: 0 = not started, 1 Bronze, 2 Silver, 3 Gold.
     func tier(of lesson: Lesson, in g: Genre) -> Int {
-        let gp = genreProgress(g)
+        let gp = lessonProgress(lesson.id, in: g)
         return max(gp.tiers[lesson.id] ?? 0, gp.completed.contains(lesson.id) ? 1 : 0)
     }
 
@@ -283,7 +356,7 @@ final class AppState {
     /// A finished lesson not played for a week or more.
     func needsPractice(_ lesson: Lesson, in g: Genre) -> Bool {
         guard !lesson.isMastery, isCompleted(lesson, in: g),
-              let last = genreProgress(g).lastPlayed[lesson.id] else { return false }
+              let last = lessonProgress(lesson.id, in: g).lastPlayed[lesson.id] else { return false }
         return Date.now.timeIntervalSince(last) > 7 * 24 * 3600
     }
 
@@ -314,8 +387,13 @@ final class AppState {
         var xp = session.lesson.xp
         if accuracy >= 0.999 { xp += 5 }
         gp.xp += xp
-        for id in session.sources { gp.lastPlayed[id] = .now }
         progress.genres[g.rawValue] = gp
+        for id in session.sources {
+            let key = bucket(id, g)
+            var lp = progress.genres[key] ?? GenreProgress()
+            lp.lastPlayed[id] = .now
+            progress.genres[key] = lp
+        }
         let share = max(1, xp / max(1, session.skills.count))
         for skill in session.skills { progress.skillXP[skill.rawValue, default: 0] += share }
         progress.practiceDay = today
@@ -339,7 +417,9 @@ final class AppState {
 
     func complete(_ lesson: Lesson, genre g: Genre, accuracy: Double, tier: LessonTier = .bronze) -> CompletionReward {
         var gp = genreProgress(g)
-        let wasCompleted = gp.completed.contains(lesson.id)
+        let key = bucket(lesson.id, g)
+        var lp = progress.genres[key] ?? GenreProgress()
+        let wasCompleted = lp.completed.contains(lesson.id)
         let previousTier = self.tier(of: lesson, in: g)
         let replay = previousTier >= tier.rawValue
         let oldLevel = Self.level(for: gp.xp).level
@@ -349,12 +429,18 @@ final class AppState {
         if accuracy >= 0.999 { xp += 5 }
         if lesson.isMastery && !wasCompleted && accuracy >= 0.95 { xp += 20 }
 
-        gp.xp += xp
-        if !wasCompleted { gp.completed.append(lesson.id) }
-        gp.tiers[lesson.id] = max(previousTier, tier.rawValue)
-        gp.lastPlayed[lesson.id] = .now
+        if !wasCompleted { lp.completed.append(lesson.id) }
+        lp.tiers[lesson.id] = max(previousTier, tier.rawValue)
+        lp.lastPlayed[lesson.id] = .now
         let pct = Int((accuracy * 100).rounded())
-        gp.bestScores[lesson.id] = max(gp.bestScores[lesson.id] ?? 0, pct)
+        lp.bestScores[lesson.id] = max(lp.bestScores[lesson.id] ?? 0, pct)
+        if key == g.rawValue {
+            lp.xp += xp
+            gp = lp
+        } else {
+            gp.xp += xp
+            progress.genres[key] = lp
+        }
         progress.genres[g.rawValue] = gp
         progress.skillXP[lesson.skill.rawValue, default: 0] += xp
 
@@ -370,7 +456,9 @@ final class AppState {
         }
         award(.firstBeat, true)
         award(.groovemaker, lesson.id == "house.u1.l3" || lesson.id.hasPrefix("techno") || lesson.id.hasPrefix("ukg"))
-        award(.bassFace, lesson.id == "house.u1.l4")
+        award(.bassFace, lesson.steps.contains { step in
+            if case .pianoRoll(let t) = step { t.voice == .bass } else { false }
+        })
         award(.filterFreak, lesson.id == "house.u1.l5")
         award(.unitMaster, lesson.isMastery)
         award(.flawless, lesson.isMastery && accuracy >= 0.999)
@@ -383,7 +471,7 @@ final class AppState {
         let newLevel = Self.level(for: gp.xp).level
         let unitsAfter = unlockedUnitCount(g)
         let units = Curriculum.units(for: g)
-        let newUnit: Unit? = unitsAfter > unitsBefore ? units.first(where: { $0.number == unitsAfter }) : nil
+        let newUnit: Unit? = unitsAfter > unitsBefore && unitsAfter <= units.count ? units[unitsAfter - 1] : nil
 
         return CompletionReward(xp: xp, accuracy: accuracy, leveledUp: newLevel > oldLevel ? newLevel : nil,
                                 newAchievements: unlocked, streak: progress.streak, streakIncreased: increased,

@@ -20,6 +20,29 @@ nonisolated enum TechHouseCourse {
                               openHat: [2, 6, 10, 14], perc: [3, 9, 13], bass: rolling)
     static let lanes: [Instrument] = [.drum(.kick), .drum(.clap), .drum(.hat), .drum(.perc), .bass]
 
+    // MARK: Academy (Part 2)
+
+    private static func pick(_ ids: String...) -> [Lesson] { Curriculum.lessons(ids, from: units) }
+    private static let style = AcademyKit.techHouse
+
+    static let academy: [Unit] = [
+        K.unit("tech.a1", 1, "Tech House Foundations", "House groove, techno punch",
+               [AcademyKit.whatMakes(style), AcademyKit.anatomy(style)] + pick("tech.u1.l1") + [AcademyKit.foundationsCheck(style)]),
+        K.unit("tech.a2", 2, "Drums & Percussion", "Shuffled hats & rims that groove",
+               pick("tech.u1.l2", "tech.u1.l3", "tech.u1.l4", "tech.u1.l5", "tech.u1.mastery")),
+        K.unit("tech.a3", 3, "Rolling Bass", "Basslines that roll",
+               pick("tech.u2.l1", "tech.u2.l2", "tech.u2.l3", "tech.u2.l4", "tech.u2.l5", "tech.u2.mastery")),
+        K.unit("tech.a4", 4, "Keys & Transposing", "Move ideas to any key",
+               pick("tech.key.l1", "tech.key.l2", "tech.key.l3", "tech.key.l4", "tech.key.mastery")),
+        K.unit("tech.a5", 5, "Vocal Hooks", "One word, stuck in your head",
+               [AcademyKit.chopIntro(style), AcademyKit.chopRhythm(style), AcademyKit.chopHook(style),
+                AcademyKit.vocalMastery(style)].compactMap { $0 }),
+        K.unit("tech.a6", 6, "Club Arrangement", "Builds, drops & cuts",
+               pick("tech.u4.l1", "tech.u4.l2", "tech.u4.l3", "tech.u4.l4", "tech.u4.l5", "tech.u4.mastery")),
+        K.unit("tech.a7", 7, "Mixing & Final Project", "Tight, loud, finished",
+               [AcademyKit.mixBalance(style), AcademyKit.mixPump(style), AcademyKit.mixSpace(style), AcademyKit.finalProject(style)]),
+    ]
+
     static let units: [Unit] = [unit1, unit2, keyUnit, unit4]
 
     // MARK: Unit 1 — The Rolling Groove

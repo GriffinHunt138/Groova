@@ -41,6 +41,11 @@ nonisolated enum Skill: String, CaseIterable, Codable, Identifiable, Sendable {
 
 // MARK: - Structure
 
+/// Part 1 is shared by every genre. Part 2 is the genre's own academy.
+nonisolated enum CoursePart: Sendable {
+    case foundations, academy
+}
+
 nonisolated struct Unit: Identifiable, Sendable {
     let id: String
     let number: Int
@@ -49,9 +54,22 @@ nonisolated struct Unit: Identifiable, Sendable {
     let lessons: [Lesson]
     /// Shown honestly as "in production" with planned lesson titles.
     var plannedLessons: [String] = []
+    var part: CoursePart = .academy
+    /// Prefix for academy units, like "H" for House: "Unit H3".
+    var code: String = ""
 
     var isComingSoon: Bool { lessons.isEmpty }
     var mastery: Lesson? { lessons.first(where: \.isMastery) }
+
+    /// "UNIT 3" or "UNIT H3".
+    var label: String { "UNIT \(code)\(number)" }
+    /// "Unit 3" or "Unit H3".
+    var shortLabel: String { "Unit \(code)\(number)" }
+
+    func with(part: CoursePart, code: String, number: Int) -> Unit {
+        Unit(id: id, number: number, title: title, subtitle: subtitle, lessons: lessons,
+             plannedLessons: plannedLessons, part: part, code: code)
+    }
 }
 
 nonisolated struct Lesson: Identifiable, Sendable {
@@ -79,6 +97,7 @@ nonisolated enum LessonStep: Sendable {
     case soundLab(SoundLabTask)
     case mixer(MixerTask)
     case arrangement(ArrangementTask)
+    case tempo(TempoTask)
 }
 
 /// How a step is judged.
@@ -178,12 +197,22 @@ nonisolated struct ChordBuilderTask: Sendable {
     var exact = false
 }
 
-/// Listen, then pick the right answer. Each round plays one or more chords in order.
+/// Listen, then pick the right answer. Each round plays one or more chords in order,
+/// or, for listening rounds, one or more loops in order.
 nonisolated struct EarRound: Sendable {
     var chords: [ChordShape]
     var options: [String]
     var answer: Int
     var explain: String = ""
+    /// Loops played one after another, `bars` bars each. Empty for chord rounds.
+    var loops: [Pattern] = []
+    var bars = 1
+    var bpm: Double? = nil
+    var swing: Double? = nil
+    /// Play the loops with another genre's sounds and tempo.
+    var genre: Genre? = nil
+
+    var isListening: Bool { !loops.isEmpty }
 }
 
 nonisolated struct EarChoiceTask: Sendable {
@@ -192,7 +221,34 @@ nonisolated struct EarChoiceTask: Sendable {
     var rounds: [EarRound]
 }
 
+/// A vocal chop: a sung note that glides from one vowel to another.
+nonisolated struct VoxChop: Sendable, Hashable {
+    var name: String
+    var pitch: Int
+    /// Vowels: 0 a, 1 e, 2 i, 3 o, 4 u.
+    var from: Int
+    var to: Int
+
+    var shape: ChordShape { ChordShape(name: name, pitches: [pitch]) }
+}
+
+/// Find the tempo. With a target it's graded; `byEar` hides the number and plays a reference.
+nonisolated struct TempoTask: Sendable {
+    var prompt: String
+    var body: String
+    var loop: Pattern
+    var target: Double? = nil
+    var start: Double = 100
+    var byEar = false
+    /// How close counts, in BPM.
+    var tolerance: Double = 3
+    var swing: Double? = nil
+
+    static let range: ClosedRange<Double> = 70...180
+}
+
 /// A one-bar lane of chord stabs. Pick a chord from the palette, tap steps to place it.
+/// With `chops` it's a lane of vocal chops instead, sung by the vocal synth.
 nonisolated struct ChordLaneTask: Sendable {
     var prompt: String
     var hint: String
@@ -204,6 +260,8 @@ nonisolated struct ChordLaneTask: Sendable {
     var target: [Int: Int] = [:]
     var stabLength = 1
     var threshold = 0.8
+    var chops: [VoxChop]? = nil
+    var vox = VoxSettings()
 
     func cells(_ map: [Int: Int]) -> [Int?] { (0..<Pattern.steps).map { map[$0] } }
 
@@ -219,7 +277,7 @@ nonisolated struct ChordLaneTask: Sendable {
 /// One knob in the Sound Lab. Knob values run 0...1 and map onto real synth settings.
 nonisolated enum SoundParam: String, Sendable, CaseIterable {
     case kickPitch, kickDecay, kickDrive
-    case bassCutoff, bassEnv, bassResonance, bassDecay
+    case bassCutoff, bassEnv, bassResonance, bassDecay, bassWave
     case chordCutoff, chordDecay, chordAttack, chordRelease
 
     var label: String {
@@ -232,6 +290,7 @@ nonisolated enum SoundParam: String, Sendable, CaseIterable {
         case .bassResonance: "Resonance"
         case .chordAttack: "Attack"
         case .chordRelease: "Release"
+        case .bassWave: "Wave"
         }
     }
 
@@ -247,6 +306,7 @@ nonisolated enum SoundParam: String, Sendable, CaseIterable {
         case .chordDecay: "\(Int((0.06 + v * 0.9) * 1000)) ms"
         case .chordAttack: "\(Int((0.002 + v * v * 0.8) * 1000)) ms"
         case .chordRelease: "\(Int((0.03 + v * 1.2) * 1000)) ms"
+        case .bassWave: v < 0.2 ? "Sine" : v < 0.4 ? "Round" : v < 0.6 ? "Saw" : v < 0.8 ? "Hollow" : "Square"
         }
     }
 
@@ -272,6 +332,12 @@ nonisolated enum SoundParam: String, Sendable, CaseIterable {
             kit.chords.sustain = x * 0.5
         case .chordAttack: kit.chords.attack = 0.002 + x * x * 0.8
         case .chordRelease: kit.chords.release = 0.03 + x * 1.2
+        case .bassWave:
+            // Sine at 0, saw in the middle, square at 1.
+            let saw = min(1, x * 2), square = max(0, x * 2 - 1)
+            kit.bass.sine = 0.15 + 0.85 * (1 - saw)
+            kit.bass.saw = 0.75 * saw * (1 - square)
+            kit.bass.square = 0.6 * square
         }
     }
 }
@@ -376,14 +442,38 @@ nonisolated struct MasteryTask: Sendable {
 // MARK: - Content
 
 nonisolated enum Curriculum {
-    static func units(for genre: Genre) -> [Unit] {
+    /// Part 1, Core Foundations, then the genre's academy.
+    static func units(for genre: Genre) -> [Unit] { byGenre[genre] ?? CoreCourse.units }
+
+    static func academy(for genre: Genre) -> [Unit] {
         switch genre {
-        case .house: houseUnits
-        case .techno: TechnoCourse.units
-        case .ukGarage: GarageCourse.units
-        case .deepHouse: DeepHouseCourse.units
-        case .techHouse: TechHouseCourse.units
+        case .house: HouseCourse.academy
+        case .techno: TechnoCourse.academy
+        case .ukGarage: GarageCourse.academy
+        case .deepHouse: DeepHouseCourse.academy
+        case .techHouse: TechHouseCourse.academy
         }
+    }
+
+    private static let byGenre: [Genre: [Unit]] = {
+        var out: [Genre: [Unit]] = [:]
+        for g in Genre.allCases {
+            out[g] = CoreCourse.units + academy(for: g).enumerated().map { i, u in
+                u.with(part: .academy, code: g.academyCode, number: i + 1)
+            }
+        }
+        return out
+    }()
+
+    /// Progress for Core Foundations lessons is shared by every genre.
+    static let coreKey = "core"
+    static let coreIDs: Set<String> = Set(CoreCourse.units.flatMap { $0.lessons.map(\.id) })
+    static func isCore(_ lessonID: String) -> Bool { coreIDs.contains(lessonID) }
+
+    /// Every lesson that exists, by id, so units can be put together from lessons written elsewhere.
+    static func lessons(_ ids: [String], from pool: [Unit]) -> [Lesson] {
+        let all = pool.flatMap(\.lessons)
+        return ids.compactMap { id in all.first { $0.id == id } }
     }
 
     static func allLessons(for genre: Genre) -> [Lesson] {

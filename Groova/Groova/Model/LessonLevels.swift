@@ -125,6 +125,7 @@ nonisolated enum Levels {
         case .filter(let t): t.target != nil
         case .soundLab(let t): t.target != nil
         case .mixer(let t): t.target != nil
+        case .tempo(let t): t.target != nil
         default: true
         }
     }
@@ -228,7 +229,8 @@ nonisolated enum Levels {
             n.mode = .recreate
             n.threshold = gold ? 0.9 : 0.85
             n.prompt = gold ? "Recreate the new progression by ear" : "Same stabs, new order"
-            n.hint = t.palette.count > 1
+            if t.chops != nil { n.prompt = gold ? "Recreate this vocal hook by ear" : "Same chops, new rhythm" }
+            n.hint = t.chops != nil ? "Count where each chop lands, and listen for which vowel it sings." : t.palette.count > 1
                 ? "The chords swapped places or moved earlier. Listen for which one comes first."
                 : "The stabs moved. Count where each one lands."
             return [.chordLane(n)]
@@ -265,6 +267,16 @@ nonisolated enum Levels {
                 return .chordBuilder(n)
             }
 
+        case .earChoice(let t) where t.rounds.contains(where: \.isListening):
+            // Listening rounds can't be transposed. Silver plays them in reverse order with the
+            // answers moved around; Gold starts from the second round. With Silver and Gold sounds.
+            var n = t
+            let order = gold ? Array(t.rounds.dropFirst()) + Array(t.rounds.prefix(1)) : Array(t.rounds.reversed())
+            n.rounds = order.map { shuffleOptions($0, &rng) }
+            n.body = gold ? "New sounds, new order. Listen to the whole loop before you answer."
+                          : "Same idea, new sounds. " + t.body
+            return [.earChoice(n)]
+
         case .earChoice(let t):
             var n = t
             let rounds = gold
@@ -279,6 +291,20 @@ nonisolated enum Levels {
 
         case .mixer(let t):
             return [.mixer(mixVariation(t, gold: gold, &rng))]
+
+        case .tempo(let t):
+            guard let target = t.target else { return [] }
+            var n = t
+            // A new tempo each level, found by ear.
+            let options: [Double] = gold ? [96, 118, 136, 150, 172] : [100, 112, 128, 140, 160]
+            let far = options.filter { abs($0 - target) >= 10 }
+            n.target = rng.pick(far) ?? (target > 120 ? target - 20 : target + 20)
+            n.byEar = true
+            n.tolerance = gold ? 2 : 3
+            n.start = (n.target ?? 120) > 120 ? 100 : 140
+            n.prompt = gold ? "Find this tempo by ear, within 2 BPM" : "Find this tempo by ear"
+            n.body = "Play the reference, then tap along or drag until your loop locks in with it."
+            return [.tempo(n)]
 
         case .filter(let t):
             var n = t
@@ -319,11 +345,15 @@ nonisolated enum Levels {
                     mode: .create(.notesAtLeast(n)), rows: t.rows, backing: t.backing, voice: t.voice))
             case .chordLane(let t):
                 let n = max(3, t.target.count + 1)
-                return .chordLane(ChordLaneTask(
+                let part = t.chops == nil ? "chord part" : "vocal hook"
+                var task = ChordLaneTask(
                     prompt: "Make it yours",
-                    hint: "Write your own chord part that uses \(topic). Place at least \(n) stabs.",
+                    hint: "Write your own \(part) that uses \(topic). Place at least \(n) \(t.chops == nil ? "stabs" : "chops").",
                     mode: .create(.chordsAtLeast(n)), palette: t.palette, backing: t.backing,
-                    stabLength: t.stabLength))
+                    stabLength: t.stabLength)
+                task.chops = t.chops
+                task.vox = t.vox
+                return .chordLane(task)
             case .arrangement(let t):
                 return .arrangement(ArrangementTask(
                     prompt: "Arrange your own track",
@@ -573,16 +603,19 @@ nonisolated enum Levels {
                 return r
             }
         }
-        return EarRound(chords: moved,
-                        options: r.options.map { transposeText($0, semitones) },
-                        answer: r.answer,
-                        explain: transposeText(r.explain, semitones))
+        var n = r
+        n.chords = moved
+        n.options = r.options.map { transposeText($0, semitones) }
+        n.explain = transposeText(r.explain, semitones)
+        return n
     }
 
     private static func shuffleOptions(_ r: EarRound, _ rng: inout LevelRNG) -> EarRound {
         let order = rng.shuffled(Array(r.options.indices))
-        return EarRound(chords: r.chords, options: order.map { r.options[$0] },
-                        answer: order.firstIndex(of: r.answer) ?? r.answer, explain: r.explain)
+        var n = r
+        n.options = order.map { r.options[$0] }
+        n.answer = order.firstIndex(of: r.answer) ?? r.answer
+        return n
     }
 
     // MARK: Arrangement
@@ -749,7 +782,14 @@ nonisolated enum Levels {
         case .chordBuilder(let t):
             return "build \(t.target.name)"
         case .earChoice(let t):
-            return "ear " + t.rounds.map { $0.chords.map(\.name).joined(separator: "+") + "/" + $0.options.joined(separator: ",") }.joined(separator: ";")
+            let rounds = t.rounds.map { r -> String in
+                let chords = r.chords.map(\.name).joined(separator: "+")
+                let loops = r.loops.map(bits).joined(separator: "+")
+                return "\(chords)/\(r.options.joined(separator: ","))/\(r.answer)/\(loops)"
+            }
+            return "ear " + rounds.joined(separator: ";")
+        case .tempo(let t):
+            return "tempo \(t.target ?? 0) \(t.byEar)"
         case .soundLab(let t):
             return "lab \(t.params.map(\.rawValue)) \(t.target ?? [])"
         case .mixer(let t):

@@ -20,6 +20,36 @@ nonisolated enum DeepHouseCourse {
     static let lanes: [Instrument] = [.drum(.kick), .drum(.clap), .drum(.hat), .bass, .chords]
     static let sections = ["Intro", "Groove", "Break", "Outro"]
 
+    // MARK: Academy (Part 2)
+
+    private static func pick(_ ids: String...) -> [Lesson] { Curriculum.lessons(ids, from: units) }
+    private static let style = AcademyKit.deep
+
+    static let academy: [Unit] = [
+        K.unit("deep.a1", 1, "Deep House Foundations", "Soul, jazz & the late-night feel",
+               [AcademyKit.whatMakes(style), AcademyKit.anatomy(style)] + pick("deep.u1.l3") + [AcademyKit.foundationsCheck(style)]),
+        K.unit("deep.a2", 2, "Drums & Groove", "Soft kicks, rims & shuffling hats",
+               pick("deep.u1.l1", "deep.u1.l2", "deep.u1.l4", "deep.u1.mastery")),
+        K.unit("deep.a3", 3, "Bass & Low End", "Round, warm and dark",
+               pick("deep.u1.l5", "deep.u3.l2", "deep.u3.l3") + [lowEndMastery]),
+        K.unit("deep.a4", 4, "Jazzy Chords", "Sevenths, ninths & colour",
+               pick("deep.u2.l1", "deep.u2.l2", "deep.u2.l3", "deep.u2.l4", "deep.u2.l5", "deep.u2.mastery")),
+        K.unit("deep.a5", 5, "Voice Leading", "Chords that glide",
+               pick("deep.vl.l1", "deep.vl.l2", "deep.vl.l3", "deep.vl.l4", "deep.vl.mastery")),
+        K.unit("deep.a6", 6, "Vocals & Atmosphere", "Breathy chops, pads & space",
+               [AcademyKit.chopIntro(style), AcademyKit.chopHook(style)].compactMap { $0 }
+                   + pick("deep.u3.l1", "deep.u3.l4", "deep.u3.l5", "deep.u3.mastery")),
+        K.unit("deep.a7", 7, "Arrangement", "Intros, breaks & outros",
+               pick("deep.u4.l3", "deep.u4.l4", "deep.u4.l5") + [AcademyKit.loopToTrack(style)] + pick("deep.u4.mastery")),
+        K.unit("deep.a8", 8, "Mixing & Final Project", "Warm, wide, finished",
+               [AcademyKit.mixBalance(style), AcademyKit.mixPump(style), AcademyKit.mixSpace(style), AcademyKit.finalProject(style)]),
+    ]
+
+    static let lowEndMastery = K.mastery("deep.a3.mastery", "Low End Mastery", "Recreate a deep groove and bassline", .theory, 70, [
+        K.groove("Recreate this deep house groove", reference: full.keeping([.kick, .clap, .hat, .perc], bass: true, chords: false),
+                 tracks: [.kick, .clap, .hat, .perc], rows: rows),
+    ])
+
     static let units: [Unit] = [unit1, unit2, unit3, voiceUnit, unit4]
 
     // MARK: Unit 1 — Late Night Grooves

@@ -20,13 +20,12 @@ extension AppState {
     func makePractice(_ g: Genre) -> PracticeSession? {
         let pool = practiceCandidates(g)
         guard !pool.isEmpty else { return nil }
-        let gp = genreProgress(g)
         let weakest = Set(pool.map(\.skill)).min { skillXP($0) < skillXP($1) }
 
         let scored = pool.map { lesson -> (Lesson, Double) in
             var score = Double.random(in: 0..<1)
             if needsPractice(lesson, in: g) { score += 3 }
-            if (gp.bestScores[lesson.id] ?? 100) < 90 { score += 2 }
+            if (bestScore(lesson, in: g) ?? 100) < 90 { score += 2 }
             if lesson.skill == weakest { score += 1 }
             return (lesson, score)
         }

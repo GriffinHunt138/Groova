@@ -31,6 +31,28 @@ nonisolated enum Genre: String, CaseIterable, Codable, Identifiable, Hashable, S
         }
     }
 
+    /// Prefix for academy units: "Unit H3".
+    var academyCode: String {
+        switch self {
+        case .house: "H"
+        case .deepHouse: "D"
+        case .techno: "T"
+        case .techHouse: "TH"
+        case .ukGarage: "U"
+        }
+    }
+
+    /// What this genre's academy is about, for the Part 2 header.
+    var academyFocus: String {
+        switch self {
+        case .house: "Groove, soulful chords, vocals and the four-on-the-floor dance floor."
+        case .deepHouse: "Warm sounds, jazzy chords and patient, late-night grooves."
+        case .techno: "Hypnotic loops, machine rhythm, sound design and long tension."
+        case .techHouse: "Rolling bass, percussion, vocal hooks and club energy."
+        case .ukGarage: "Shuffle, swing, chopped vocals and bouncing bass."
+        }
+    }
+
     var traits: [String] {
         switch self {
         case .house: ["124 BPM", "Offbeat hats", "Piano & stabs"]

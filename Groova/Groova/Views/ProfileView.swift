@@ -24,7 +24,7 @@ struct ProfileView: View {
                     }
                     SectionTitle(text: "Skills")
                     VStack(spacing: 14) {
-                        ForEach(Skill.allCases.filter { $0 != .mixing }) { s in skillRow(s) }
+                        ForEach(Skill.allCases) { s in skillRow(s) }
                     }
                     .card()
                     SectionTitle(text: "Achievements")
