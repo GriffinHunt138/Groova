@@ -132,6 +132,10 @@ nonisolated enum Levels {
 
     /// Opening card: what this level asks of you, plus a deeper idea for the skill.
     private static func brief(_ lesson: Lesson, _ tier: LessonTier) -> LessonStep {
+        if let note = LevelNotes.note(lesson.id, tier) {
+            return .intro(IntroStep(title: note.title, body: note.body,
+                                    pads: [], demo: nil, badge: "\(tier.name) level", level: tier))
+        }
         let topic = lesson.subtitle.isEmpty ? lesson.title.lowercased() : lesson.subtitle.lowercased()
         let intro: String
         switch tier {

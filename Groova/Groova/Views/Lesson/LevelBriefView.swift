@@ -19,11 +19,20 @@ struct LevelBriefView: View {
 
     @State private var appeared = false
 
-    /// One short line: what's different about this level.
+    /// This lesson's own explanation: the first paragraph of the step body that isn't a pro tip.
     private var line: String {
-        level == .gold
+        let para = step.body.components(separatedBy: "\n\n")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .first { !$0.isEmpty && !$0.hasPrefix("Pro tip:") }
+        if let para { return para }
+        return level == .gold
             ? "Bigger versions with more to control, all by ear. Then you finish with one of your own."
             : "Same idea, new material. You'll work it out by ear, with the beat guide off."
+    }
+
+    private var headline: String {
+        let t = step.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        return t.isEmpty ? lessonTitle : t
     }
 
     var body: some View {
@@ -35,12 +44,19 @@ struct LevelBriefView: View {
                         Text("\(level.name.uppercased()) · \(level.focus.uppercased())")
                             .font(.label(14, weight: .black)).tracking(1)
                             .foregroundStyle(level.ink)
-                        Text(lessonTitle)
+                        Text(headline)
                             .font(.display(30))
                             .foregroundStyle(Theme.text)
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
                             .padding(.top, 6)
+                        if headline != lessonTitle {
+                            Text(lessonTitle)
+                                .font(.label(15, weight: .bold))
+                                .foregroundStyle(Theme.textSecondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.top, 4)
+                        }
                         Text(line)
                             .font(.label(17, weight: .semibold))
                             .foregroundStyle(Theme.text)
