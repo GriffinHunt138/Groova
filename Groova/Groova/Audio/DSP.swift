@@ -250,6 +250,27 @@ nonisolated final class DSPCore: @unchecked Sendable {
         scheduled.reserveCapacity(64)
     }
 
+    deinit {
+        scratch.deallocate()
+        rightBuf.deallocate()
+        duckBuf.deallocate()
+    }
+
+    /// Renders one sound offline, for drawing it. Uses a throwaway core, never the live one.
+    static func renderOffline(_ event: PendingEvent, seconds: Double, sampleRate: Float = 24_000) -> [Float] {
+        let core = DSPCore()
+        core.sampleRate = sampleRate
+        let n = Int(Double(sampleRate) * seconds)
+        var out = [Float](repeating: 0, count: n)
+        core.lock.lock()
+        core.enqueue(event)
+        core.lock.unlock()
+        out.withUnsafeMutableBufferPointer { buf in
+            if let base = buf.baseAddress { core.render(base, right: nil, frames: n) }
+        }
+        return out
+    }
+
     // MARK: Control (call with lock held via the AudioEngine wrappers)
 
     func enqueue(_ e: PendingEvent) { pending.append(e) }

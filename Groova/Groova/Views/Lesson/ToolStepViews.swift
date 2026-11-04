@@ -93,6 +93,10 @@ struct SoundLabStepView: View {
                     .opacity(reference ? 0.45 : 1)
                     .allowsHitTesting(!reference)
 
+                    // Always your sound, never the reference, so matching stays by ear.
+                    WaveformPreview(kit: task.kit(base: genre.kit, values: values), sound: PreviewSound(task.params),
+                                    dimmed: reference)
+
                     if isMatch {
                         Text("Switch between Reference and Yours, and turn the knobs until they sound the same. Scored on knob positions.")
                             .font(.label(13, weight: .medium))
