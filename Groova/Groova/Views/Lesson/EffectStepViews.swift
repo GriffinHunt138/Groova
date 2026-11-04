@@ -110,10 +110,21 @@ struct FilterStepView: View {
                 VStack(spacing: 22) {
                     StepPrompt(title: task.prompt, detail: task.body, badge: isMatch ? "Sound match" : "Explore")
 
-                    SpectrumView(color: genre.color,
-                                 cutoff: listeningToReference ? task.target?.cutoff : cutoffHz,
-                                 resonance: listeningToReference ? (task.target?.resonance ?? 0) : resonance)
+                    // Only ever shows your settings. While the reference plays it's hidden,
+                    // so the match is made by ear, not by copying a picture.
+                    SpectrumView(color: genre.color, cutoff: cutoffHz, resonance: resonance)
                         .frame(height: 170)
+                        .blur(radius: listeningToReference ? 14 : 0)
+                        .overlay {
+                            if listeningToReference {
+                                Label("Listen closely", systemImage: "ear.fill")
+                                    .font(.label(14, weight: .heavy))
+                                    .foregroundStyle(Theme.brand)
+                                    .padding(.horizontal, 14).frame(height: 36)
+                                    .background(Capsule().fill(Theme.brandSoft))
+                            }
+                        }
+                        .animation(.easeOut(duration: 0.2), value: listeningToReference)
                         .padding(.bottom, 10)
 
                     if isMatch {

@@ -68,7 +68,17 @@ struct WaveformPreview: View {
         .background(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).fill(Theme.surface))
         .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous)
             .strokeBorder(Theme.stroke, lineWidth: Theme.border))
-        .opacity(dimmed ? 0.5 : 1)
+        .blur(radius: dimmed ? 10 : 0)
+        .overlay {
+            if dimmed {
+                Label("Listen closely", systemImage: "ear.fill")
+                    .font(.label(14, weight: .heavy))
+                    .foregroundStyle(Theme.brand)
+                    .padding(.horizontal, 14).frame(height: 36)
+                    .background(Capsule().fill(Theme.brandSoft))
+            }
+        }
+        .animation(.easeOut(duration: 0.2), value: dimmed)
         .task(id: kit) { samples = render() }
         .accessibilityHidden(true)
     }
