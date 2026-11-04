@@ -123,7 +123,21 @@ struct ChordBuilderStepView: View {
     private func check() {
         let have = Set(selected.map { (($0 % 12) + 12) % 12 })
         let want = task.target.pitchClasses
-        if have == want && selected.count == want.count {
+        let rightNotes = have == want && selected.count == want.count
+        if rightNotes && task.exact && sortedSelection != task.target.pitches.sorted() {
+            // Right notes, wrong order: the voicing is the point of this step.
+            fails += 1
+            let low = NoteName.name(task.target.pitches.min() ?? 0)
+            AudioEngine.shared.playNudge()
+            Haptics.warning()
+            withAnimation {
+                feedback = StepFeedback(kind: .retry, title: "Right notes!",
+                                        message: "Now the order. The lowest note should be \(low). Move notes up or down an octave.",
+                                        score: nil)
+            }
+            return
+        }
+        if rightNotes {
             strum()
             Haptics.success()
             withAnimation {
@@ -180,7 +194,8 @@ struct EarChoiceStepView: View {
                             Image(systemName: playing ? "speaker.wave.3.fill" : "play.fill")
                                 .font(.system(size: 34, weight: .black))
                                 .symbolEffect(.variableColor.iterative, isActive: playing)
-                            Text(current.chords.count > 1 ? "Play the chords" : "Play the chord")
+                            Text(current.chords.allSatisfy { $0.pitches.count == 1 } ? "Play the phrase"
+                                 : (current.chords.count > 1 ? "Play the chords" : "Play the chord"))
                                 .font(.label(15, weight: .heavy))
                         }
                         .foregroundStyle(Theme.onBrand)
@@ -232,11 +247,15 @@ struct EarChoiceStepView: View {
 
     private func play() {
         playing = true
+        // Single notes are a melody, so they play quicker, like a phrase.
+        let melodic = current.chords.allSatisfy { $0.pitches.count == 1 }
+        let gap = melodic ? 0.34 : 0.85
         for (i, chord) in current.chords.enumerated() {
-            AudioEngine.shared.playChord(chord.pitches, seconds: 0.75, patch: SoundFlavor.earPatch(Transport.shared.flavor + round),
-                                         delay: Double(i) * 0.85)
+            AudioEngine.shared.playChord(chord.pitches, seconds: melodic ? 0.3 : 0.75,
+                                         patch: SoundFlavor.earPatch(Transport.shared.flavor + round),
+                                         delay: Double(i) * gap)
         }
-        let length = Double(current.chords.count) * 0.85 + 0.2
+        let length = Double(current.chords.count) * gap + 0.2
         Task {
             try? await Task.sleep(for: .seconds(length))
             playing = false

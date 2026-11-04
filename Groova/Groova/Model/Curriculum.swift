@@ -142,6 +142,14 @@ nonisolated struct PianoRollTask: Sendable {
     var target: [NoteEvent] = []
     var backing = Pattern()
     var threshold = 0.8
+    /// Notes already on the grid when the step opens (e.g. the "call" you answer).
+    var start: [NoteEvent] = []
+    /// Bass plays on the bass synth. Lead plays on the keys/chord synth, for melodies and riffs.
+    var voice: RollVoice = .bass
+}
+
+nonisolated enum RollVoice: Sendable, Equatable {
+    case bass, lead
 }
 
 nonisolated struct FilterTask: Sendable {
@@ -166,6 +174,8 @@ nonisolated struct ChordBuilderTask: Sendable {
     var start: [Int] = []
     var lowNote = 55
     var highNote = 67
+    /// Grade the exact keys, not just the note names. Used for inversions and voicings.
+    var exact = false
 }
 
 /// Listen, then pick the right answer. Each round plays one or more chords in order.

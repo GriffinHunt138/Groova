@@ -2,7 +2,7 @@
 //  HouseCourse.swift
 //  Groova
 //
-//  House units 3–6: sound design, mixing, arrangement and house styles.
+//  House units 3–6: sound design, melody & hooks, arrangement and house styles.
 //  Units 1–2 live in Curriculum.swift.
 //
 
@@ -23,7 +23,7 @@ nonisolated enum HouseCourse {
     static let stabLoop = Pattern(kick: [0, 4, 8, 12], clap: [4, 12], chords: [K.ch(2, .am7, 4), K.ch(10, .dm7, 4)])
     static let padLoop = Pattern(kick: [0, 8], chords: [K.ch(0, .am7, 8), K.ch(8, .fmaj7, 8)])
 
-    static let units: [Unit] = [unit3, unit4, unit5, unit6]
+    static let units: [Unit] = [unit3, melodyUnit, unit5, unit6]
 
     // MARK: Unit 3 — Shape Your Sound
 
@@ -75,58 +75,6 @@ nonisolated enum HouseCourse {
                   [.bassCutoff, .bassEnv, .bassResonance], start: [0.6, 0.15, 0.1], target: [0.25, 0.6, 0.55], loop: bassLoop),
             K.lab("Match this pad", "How it fades in and out, and how bright it is. Cutoff sets the brightness.",
                   [.chordAttack, .chordRelease, .chordCutoff], start: [0.0, 0.1, 0.8], target: [0.6, 0.65, 0.35], loop: padLoop),
-        ]),
-    ])
-
-    // MARK: Unit 4 — Mix It Up
-
-    static let mixLoop = Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14], bass: bassline,
-                                 chords: [K.ch(3, .am7, 2), K.ch(10, .dm7, 2)])
-
-    static let unit4 = K.unit("house.u4", 4, "Mix It Up", "Levels, pump & space", [
-        K.lesson("house.u4.l1", "Faders 101", "Louder and quieter", "slider.vertical.3", .mixing, 30, [
-            K.mix("Move every fader", "Each slider sets how loud one part is. Hear how the groove changes.",
-                  [.drum(.kick), .drum(.clap), .drum(.hat), .bass], start: [K.u, K.u, K.u, K.u], loop: mixLoop),
-            K.mix("Match: hats pulled back", "In the reference the hats are quieter. Find how much.",
-                  [.drum(.kick), .drum(.hat), .bass], start: [K.u, K.u, K.u], target: [K.u, 0.35, K.u], loop: mixLoop),
-            K.mix("Match: chords up front", "This time the chords are the star.",
-                  [.drum(.kick), .bass, .chords], start: [K.u, K.u, 0.4], target: [K.u, K.u, 0.95], loop: mixLoop),
-        ]),
-        K.lesson("house.u4.l2", "Kick vs Bass", "The low-end balance", "speaker.wave.3.fill", .mixing, 30, [
-            K.mix("Fix the weak kick", "The bass is drowning the kick. Match the reference balance.",
-                  [.drum(.kick), .bass], start: [0.35, 0.95], target: [0.78, 0.6], loop: mixLoop),
-            K.mix("Fix the missing bass", "Now the bass is too quiet.",
-                  [.drum(.kick), .bass], start: [0.9, 0.2], target: [K.u, K.u], loop: mixLoop),
-            K.mix("Balance kick, bass and clap", "Three parts, one balance.",
-                  [.drum(.kick), .drum(.clap), .bass], start: [0.4, 0.9, 0.4], target: [0.75, 0.55, 0.65], loop: mixLoop),
-        ]),
-        K.lesson("house.u4.l3", "The Pump", "Sidechain", "waveform.path.ecg", .mixing, 30, [
-            K.mix("Turn up the pump", "Sidechain ducks the bass and chords every time the kick hits, so the groove breathes.",
-                  [.sidechain], start: [0], loop: mixLoop),
-            K.mix("Match the pump", "Listen to how hard the chords duck.",
-                  [.sidechain], start: [0.05], target: [0.7], loop: mixLoop),
-            K.mix("Match chords and pump together", "Louder chords, gentler pump.",
-                  [.chords, .sidechain], start: [0.4, 0.0], target: [0.85, 0.4], loop: mixLoop),
-        ]),
-        K.lesson("house.u4.l4", "Space in the Mix", "Reverb and depth", "sparkles", .mixing, 30, [
-            K.space("Put the groove in a room", "Reverb pushes sounds back. Try each space and a few mix amounts.", mixLoop),
-            K.mix("Push the hats back", "Quieter hats sound further away. Match the reference.",
-                  [.drum(.hat), .drum(.clap)], start: [0.9, 0.9], target: [0.4, 0.6], loop: mixLoop),
-            K.filterMatch("Match the distant sound", "A darker filter makes things sound further away.",
-                          cutoff: 1400, resonance: 0.2, mixLoop),
-        ]),
-        K.lesson("house.u4.l5", "Mix by Ear", "Four faders", "ear.fill", .mixing, 35, [
-            K.mix("Match this mix", "Kick, hats, bass and chords. Listen part by part.",
-                  [.drum(.kick), .drum(.hat), .bass, .chords], start: [0.3, 0.9, 0.9, 0.3],
-                  target: [0.72, 0.45, 0.6, 0.75], loop: mixLoop),
-            K.mix("Match this mix, with pump", "Same parts, plus the sidechain.",
-                  [.drum(.kick), .bass, .chords, .sidechain], start: [0.4, 0.4, 0.4, 0],
-                  target: [0.75, 0.65, 0.7, 0.55], loop: mixLoop),
-        ]),
-        K.mastery("house.u4.mastery", "Mixing Mastery", "Match a full mix", .mixing, 80, [
-            K.mix("Match this full mix", "Five controls. Switch between Reference and Yours as often as you need.",
-                  [.drum(.kick), .drum(.clap), .drum(.hat), .bass, .sidechain], start: [0.4, 0.9, 0.85, 0.3, 0],
-                  target: [0.72, 0.55, 0.4, 0.62, 0.5], loop: mixLoop),
         ]),
     ])
 
@@ -245,8 +193,8 @@ nonisolated enum HouseCourse {
                        start: Pattern(kick: [0, 4, 8, 12], clap: [4, 12]),
                        target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [1, 3, 5, 7, 9, 11, 13, 15],
                                        openHat: [2, 6, 10, 14])),
-            K.mix("Mix it for the peak", "Big kick, hard pump.",
-                  [.drum(.kick), .bass, .sidechain], start: [0.4, 0.4, 0], target: [0.8, 0.65, 0.65], loop: full),
+            K.lab("Make the kick peak-time", "Peak-time kicks hit hard: a little higher, short and driven.",
+                  [.kickPitch, .kickDecay, .kickDrive], start: [0.2, 0.6, 0.1], target: [0.45, 0.25, 0.6], loop: full),
         ]),
         K.mastery("house.u6.mastery", "House Mastery", "A full peak-time groove", .rhythm, 100, [
             K.groove("Recreate this peak-time house groove",

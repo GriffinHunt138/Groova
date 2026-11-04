@@ -29,7 +29,7 @@ nonisolated enum GarageLevels {
         "ukg.u1.l1": u1l1, "ukg.u1.l2": u1l2, "ukg.u1.l3": u1l3, "ukg.u1.l4": u1l4, "ukg.u1.l5": u1l5,
         "ukg.u2.l1": u2l1, "ukg.u2.l2": u2l2, "ukg.u2.l3": u2l3, "ukg.u2.l4": u2l4, "ukg.u2.l5": u2l5,
         "ukg.u3.l1": u3l1, "ukg.u3.l2": u3l2, "ukg.u3.l3": u3l3, "ukg.u3.l4": u3l4, "ukg.u3.l5": u3l5,
-        "ukg.u4.l1": u4l1, "ukg.u4.l2": u4l2, "ukg.u4.l3": u4l3, "ukg.u4.l4": u4l4, "ukg.u4.l5": u4l5,
+        "ukg.u4.l3": u4l3, "ukg.u4.l4": u4l4, "ukg.u4.l5": u4l5,
     ]
 
     // MARK: Unit 1 — The Two-Step
@@ -365,42 +365,8 @@ nonisolated enum GarageLevels {
                                       chords: [K.ch(3, .em9, 2), K.ch(8, .am9, 2), K.ch(13, .cmaj9, 2)]), notes: 7),
         ])
 
-    // MARK: Unit 4 — Mix & Arrange
+    // MARK: Unit 5 — Speed Garage & the Drop
 
-    static let mixC: [MixChannel] = [.drum(.kick), .drum(.clap), .drum(.hat), .bass, .chords]
-
-    static let u4l1: LevelPair = (
-        silver: [
-            L.silver("chords and bass share the lead",
-                     "In garage the bass and chords both want the spotlight. Choose which leads each mix."),
-            K.mix("Match: chords lead", "Chords loudest, bass a little under the kick.", [.drum(.kick), .bass, .chords], start: [u, u, u], target: [0.6, 0.5, 0.9],
-                  loop: G.full),
-            K.mix("Match: drums tight, bass big", "Bass loudest, clap above the kick, hats low.", [.drum(.kick), .drum(.clap), .drum(.hat), .bass], start: [u, u, u, u],
-                  target: [0.55, 0.7, 0.4, 0.85], loop: G.full),
-        ],
-        gold: [
-            L.gold("five-part garage mix", "Set the bass first, then everything else around it."),
-            K.mix("Match this mix", "Bass first. Kick, clap and chords level, hats low.", mixC, start: [u, u, u, u, u], target: [0.6, 0.65, 0.45, 0.85, 0.6], loop: G.full),
-            K.mix("Match this mix", "Chords lead. Kick next, clap lowest.", mixC, start: [u, u, u, u, u], target: [0.7, 0.5, 0.6, 0.6, 0.85], loop: G.full),
-            K.mix("Make it yours", "Pick bass or chords to lead, then fit the rest.", mixC, start: [0.2, 0.2, 0.2, 0.2, 0.2], loop: G.full),
-        ])
-
-    static let u4l2: LevelPair = (
-        silver: [
-            L.silver("pump with two kicks",
-                     "With only two kicks a bar, every duck is a big, obvious bounce. Use it carefully."),
-            K.mix("Match: gentle pump", "Pull it well down.", [.sidechain], start: [0.8], target: [0.35], loop: G.full),
-            K.mix("Match bass and pump", "Bass loud, pump above halfway.", [.bass, .sidechain], start: [u, 0], target: [0.85, 0.6], loop: G.full),
-        ],
-        gold: [
-            L.gold("pump the whole mix", "Pump changes how loud everything feels, so balance them together."),
-            K.mix("Match this mix", "Bass leads, pump in the middle.", [.drum(.kick), .bass, .chords, .sidechain], start: [u, u, u, 0],
-                  target: [0.7, 0.8, 0.65, 0.55], loop: G.full),
-            K.mix("Match this mix", "Chords lead, very light pump.", [.drum(.clap), .bass, .chords, .sidechain], start: [u, u, u, 0],
-                  target: [0.75, 0.6, 0.85, 0.25], loop: G.full),
-            K.mix("Make it yours", "Set the pump first, then balance around it.", [.drum(.kick), .bass, .chords, .sidechain], start: [0.2, 0.2, 0.2, 0],
-                  loop: G.full),
-        ])
 
     static let u4l3: LevelPair = (
         silver: [

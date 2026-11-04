@@ -207,7 +207,10 @@ nonisolated enum Levels {
             n.target = varyBass(t.target, rows: t.rows, gold: gold, &rng)
             n.mode = .recreate
             n.threshold = gold ? 0.9 : 0.85
-            n.prompt = gold ? "Recreate this longer variation by ear" : "New bassline, same idea"
+            // The pre-placed notes stay only if they're still part of the new answer.
+            n.start = t.start.filter { s in n.target.contains { $0.step == s.step && $0.pitch == s.pitch } }
+            let line = t.voice == .lead ? "melody" : "bassline"
+            n.prompt = gold ? "Recreate this longer variation by ear" : "New \(line), same idea"
             n.hint = "At Bronze: \(t.prompt). This one moves some notes. Listen for higher or lower, earlier or later."
             return [.pianoRoll(n)]
 
@@ -250,6 +253,11 @@ nonisolated enum Levels {
                 var n = t
                 n.target = chord
                 n.start = []
+                if t.exact {
+                    // Make room on the keyboard for the exact voicing.
+                    n.lowNote = min(t.lowNote, (chord.pitches.min() ?? t.lowNote) - 2)
+                    n.highNote = max(t.highNote, (chord.pitches.max() ?? t.highNote) + 2)
+                }
                 n.prompt = "Build \(chord.name)"
                 n.body = gold
                     ? "No starting notes. Same type of chord as \(t.target.name), from a new root."
@@ -307,8 +315,8 @@ nonisolated enum Levels {
                 let n = max(5, t.target.count + 2)
                 return .pianoRoll(PianoRollTask(
                     prompt: "Make it yours",
-                    hint: "Write your own bassline that uses \(topic). Use at least \(n) notes and at least two different pitches.",
-                    mode: .create(.notesAtLeast(n)), rows: t.rows, backing: t.backing))
+                    hint: "Write your own \(t.voice == .lead ? "melody" : "bassline") that uses \(topic). Use at least \(n) notes and at least two different pitches.",
+                    mode: .create(.notesAtLeast(n)), rows: t.rows, backing: t.backing, voice: t.voice))
             case .chordLane(let t):
                 let n = max(3, t.target.count + 1)
                 return .chordLane(ChordLaneTask(
@@ -547,11 +555,28 @@ nonisolated enum Levels {
         }.joined(separator: " ")
     }
 
+    /// Moves a whole round by the same amount, so "up or down" and "smooth or jumpy" answers still hold.
+    /// Single notes (melodic phrases) are renamed by pitch; chords by their root.
     private static func transpose(_ r: EarRound, _ semitones: Int) -> EarRound {
-        EarRound(chords: r.chords.map { transpose($0, semitones) ?? $0 },
-                 options: r.options.map { transposeText($0, semitones) },
-                 answer: r.answer,
-                 explain: transposeText(r.explain, semitones))
+        let all = r.chords.flatMap(\.pitches)
+        var shift = semitones
+        if (all.max() ?? 0) + shift > 76 { shift -= 12 }
+        if (all.min() ?? 60) + shift < 45 { shift += 12 }
+        var moved: [ChordShape] = []
+        for c in r.chords {
+            let pitches = c.pitches.map { $0 + shift }
+            if c.pitches.count == 1 {
+                moved.append(ChordShape(name: NoteName.name(pitches[0]), pitches: pitches))
+            } else if let (root, suffix) = parseChord(c.name) {
+                moved.append(ChordShape(name: flatNames[(root + semitones % 12 + 12) % 12] + suffix, pitches: pitches))
+            } else {
+                return r
+            }
+        }
+        return EarRound(chords: moved,
+                        options: r.options.map { transposeText($0, semitones) },
+                        answer: r.answer,
+                        explain: transposeText(r.explain, semitones))
     }
 
     private static func shuffleOptions(_ r: EarRound, _ rng: inout LevelRNG) -> EarRound {

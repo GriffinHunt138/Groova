@@ -2,7 +2,7 @@
 //  GarageCourse.swift
 //  Groova
 //
-//  UK Garage: two-step drums, bouncy bass, swung ninth chords, mixing and arrangement.
+//  UK Garage: two-step drums, bouncy bass, swung ninth chords, bass-and-chord interplay and arrangement.
 //  Playback uses the genre's heavy swing, so every groove here shuffles.
 //
 
@@ -19,7 +19,7 @@ nonisolated enum GarageCourse {
     static let full = Pattern(kick: [0, 10], clap: [4, 12], hat: [2, 3, 6, 7, 10, 11, 14, 15], perc: [9],
                               bass: bassline, chords: [K.ch(3, .em9, 2), K.ch(11, .am9, 2)])
 
-    static let units: [Unit] = [unit1, unit2, unit3, unit4]
+    static let units: [Unit] = [unit1, unit2, unit3, talkUnit, unit4]
 
     // MARK: Unit 1 — The Two-Step
 
@@ -162,21 +162,11 @@ nonisolated enum GarageCourse {
         ]),
     ])
 
-    // MARK: Unit 4 — Mix & Arrange
+    // MARK: Unit 5 — Speed Garage & the Drop
 
     static let lanes: [Instrument] = [.drum(.kick), .drum(.clap), .drum(.hat), .bass, .chords]
 
-    static let unit4 = K.unit("ukg.u4", 4, "Mix & Arrange", "Levels, pump & the drop", [
-        K.lesson("ukg.u4.l1", "Garage Levels", "Bass up front", "slider.vertical.3", .mixing, 35, [
-            K.mix("Match: bass up front", "In garage the bass and the vocal lead. Here, bass is the star.",
-                  [.drum(.kick), .drum(.hat), .bass], start: [K.u, K.u, 0.3], target: [0.6, 0.5, 0.9], loop: full),
-        ]),
-        K.lesson("ukg.u4.l2", "Pump the Bass", "Sidechain bounce", "waveform.path.ecg", .mixing, 35, [
-            K.mix("Match the pump", "Sidechain ducks the bass and chords on each kick. With two kicks a bar, each pump is a big bounce.",
-                  [.sidechain], start: [0], target: [0.75], loop: full),
-            K.mix("Match chords and pump", "Chords up, gentle pump.",
-                  [.chords, .sidechain], start: [0.3, 0.8], target: [0.8, 0.4], loop: full),
-        ]),
+    static let unit4 = K.unit("ukg.u4", 5, "Speed Garage & the Drop", "Four-four swing, intros & drops", [
         K.lesson("ukg.u4.l3", "Speed Garage", "Four on the floor, garage swing", "hare.fill", .rhythm, 35, [
             K.drumRule("Speed garage kick: every beat", "Steps 1, 5, 9 and 13. Same swing, harder drive.",
                        tracks: [.kick, .clap, .hat], edit: [.kick],

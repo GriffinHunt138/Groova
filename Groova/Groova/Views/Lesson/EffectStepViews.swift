@@ -215,7 +215,7 @@ struct FilterStepView: View {
             lastScore = 1
             withAnimation {
                 feedback = StepFeedback(kind: .success, title: "Filter unlocked",
-                                        message: "Closed = warm and muffled. Open = bright and present. DJs sweep this live to build tension.",
+                                        message: "Closed = warm and muffled. Open = bright and present. Producers automate this to build tension into a drop.",
                                         score: nil)
             }
             AudioEngine.shared.playSuccess(); Haptics.success()

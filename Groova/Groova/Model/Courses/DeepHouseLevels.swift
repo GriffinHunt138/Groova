@@ -35,7 +35,7 @@ nonisolated enum DeepHouseLevels {
         "deep.u1.l1": u1l1, "deep.u1.l2": u1l2, "deep.u1.l3": u1l3, "deep.u1.l4": u1l4, "deep.u1.l5": u1l5,
         "deep.u2.l1": u2l1, "deep.u2.l2": u2l2, "deep.u2.l3": u2l3, "deep.u2.l4": u2l4, "deep.u2.l5": u2l5,
         "deep.u3.l1": u3l1, "deep.u3.l2": u3l2, "deep.u3.l3": u3l3, "deep.u3.l4": u3l4, "deep.u3.l5": u3l5,
-        "deep.u4.l1": u4l1, "deep.u4.l2": u4l2, "deep.u4.l3": u4l3, "deep.u4.l4": u4l4, "deep.u4.l5": u4l5,
+        "deep.u4.l3": u4l3, "deep.u4.l4": u4l4, "deep.u4.l5": u4l5,
     ]
 
     // MARK: Unit 1 — Late Night Grooves
@@ -301,7 +301,7 @@ nonisolated enum DeepHouseLevels {
                   target: [0.35, 0.45], loop: Pattern(kick: [0, 4, 8, 12], hat: offHats, bass: D.bassline)),
         ],
         gold: [
-            L.gold("bass in the mix",
+            L.gold("bass in the full track",
                    "Match four bass controls with the whole track playing."),
             K.lab("Match this bass", "Dark and long, a hint of resonance.", [.bassCutoff, .bassEnv, .bassResonance, .bassDecay], start: [0.8, 0.8, 0.0, 0.1],
                   target: [0.25, 0.2, 0.3, 0.65], loop: D.full),
@@ -318,7 +318,7 @@ nonisolated enum DeepHouseLevels {
         ],
         gold: [
             L.gold("filters on different parts",
-                   "A filter on the whole mix is a DJ move. A filter on just the chords or just the bass is a production move."),
+                   "A filter on the whole track changes everything at once. A filter on just the chords or just the bass shapes one part and leaves the rest punchy."),
             K.filterMatch("Match this filter", "About halfway closed, medium resonance.", cutoff: 1100, resonance: 0.5, D.full),
             K.lab("Match the chord brightness", "A little darker than halfway.", [.chordCutoff], start: [0.9], target: [0.4], loop: D.full),
             K.lab("Match the bass brightness", "Very dark.", [.bassCutoff], start: [0.9], target: [0.15], loop: D.full),
@@ -338,8 +338,8 @@ nonisolated enum DeepHouseLevels {
                    "Dark, quiet, slow sounds sit at the back. Bright, loud, fast ones sit at the front. Push the pad back."),
             K.lab("Push the pad back", "Dark, slow in, long release.", [.chordCutoff, .chordAttack, .chordRelease], start: [0.9, 0.0, 0.1],
                   target: [0.25, 0.5, 0.8], loop: D.full),
-            K.mix("Match the depth", "Chords back, bass and kick forward.", [.drum(.kick), .bass, .chords],
-                  start: [u, u, u], target: [0.8, 0.75, 0.45], loop: D.full),
+            K.lab("Bring the bass forward", "Brighter and shorter sounds closer. Pull the bass toward you.",
+                  [.bassCutoff, .bassDecay], start: [0.1, 0.8], target: [0.55, 0.3], loop: D.full),
             K.space("Give it a room", "Big enough for the pads, not so big the kick blurs.", D.full),
         ])
 
@@ -363,42 +363,8 @@ nonisolated enum DeepHouseLevels {
                    palette: [.fm9, .bbm7, .cm7, .ebmaj7], backing: D.drums),
         ])
 
-    // MARK: Unit 4 — Deep Mix & Arrangement
+    // MARK: Unit 5 — Late Night Arrangement
 
-    static let mixC: [MixChannel] = [.drum(.kick), .drum(.hat), .drum(.perc), .bass, .chords]
-
-    static let u4l1: LevelPair = (
-        silver: [
-            L.silver("which part leads",
-                     "In deep house the chords usually lead and the drums sit back. Hear two balances of the same loop."),
-            K.mix("Match: chords lead", "Chords well above the drums. Hats lowest.", [.drum(.kick), .drum(.hat), .chords], start: [u, u, u],
-                  target: [0.55, 0.35, 0.85], loop: D.full),
-            K.mix("Match: bass leads", "Bass on top, chords tucked under the kick.", [.drum(.kick), .bass, .chords], start: [u, u, u], target: [0.6, 0.85, 0.5],
-                  loop: D.full),
-        ],
-        gold: [
-            L.gold("five-part balance", "Kick first, then bass, then chords, then the small parts."),
-            K.mix("Match this mix", "Chords lead, bass next. Hats and rims low.", mixC, start: [u, u, u, u, u], target: [0.65, 0.4, 0.35, 0.7, 0.8], loop: D.full),
-            K.mix("Match this one", "Bass leads. Hats and chords close together.", mixC, start: [u, u, u, u, u], target: [0.7, 0.55, 0.5, 0.8, 0.55], loop: D.full),
-            K.mix("Make it yours", "Decide what leads: the bass or the chords.", mixC, start: [0.2, 0.2, 0.2, 0.2, 0.2], loop: D.full),
-        ])
-
-    static let u4l2: LevelPair = (
-        silver: [
-            L.silver("pump on the chords",
-                     "In deep house the pump is felt most on held chords. Too much and the pads wobble. Just enough and they breathe."),
-            K.mix("Match: barely breathing", "Pump almost off.", [.sidechain], start: [0.9], target: [0.15],
-                  loop: pads([(0, .fm9, 8), (8, .dbmaj7, 8)])),
-            K.mix("Match chords and pump", "Chords loud, light pump.", [.chords, .sidechain], start: [u, 0], target: [0.85, 0.4],
-                  loop: pads([(0, .fm9, 8), (8, .dbmaj7, 8)])),
-        ],
-        gold: [
-            L.gold("pump and balance", "Set the pump, then rebalance around it."),
-            K.mix("Match this mix", "Chords lead, light pump.", [.drum(.kick), .bass, .chords, .sidechain], start: [u, u, u, 0],
-                  target: [0.7, 0.65, 0.8, 0.25], loop: D.full),
-            K.mix("Match this one", "Bass leads, hats low, medium pump.", [.drum(.kick), .drum(.hat), .bass, .chords, .sidechain], start: [u, u, u, u, 0],
-                  target: [0.6, 0.35, 0.8, 0.7, 0.4], loop: D.full),
-        ])
 
     static let lanes = D.lanes
     static let long = ["Intro", "Groove", "Break", "Drop", "Outro"]
@@ -409,8 +375,8 @@ nonisolated enum DeepHouseLevels {
 
     static let u4l3: LevelPair = (
         silver: [
-            L.silver("DJ-friendly edges",
-                     "DJs mix the start and end of your track into other records. Keep those edges simple: drums and maybe the bass."),
+            L.silver("gentle edges",
+                     "A deep track eases in and eases out. Keep the first and last sections simple, drums and maybe the bass, so the chords feel like an arrival."),
             arr("Copy this track", "Kick and hats run all the way through.", .recreate, target: K.grid("xxxx", "-x-x", "xxxx", "-xx-", "-xx-")),
             arr("Intro: kick and hats only", "Switch off the clap, bass and chords in the Intro.", .rule,
                 start: K.grid("xxxx", "xxxx", "xxxx", "xxxx", "xxxx"),
@@ -420,7 +386,7 @@ nonisolated enum DeepHouseLevels {
             L.gold("longer tracks", "Five sections, slowly adding and removing parts."),
             arr("Recreate this track", "Hats never stop. The kick sits out the Break.", .recreate, sections: long,
                 target: K.grid("xx-xx", "-x-x-", "xxxxx", "-x-xx", "-xxx-")),
-            arr("Make it yours", "Keep the Intro and Outro simple for DJs.", .create(.variedSections), sections: long),
+            arr("Make it yours", "Keep the Intro and Outro simple, so the middle feels full.", .create(.variedSections), sections: long),
         ])
 
     static let u4l4: LevelPair = (

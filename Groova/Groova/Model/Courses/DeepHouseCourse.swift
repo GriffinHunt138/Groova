@@ -2,7 +2,7 @@
 //  DeepHouseCourse.swift
 //  Groova
 //
-//  Deep House: soft grooves, jazzy chords, warm sounds, gentle mixing and late-night arrangement.
+//  Deep House: soft grooves, jazzy chords, warm sounds, voice leading and late-night arrangement.
 //
 
 import Foundation
@@ -20,7 +20,7 @@ nonisolated enum DeepHouseCourse {
     static let lanes: [Instrument] = [.drum(.kick), .drum(.clap), .drum(.hat), .bass, .chords]
     static let sections = ["Intro", "Groove", "Break", "Outro"]
 
-    static let units: [Unit] = [unit1, unit2, unit3, unit4]
+    static let units: [Unit] = [unit1, unit2, unit3, voiceUnit, unit4]
 
     // MARK: Unit 1 — Late Night Grooves
 
@@ -155,20 +155,10 @@ nonisolated enum DeepHouseCourse {
         ]),
     ])
 
-    // MARK: Unit 4 — Deep Mix & Arrangement
+    // MARK: Unit 5 — Late Night Arrangement
 
-    static let unit4 = K.unit("deep.u4", 4, "Deep Mix & Arrangement", "Balance, breaks & long outros", [
-        K.lesson("deep.u4.l1", "Soft Balance", "Chords and bass together", "slider.vertical.3", .mixing, 35, [
-            K.mix("Match this balance", "Chords warm and present, bass round underneath.",
-                  [.drum(.kick), .bass, .chords], start: [0.9, 0.3, 0.3], target: [0.6, 0.65, 0.8], loop: full),
-        ]),
-        K.lesson("deep.u4.l2", "Gentle Pump", "Breathing, not pumping", "waveform.path.ecg", .mixing, 35, [
-            K.mix("Match the gentle pump", "Sidechain ducks the chords and bass on each kick. Here, just enough to breathe.",
-                  [.sidechain], start: [0.8], target: [0.3], loop: full),
-            K.mix("Match the mix and pump", "Four controls.", [.drum(.kick), .drum(.hat), .chords, .sidechain],
-                  start: [0.3, 0.9, 0.4, 0.0], target: [0.65, 0.45, 0.8, 0.3], loop: full),
-        ]),
-        K.lesson("deep.u4.l3", "Intro & Outro", "Mix-friendly edges", "arrow.left.and.right", .arrangement, 35, [
+    static let unit4 = K.unit("deep.u4", 5, "Late Night Arrangement", "Intros, breaks & outros", [
+        K.lesson("deep.u4.l3", "Intro & Outro", "Start and end gently", "arrow.left.and.right", .arrangement, 35, [
             K.arrange("Drums only in the outro", "Columns are sections, rows are parts. In the Outro, switch off the bass and chords.", .rule,
                       sections: sections, lanes: lanes, loop: full,
                       start: K.grid("xxxx", "-xxx", "xxxx", "-xxx", "xxxx"),

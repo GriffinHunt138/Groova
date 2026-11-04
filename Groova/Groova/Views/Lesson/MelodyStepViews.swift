@@ -126,11 +126,27 @@ struct PianoRollStepView: View {
     private var isRecreate: Bool { if case .recreate = task.mode { true } else { false } }
     private var isCreate: Bool { if case .create = task.mode { true } else { false } }
 
-    private var userPattern: Pattern {
-        var p = task.backing
-        p.bass = notes
+    init(task: PianoRollTask, genre: Genre, onComplete: @escaping (Double) -> Void) {
+        self.task = task
+        self.genre = genre
+        self.onComplete = onComplete
+        _notes = State(initialValue: task.start.map { var n = $0; n.id = UUID(); return n })
+    }
+
+    private var isLead: Bool { task.voice == .lead }
+
+    /// Puts notes on the right instrument: the bass synth, or the keys for a lead line.
+    private func with(_ line: [NoteEvent], on base: Pattern) -> Pattern {
+        var p = base
+        if isLead {
+            p.chords += line.map { ChordEvent(step: $0.step, pitches: [$0.pitch], length: $0.length) }
+        } else {
+            p.bass = line
+        }
         return p
     }
+
+    private var userPattern: Pattern { with(notes, on: task.backing) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -144,9 +160,8 @@ struct PianoRollStepView: View {
                             TransportButton(title: "Reference",
                                             symbol: transport.isPlaying(.reference) ? "stop.fill" : "ear.fill",
                                             active: transport.isPlaying(.reference), color: Theme.text) {
-                                var ref = task.backing
-                                ref.bass = task.target
-                                transport.toggle(ref, genre: genre, source: .reference, bars: 2)
+                                transport.toggle(with(task.target, on: task.backing), genre: genre,
+                                                 source: .reference, bars: 2)
                             }
                         }
                         TransportButton(title: isRecreate ? "Yours" : "Play",
@@ -159,9 +174,8 @@ struct PianoRollStepView: View {
                                             symbol: transport.isPlaying(.compare) ? "stop.fill" : "headphones",
                                             active: transport.isPlaying(.compare), color: Theme.text) {
                                 if transport.isPlaying(.compare) { transport.stop() } else {
-                                    var ref = Pattern()
-                                    ref.bass = task.target
-                                    transport.play(userPattern, genre: genre, source: .compare, overlay: ref)
+                                    transport.play(userPattern, genre: genre, source: .compare,
+                                                   overlay: with(task.target, on: Pattern()))
                                 }
                             }
                         }
@@ -176,7 +190,7 @@ struct PianoRollStepView: View {
                         ChordStrip(chords: task.backing.chords, playhead: transport.step)
                     }
                     PianoRollGrid(notes: $notes, rows: task.rows, playhead: transport.step,
-                                  patch: transport.kit(for: genre).bass, correct: correct, wrong: wrong, ghosts: ghosts)
+                                  patch: isLead ? transport.kit(for: genre).chords : transport.kit(for: genre).bass, correct: correct, wrong: wrong, ghosts: ghosts)
                     if feedback == nil, fails > 0, isRecreate {
                         Label(task.hint, systemImage: "lightbulb.fill")
                             .font(.label(14, weight: .medium))
@@ -216,9 +230,17 @@ struct PianoRollStepView: View {
         if isCreate {
             lastScore = 1
             let offKick = notes.filter { !task.backing.kick[$0.step] }.count
-            let msg = offKick >= notes.count / 2
-                ? "Notes between the kicks give it bounce. That's a real house bassline."
-                : "Notes on the kick feel heavy and solid. Try a few offbeats too, next time."
+            let msg: String
+            if isLead {
+                let pitches = Set(notes.map(\.pitch)).count
+                msg = pitches >= 3
+                    ? "That's a real melody. Hum it back: if you can, it's a hook."
+                    : "A riff with just a couple of notes can be the catchiest part. Try adding one more pitch next time."
+            } else {
+                msg = offKick >= notes.count / 2
+                    ? "Notes between the kicks give it bounce. That's a real house bassline."
+                    : "Notes on the kick feel heavy and solid. Try a few offbeats too, next time."
+            }
             withAnimation { feedback = StepFeedback(kind: .success, title: Cheer.win(), message: msg, score: nil) }
             AudioEngine.shared.playSuccess()
             Haptics.success()

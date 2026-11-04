@@ -79,6 +79,47 @@ nonisolated enum K {
                                  backing: backing))
     }
 
+    // MARK: Melody (played on the keys)
+
+    static func leadRule(_ prompt: String, _ hint: String, rows: [Int], target: [NoteEvent], backing: Pattern,
+                         start: [NoteEvent] = []) -> LessonStep {
+        .pianoRoll(PianoRollTask(prompt: prompt, hint: hint, mode: .rule, rows: rows, target: target, backing: backing,
+                                 start: start, voice: .lead))
+    }
+
+    static func leadCopy(_ prompt: String, _ hint: String, rows: [Int], target: [NoteEvent], backing: Pattern,
+                         start: [NoteEvent] = [], threshold: Double = 0.8) -> LessonStep {
+        .pianoRoll(PianoRollTask(prompt: prompt, hint: hint, mode: .recreate, rows: rows, target: target,
+                                 backing: backing, threshold: threshold, start: start, voice: .lead))
+    }
+
+    static func leadMake(_ prompt: String, _ hint: String, rows: [Int], backing: Pattern, notes: Int = 4,
+                         start: [NoteEvent] = []) -> LessonStep {
+        .pianoRoll(PianoRollTask(prompt: prompt, hint: hint, mode: .create(.notesAtLeast(notes)), rows: rows,
+                                 backing: backing, start: start, voice: .lead))
+    }
+
+    /// A demo loop with a lead line on top, for intro cards.
+    static func withLead(_ base: Pattern, _ notes: [NoteEvent]) -> Pattern {
+        var p = base
+        p.chords += notes.map { ChordEvent(step: $0.step, pitches: [$0.pitch], length: $0.length) }
+        return p
+    }
+
+    /// Notes as (step, pitch) or (step, pitch, length).
+    static func line(_ n: [(Int, Int)]) -> [NoteEvent] { n.map { NoteEvent($0.0, $0.1) } }
+    static func line(_ n: [(Int, Int, Int)]) -> [NoteEvent] { n.map { NoteEvent($0.0, $0.1, $0.2) } }
+
+    /// Play these notes in order on the keyboard.
+    static func play(_ prompt: String, _ body: String, _ sequence: [Int], low: Int, high: Int) -> LessonStep {
+        .keyboard(KeyboardTask(prompt: prompt, body: body, sequence: sequence, lowNote: low, highNote: high))
+    }
+
+    /// A phrase of single notes for ear training. Named by note so levels can transpose it.
+    static func phrase(_ pitches: [Int]) -> [ChordShape] {
+        pitches.map { ChordShape(name: NoteName.name($0), pitches: [$0]) }
+    }
+
     static func notes(_ pitch: Int, _ steps: [Int], length: Int = 1) -> [NoteEvent] {
         steps.map { NoteEvent($0, pitch, length) }
     }
@@ -90,9 +131,9 @@ nonisolated enum K {
     }
 
     static func build(_ prompt: String, _ body: String, _ chord: ChordShape, start: [Int] = [],
-                      low: Int = 55, high: Int = 67) -> LessonStep {
+                      low: Int = 55, high: Int = 67, exact: Bool = false) -> LessonStep {
         .chordBuilder(ChordBuilderTask(prompt: prompt, body: body, target: chord, start: start, lowNote: low,
-                                       highNote: high))
+                                       highNote: high, exact: exact))
     }
 
     static func quiz(_ prompt: String, _ body: String, _ rounds: [EarRound]) -> LessonStep {

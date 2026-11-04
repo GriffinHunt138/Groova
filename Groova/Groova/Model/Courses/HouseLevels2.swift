@@ -12,14 +12,12 @@ typealias LevelPair = (silver: [LessonStep], gold: [LessonStep])
 nonisolated enum HouseLevels2 {
     typealias H = HouseCourse
     static let u = K.u
-    static let mx = H.mixLoop
     static let full = H.full
     static let lanes5: [Instrument] = K.fullHouseLanes
     static let twoDrops = ["Intro", "Drop", "Break", "Drop 2"]
 
     static let all: [String: LevelPair] = [
         "house.u3.l1": u3l1, "house.u3.l2": u3l2, "house.u3.l3": u3l3, "house.u3.l4": u3l4, "house.u3.l5": u3l5,
-        "house.u4.l1": u4l1, "house.u4.l2": u4l2, "house.u4.l3": u4l3, "house.u4.l4": u4l4, "house.u4.l5": u4l5,
         "house.u5.l1": u5l1, "house.u5.l2": u5l2, "house.u5.l3": u5l3, "house.u5.l4": u5l4, "house.u5.l5": u5l5,
         "house.u6.l1": u6l1, "house.u6.l2": u6l2, "house.u6.l3": u6l3, "house.u6.l4": u6l4, "house.u6.l5": u6l5,
     ]
@@ -146,114 +144,6 @@ nonisolated enum HouseLevels2 {
                   start: [0.5, 0.5, 0.5, 0.5], loop: H.padLoop),
         ])
 
-    // MARK: Unit 4 — Mix It Up
-
-    static let kchb: [MixChannel] = [.drum(.kick), .drum(.clap), .drum(.hat), .bass]
-    static let five: [MixChannel] = [.drum(.kick), .drum(.clap), .drum(.hat), .bass, .chords]
-
-    static let u4l1: LevelPair = (
-        silver: [
-            L.silver("balance, not volume",
-                     "Mixing is about how loud parts are compared with each other. Turning everything up changes nothing. Hear which part leads each mix."),
-            K.mix("Match: bass-heavy mix", "The bass leads. The clap and hats sit back.", kchb,
-                  start: [u, u, u, u], target: [u, 0.4, 0.3, 0.8], loop: mx),
-            K.mix("Match: drum-led mix", "Drums up front, bass tucked under.", kchb,
-                  start: [u, u, u, u], target: [0.9, 0.7, 0.6, 0.35], loop: mx),
-        ],
-        gold: [
-            L.gold("five-part balance",
-                   "With five parts, every fader affects how the others sound. Set the loudest part first, then bring the others in around it."),
-            K.mix("Match: chord-led mix", "The chords are the star.", five,
-                  start: [u, u, u, u, u], target: [0.7, 0.5, 0.35, 0.6, 0.85], loop: mx),
-            K.mix("Match: club mix", "Big drums and bass, chords in the background.", five,
-                  start: [u, u, u, u, u], target: [0.85, 0.65, 0.55, 0.75, 0.3], loop: mx),
-            K.mix("Make it yours", "Every fader starts low. Build your own mix.", five,
-                  start: [0.2, 0.2, 0.2, 0.2, 0.2], loop: mx),
-        ])
-
-    static let u4l2: LevelPair = (
-        silver: [
-            L.silver("kick and bass share space",
-                     "Kick and bass fight for the same low end. Producers give one priority, or use a little pump so the bass ducks when the kick hits."),
-            K.mix("Match: pump clears the kick", "A little sidechain makes room.", [.drum(.kick), .bass, .sidechain],
-                  start: [u, u, 0], target: [0.75, 0.65, 0.4], loop: mx),
-            K.mix("Match the bass-forward deep mix", "The bass leads and the kick sits lower.", [.drum(.kick), .bass],
-                  start: [u, u], target: [0.55, 0.85], loop: mx),
-        ],
-        gold: [
-            L.gold("the whole low end",
-                   "The clap and hats change how big the kick feels. Balance all of it with the pump."),
-            K.mix("Match: punchy low end", "Kick on top, bass close behind, medium pump.", [.drum(.kick), .drum(.clap), .drum(.hat), .bass, .sidechain],
-                  start: [u, u, u, u, 0], target: [0.8, 0.55, 0.4, 0.7, 0.5], loop: mx),
-            K.mix("Match: warm low end", "Softer kick, fuller bass, gentle pump.",
-                  [.drum(.kick), .drum(.clap), .drum(.hat), .bass, .sidechain],
-                  start: [u, u, u, u, 0], target: [0.65, 0.6, 0.5, 0.8, 0.2], loop: mx),
-            K.mix("Make it yours", "Balance kick, bass and pump your way.", [.drum(.kick), .bass, .sidechain],
-                  start: [0.2, 0.2, 0], loop: mx),
-        ])
-
-    static let u4l3: LevelPair = (
-        silver: [
-            L.silver("how much pump",
-                     "A little pump adds bounce you feel more than hear. A lot of pump becomes an effect of its own. Match each amount."),
-            K.mix("Match the gentle pump", "Just enough to breathe.", [.sidechain], start: [0.8], target: [0.3], loop: mx),
-            K.mix("Match the heavy pump", "Bass loud and ducking hard.", [.bass, .sidechain],
-                  start: [u, 0], target: [0.8, 0.85], loop: mx),
-            K.mix("Match the subtle chord pump", "Quiet chords, light pump.", [.chords, .sidechain],
-                  start: [u, 0.6], target: [0.6, 0.2], loop: mx),
-        ],
-        gold: [
-            L.gold("pump in the full mix",
-                   "Pump changes how loud the bass and chords feel, so you have to set levels and pump together."),
-            K.mix("Match: festival pump", "Everything big. Chords just on top.", [.drum(.kick), .bass, .chords, .sidechain],
-                  start: [u, u, u, 0], target: [0.75, 0.7, 0.8, 0.6], loop: mx),
-            K.mix("Match: soulful pump", "Chords up, pump gentle.", [.drum(.kick), .bass, .chords, .sidechain],
-                  start: [u, u, u, 0], target: [0.7, 0.55, 0.9, 0.3], loop: mx),
-            K.mix("Make it yours", "Set kick, bass, chords and pump your way.", [.drum(.kick), .bass, .chords, .sidechain],
-                  start: [0.2, 0.2, 0.2, 0], loop: mx),
-        ])
-
-    static let u4l4: LevelPair = (
-        silver: [
-            L.silver("front to back",
-                     "Louder and brighter sounds feel close. Quieter and darker sounds feel far away. You can place each part at a different depth."),
-            K.mix("Push the drums back, chords forward", "Hats well back, clap in the middle, chords up front.", [.drum(.hat), .drum(.clap), .chords],
-                  start: [u, u, u], target: [0.3, 0.5, 0.85], loop: mx),
-            K.filterMatch("Match: in the next room", "Dark and muffled, almost no resonance.",
-                          cutoff: 900, resonance: 0.15, mx),
-            K.filterMatch("Match: just behind the speakers", "Only a little top end gone.",
-                          cutoff: 3500, resonance: 0.2, mx),
-        ],
-        gold: [
-            L.gold("a mix with depth",
-                   "A good mix has a front, a middle and a back. Kick and bass up front, chords in the middle, hats at the back."),
-            K.mix("Match this depth", "Front to back: kick, bass, chords, clap, hats.", five,
-                  start: [u, u, u, u, u], target: [0.8, 0.45, 0.3, 0.65, 0.5], loop: mx),
-            K.filterMatch("Match: far away and resonant", "Dark with a noticeable peak.",
-                          cutoff: 600, resonance: 0.3, mx),
-            K.mix("Make it yours", "Place every part at its own depth.", five,
-                  start: [0.2, 0.2, 0.2, 0.2, 0.2], loop: mx),
-        ])
-
-    static let u4l5: LevelPair = (
-        silver: [
-            L.silver("new mixes by ear",
-                     "Listen part by part: solo each sound in your head, then compare. Fix the biggest difference first."),
-            K.mix("Match this mix", "Clap, hats, bass and chords.", [.drum(.clap), .drum(.hat), .bass, .chords],
-                  start: [u, u, u, u], target: [0.5, 0.7, 0.45, 0.85], loop: mx),
-            K.mix("Match this mix with pump", "Clap on top, strong pump.", [.drum(.kick), .drum(.clap), .bass, .sidechain],
-                  start: [u, u, u, 0], target: [0.65, 0.8, 0.55, 0.7], loop: mx),
-        ],
-        gold: [
-            L.gold("full mixes by ear",
-                   "Five controls, no hints. Start with the loudest part and work down."),
-            K.mix("Match this mix", "Bass leads, clap close behind, chords low.", five, start: [u, u, u, u, u], target: [0.6, 0.75, 0.5, 0.8, 0.4], loop: mx),
-            K.mix("Match this mix", "Pump included.", [.drum(.kick), .drum(.hat), .bass, .chords, .sidechain],
-                  start: [u, u, u, u, 0], target: [0.8, 0.3, 0.6, 0.7, 0.75], loop: mx),
-            K.mix("Make it yours", "Your own full mix, pump included.",
-                  [.drum(.kick), .drum(.clap), .bass, .chords, .sidechain], start: [0.2, 0.2, 0.2, 0.2, 0], loop: mx),
-        ])
-
     // MARK: Unit 5 — Build a Track
 
     static let u5l1: LevelPair = (
@@ -279,9 +169,9 @@ nonisolated enum HouseLevels2 {
 
     static let u5l2: LevelPair = (
         silver: [
-            L.silver("intros for DJs",
-                     "DJs blend your intro into the end of the last track, so intros are mostly drums. Chords and bass wait until the mix is done."),
-            K.arrange("Build a DJ-friendly intro", "Intro: kick and hats only. Build: add the clap.", .rule, loop: full,
+            L.silver("intros that hold back",
+                     "House intros are mostly drums. Holding back the chords and bass gives the listener something to wait for."),
+            K.arrange("Build a drums-first intro", "Intro: kick and hats only. Build: add the clap.", .rule, loop: full,
                       start: K.grid("--xx", "--xx", "--xx", "--xx", "--xx"),
                       target: K.grid("xxxx", "-xxx", "xxxx", "--xx", "--xx")),
             K.arrange("Copy this intro", "Drums first, then the music arrives.", .recreate, loop: full,
@@ -484,25 +374,24 @@ nonisolated enum HouseLevels2 {
     static let u6l5: LevelPair = (
         silver: [
             L.silver("peak-time energy",
-                     "Peak-time house adds 16th hats and percussion for energy, and a harder pump to make it move."),
+                     "Peak-time house adds 16th hats and percussion for energy, and a harder, brighter kick to drive it."),
             L.copy("Copy the peak-time hats", "16th hats everywhere except the open hats, plus a rim after beats 1 and 3.",
                    tracks: [.kick, .clap, .hat, .openHat, .perc], edit: [.hat, .openHat, .perc],
                    start: Pattern(kick: [0, 4, 8, 12], clap: [4, 12]),
                    target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [0, 1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 15],
                                    openHat: [2, 6, 10, 14], perc: [3, 11])),
-            K.mix("Mix it for the peak", "Kick, clap and bass with a hard pump.",
-                  [.drum(.kick), .drum(.clap), .bass, .sidechain], start: [u, u, u, 0], target: [0.85, 0.7, 0.6, 0.75],
-                  loop: full),
+            K.lab("Tune a peak-time kick", "Higher and driven, with a short tail.", [.kickPitch, .kickDrive],
+                  start: [0.15, 0.1], target: [0.5, 0.7], loop: H.kickLoop),
         ],
         gold: [
             L.gold("the whole peak-time groove",
-                   "Put it all together: a driving kit and a big, pumping mix. Rebuild the drums from silence, then mix them."),
+                   "Put it all together: a driving kit and a kick built for big speakers. Rebuild the drums from silence, then shape the kick."),
             L.copy("Rebuild the peak-time kit", "Kick with a pickup, claps, 16th hats, offbeat open hats and two rims.",
                    tracks: [.kick, .clap, .hat, .openHat, .perc], edit: [.kick, .clap, .hat, .openHat, .perc],
                    target: Pattern(kick: [0, 4, 8, 12, 14], clap: [4, 12], hat: [1, 3, 5, 7, 9, 11, 13, 15],
                                    openHat: [2, 6, 10, 14], perc: [7, 15]), threshold: 0.9),
-            K.mix("Mix the peak", "Five controls.", [.drum(.kick), .drum(.clap), .drum(.hat), .bass, .sidechain],
-                  start: [u, u, u, u, 0], target: [0.85, 0.6, 0.45, 0.65, 0.7], loop: full),
+            K.lab("Design the peak-time kick", "Pitch, length and drive. Punchy, not boomy.", [.kickPitch, .kickDecay, .kickDrive],
+                  start: [0.1, 0.8, 0.0], target: [0.4, 0.2, 0.75], loop: H.kickLoop),
             L.make("Make it yours", "Write your own peak-time kit. At least 8 closed hats.",
                    tracks: [.kick, .clap, .hat, .openHat, .perc], edit: [.kick, .clap, .hat, .openHat, .perc],
                    goal: .atLeast(.hat, 8)),

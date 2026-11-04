@@ -2,7 +2,7 @@
 //  TechHouseCourse.swift
 //  Groova
 //
-//  Tech House: rolling percussion, rolling bass, punchy club mixing and arrangement.
+//  Tech House: rolling percussion, rolling bass, keys & transposing and club arrangement.
 //
 
 import Foundation
@@ -20,7 +20,7 @@ nonisolated enum TechHouseCourse {
                               openHat: [2, 6, 10, 14], perc: [3, 9, 13], bass: rolling)
     static let lanes: [Instrument] = [.drum(.kick), .drum(.clap), .drum(.hat), .drum(.perc), .bass]
 
-    static let units: [Unit] = [unit1, unit2, unit3, unit4]
+    static let units: [Unit] = [unit1, unit2, keyUnit, unit4]
 
     // MARK: Unit 1 — The Rolling Groove
 
@@ -106,46 +106,10 @@ nonisolated enum TechHouseCourse {
         ]),
     ])
 
-    // MARK: Unit 3 — Pump & Punch
-
-    static let unit3 = K.unit("tech.u3", 3, "Pump & Punch", "Club-ready mixing", [
-        K.lesson("tech.u3.l1", "Level the Groove", "Drums first", "slider.vertical.3", .mixing, 30, [
-            K.mix("Move every fader", "Hear how each part changes the groove.",
-                  [.drum(.kick), .drum(.clap), .drum(.perc), .bass], start: [K.u, K.u, K.u, K.u], loop: full),
-            K.mix("Match this drum balance", "Kick and clap loud, percussion tucked in.",
-                  [.drum(.kick), .drum(.clap), .drum(.perc)], start: [0.4, 0.3, 0.9], target: [0.8, 0.7, 0.45], loop: full),
-        ]),
-        K.lesson("tech.u3.l2", "Sidechain Pump", "Bass that breathes", "waveform.path.ecg", .mixing, 30, [
-            K.mix("Match the pump", "Sidechain ducks the bass under every kick.", [.sidechain], start: [0.0], target: [0.65],
-                  loop: full),
-            K.mix("Match bass and pump", "Bass loud, pump deep.", [.bass, .sidechain], start: [0.3, 0.1],
-                  target: [0.85, 0.7], loop: full),
-        ]),
-        K.lesson("tech.u3.l3", "Filter Drive", "Kick crunch", "flame.fill", .soundDesign, 30, [
-            K.lab("Match the driven kick", "More drive, more crunch.", [.kickDrive, .kickPitch], start: [0.0, 0.2],
-                  target: [0.7, 0.45], loop: basic),
-            K.filterMatch("Match the filtered groove", "A low-pass filter cuts the highs. Resonance adds a peak at the cutoff.", cutoff: 800, resonance: 0.5, full),
-        ]),
-        K.lesson("tech.u3.l4", "Percussion Space", "Room for rims", "sparkles", .mixing, 30, [
-            K.space("Give the percussion some room", "A small room makes rims sound live.", full),
-            K.mix("Match the percussion levels", "Rims and open hats sitting back.", [.drum(.perc), .drum(.openHat)],
-                  start: [0.9, 0.9], target: [0.5, 0.4], loop: full),
-        ]),
-        K.lesson("tech.u3.l5", "Mix by Ear", "Four controls", "ear.fill", .mixing, 35, [
-            K.mix("Match this club mix", "Kick, hats, bass and pump.", [.drum(.kick), .drum(.hat), .bass, .sidechain],
-                  start: [0.4, 0.9, 0.3, 0.0], target: [0.8, 0.5, 0.7, 0.55], loop: full),
-        ]),
-        K.mastery("tech.u3.mastery", "Mixing Mastery", "Match a club mix", .mixing, 80, [
-            K.mix("Match this club mix", "Five controls. Switch back and forth as much as you like.",
-                  [.drum(.kick), .drum(.clap), .drum(.perc), .bass, .sidechain], start: [0.3, 0.9, 0.9, 0.3, 0.0],
-                  target: [0.8, 0.6, 0.45, 0.7, 0.6], loop: full),
-        ]),
-    ])
-
     // MARK: Unit 4 — Club Arrangement
 
     static let unit4 = K.unit("tech.u4", 4, "Club Arrangement", "Builds, drops & cuts", [
-        K.lesson("tech.u4.l1", "Tool Track Sections", "DJ-friendly structure", "rectangle.split.3x1.fill", .arrangement, 35, [
+        K.lesson("tech.u4.l1", "Tool Track Sections", "One idea, clear sections", "rectangle.split.3x1.fill", .arrangement, 35, [
             K.arrange("Kick and hats only in the intro", "Columns are sections, rows are parts. In the Intro, switch off the clap, rims and bass.", .rule,
                       lanes: lanes, loop: full,
                       start: K.grid("xxx-", "xxx-", "xxxx", "xxx-", "xxx-"),

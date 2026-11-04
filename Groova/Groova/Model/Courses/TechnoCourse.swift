@@ -2,7 +2,7 @@
 //  TechnoCourse.swift
 //  Groova
 //
-//  Techno: machine rhythm, rumble & acid, hypnotic loops, warehouse mixing and long builds.
+//  Techno: machine rhythm, rumble & acid, hypnotic loops, riffs & arps and long builds.
 //
 
 import Foundation
@@ -20,7 +20,7 @@ nonisolated enum TechnoCourse {
     static let lanes: [Instrument] = [.drum(.kick), .drum(.hat), .drum(.openHat), .drum(.perc), .bass]
     static let sections = ["Intro", "Groove", "Break", "Slam"]
 
-    static let units: [Unit] = [unit1, unit2, unit3, unit4, unit5]
+    static let units: [Unit] = [unit1, unit2, unit3, riffUnit, unit5]
 
     // MARK: Unit 1 — Machine Rhythm
 
@@ -169,47 +169,6 @@ nonisolated enum TechnoCourse {
         ]),
     ])
 
-    // MARK: Unit 4 — Warehouse Mix
-
-    static let mixLoop = Pattern(kick: [0, 4, 8, 12], hat: Array(0..<16), openHat: [2, 6, 10, 14], perc: [3, 11],
-                                 bass: rolling)
-
-    static let unit4 = K.unit("techno.u4", 4, "Warehouse Mix", "Kick, rumble & pump", [
-        K.lesson("techno.u4.l1", "Kick Is King", "The loudest thing", "crown", .mixing, 30, [
-            K.mix("Move every fader", "In techno the kick leads. Hear what happens when it doesn't.",
-                  [.drum(.kick), .drum(.hat), .bass], start: [K.u, K.u, K.u], loop: mixLoop),
-            K.mix("Match: kick in charge", "Kick loud, everything else tucked under it.",
-                  [.drum(.kick), .drum(.hat), .bass], start: [0.4, 0.9, 0.9], target: [0.85, 0.5, 0.55], loop: mixLoop),
-        ]),
-        K.lesson("techno.u4.l2", "Rumble Pump", "Bass ducks the kick", "waveform.path.ecg", .mixing, 30, [
-            K.mix("Match the pump", "The rolling bass ducks hard under every kick.",
-                  [.sidechain], start: [0], target: [0.8], loop: mixLoop),
-            K.mix("Match bass and pump", "Bass a little louder, pump a little gentler.",
-                  [.bass, .sidechain], start: [0.3, 0.1], target: [0.8, 0.55], loop: mixLoop),
-        ]),
-        K.lesson("techno.u4.l3", "Bright Hats", "Top-end balance", "sun.max.fill", .mixing, 30, [
-            K.mix("Match the hats", "Closed and open hats at different levels.",
-                  [.drum(.hat), .drum(.openHat)], start: [0.9, 0.2], target: [0.45, 0.75], loop: mixLoop),
-            K.mix("Match the percussion", "Hats and rims sitting just right.",
-                  [.drum(.hat), .drum(.openHat), .drum(.perc)], start: [0.2, 0.9, 0.2],
-                  target: [0.55, 0.5, 0.75], loop: mixLoop),
-        ]),
-        K.lesson("techno.u4.l4", "Space & Depth", "Near and far", "sparkles", .mixing, 30, [
-            K.space("Find the warehouse", "Pick a space that sounds like a big dark room.", mixLoop),
-            K.filterMatch("Match the far-away sound", "Darker means further away.", cutoff: 1100, resonance: 0.3, mixLoop),
-        ]),
-        K.lesson("techno.u4.l5", "Mix by Ear", "Four controls", "ear.fill", .mixing, 35, [
-            K.mix("Match this mix", "Kick, hats, bass and pump.",
-                  [.drum(.kick), .drum(.hat), .bass, .sidechain], start: [0.4, 0.9, 0.3, 0],
-                  target: [0.85, 0.45, 0.65, 0.6], loop: mixLoop),
-        ]),
-        K.mastery("techno.u4.mastery", "Mixing Mastery", "Match a warehouse mix", .mixing, 90, [
-            K.mix("Match this warehouse mix", "Five controls. Take your time.",
-                  [.drum(.kick), .drum(.hat), .drum(.openHat), .bass, .sidechain], start: [0.4, 0.9, 0.2, 0.9, 0],
-                  target: [0.85, 0.45, 0.6, 0.6, 0.7], loop: mixLoop),
-        ]),
-    ])
-
     // MARK: Unit 5 — Long Builds
 
     static let unit5 = K.unit("techno.u5", 5, "Long Builds", "Tension, release & the slam", [
@@ -221,7 +180,7 @@ nonisolated enum TechnoCourse {
             K.arrange("Arrange your own", "Every section needs something, and each one should differ from the last.",
                       .create(.variedSections), sections: sections, lanes: lanes, loop: full),
         ]),
-        K.lesson("techno.u5.l2", "The Long Intro", "DJ-friendly starts", "arrow.up.right", .arrangement, 35, [
+        K.lesson("techno.u5.l2", "The Long Intro", "Patient starts", "arrow.up.right", .arrangement, 35, [
             K.arrange("Kick-only intro", "In the Intro, keep only the kick.", .rule, sections: sections, lanes: lanes,
                       loop: full,
                       start: K.grid("xx-x", "xx-x", "xx-x", "xx-x", "xx-x"),
