@@ -20,7 +20,12 @@ struct IntroStepView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 28) {
-                    StepPrompt(title: step.title, detail: step.body, badge: step.badge ?? "New sound")
+                    if step.pads.isEmpty {
+                        WooferTalks(title: step.title, line: step.body, badge: step.badge ?? (step.demo == nil ? "Woofer says" : "New idea"),
+                                    compact: step.demo != nil)
+                    } else {
+                        StepPrompt(title: step.title, detail: step.body, badge: step.badge ?? "New sound")
+                    }
                     if !step.pads.isEmpty {
                         HStack(spacing: 16) {
                             ForEach(step.pads) { track in
@@ -56,6 +61,68 @@ struct IntroStepView: View {
     }
 
     private var allTapped: Bool { step.pads.allSatisfy { tapped.contains($0) } }
+}
+
+/// A teaching card with no pads to play: Woofer front and centre, his words in a bubble above him.
+struct WooferTalks: View {
+    let title: String
+    let line: String
+    let badge: String
+    /// Smaller Woofer when a demo card sits underneath.
+    var compact = false
+    @Environment(\.accent) private var accent
+    @State private var shown = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text(badge.uppercased())
+                .font(.label(14, weight: .black)).tracking(0.6)
+                .foregroundStyle(accent)
+            Text(title)
+                .font(.display(28))
+                .foregroundStyle(Theme.text)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 6)
+            Text(line)
+                .font(.label(17, weight: .semibold))
+                .foregroundStyle(Theme.text)
+                .lineSpacing(3)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 20)
+                .padding(.top, 18)
+                .padding(.bottom, 18 + DownBubble.tail)
+                .frame(maxWidth: .infinity)
+                .background(DownBubble().fill(Theme.brandSoft))
+                .padding(.top, 22)
+                .scaleEffect(shown ? 1 : 0.92, anchor: .bottom)
+                .opacity(shown ? 1 : 0)
+            WooferView(mood: .happy, size: compact ? 120 : 180, bouncing: true)
+                .padding(.top, 6)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, compact ? 4 : 16)
+        .accessibilityElement(children: .combine)
+        .onAppear { withAnimation(.spring(response: 0.4, dampingFraction: 0.75).delay(0.1)) { shown = true } }
+    }
+}
+
+/// A rounded bubble with its tail pointing down at Woofer.
+struct DownBubble: Shape {
+    static let tail: CGFloat = 14
+
+    func path(in r: CGRect) -> Path {
+        let body = CGRect(x: r.minX, y: r.minY, width: r.width, height: r.height - Self.tail)
+        var p = Path(roundedRect: body, cornerRadius: 22, style: .continuous)
+        var t = Path()
+        t.move(to: CGPoint(x: r.midX - 14, y: body.maxY - 1))
+        t.addQuadCurve(to: CGPoint(x: r.midX, y: r.maxY), control: CGPoint(x: r.midX - 4, y: body.maxY + 4))
+        t.addQuadCurve(to: CGPoint(x: r.midX + 14, y: body.maxY - 1), control: CGPoint(x: r.midX + 4, y: body.maxY + 4))
+        t.closeSubpath()
+        p.addPath(t)
+        return p
+    }
 }
 
 /// A big square performance pad that flashes and ripples when hit.
