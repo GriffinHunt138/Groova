@@ -26,7 +26,7 @@ extension HouseCourse {
         K.lesson("house.mel.l1", "Five Safe Notes", "The minor pentatonic", "pianokeys", .theory, 30, [
             K.intro("Meet the scale",
                     "A scale is a set of notes that sound good together. The A minor pentatonic has just five, and none of them clash, so it's the safest place to start a melody. Hear it climb over a house beat.",
-                    [], demo: K.withLead(melodyBed, K.line([(0, 57), (2, 60), (4, 62), (6, 64), (8, 67), (10, 69, 4)]))),
+                    [], demo: K.withLead(melodyBed, [NoteEvent(0, 57), NoteEvent(2, 60), NoteEvent(4, 62), NoteEvent(6, 64), NoteEvent(8, 67), NoteEvent(10, 69, 4)])),
             K.play("Play the A minor pentatonic",
                    "A scale is a set of notes that belong together. This one has five: A, C, D, E and G. It's the most-used scale in dance music because none of its notes clash. Play them from low to high.",
                    [57, 60, 62, 64, 67, 69], low: 57, high: 69),
