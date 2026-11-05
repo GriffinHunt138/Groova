@@ -25,6 +25,8 @@ nonisolated enum TechHouseLevels {
         L.bassMake(prompt, hint, backing: backing, notes: notes, rows: rows)
     }
 
+    static let bassLoop = Pattern(kick: [0, 4, 8, 12], hat: [2, 6, 10, 14], bass: T.rolling)
+
     static let all: [String: LevelPair] = [
         "tech.u1.l1": u1l1, "tech.u1.l2": u1l2, "tech.u1.l3": u1l3, "tech.u1.l4": u1l4, "tech.u1.l5": u1l5,
         "tech.u2.l1": u2l1, "tech.u2.l2": u2l2, "tech.u2.l3": u2l3, "tech.u2.l4": u2l4, "tech.u2.l5": u2l5,
@@ -37,17 +39,27 @@ nonisolated enum TechHouseLevels {
         silver: [
             L.silver("punch and placement",
                      "Tech house kicks are tight and punchy. Shape the punch, then try claps in new places: a clap on the offbeat or a double clap changes the whole swagger."),
+            K.quiz("Where's the clap?", "", [
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12, 15], hat: [2, 6, 10, 14])], ["Just 2 and 4", "A double clap at the end"], 1, bars: 2),
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14])], ["Just 2 and 4", "A double clap at the end"], 0, bars: 2),
+            ]),
             K.lab("Match the tight, punchy kick", "Short, slightly higher, some drive.", [.kickPitch, .kickDecay, .kickDrive],
                   start: [0.1, 0.8, 0.0], target: [0.35, 0.15, 0.5], loop: T.basic),
             L.copy("Copy the double clap", "A second clap sneaks in at the end of the bar.", tracks: [.kick, .clap],
                    edit: [.kick, .clap], target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12, 15])),
-            L.copy("Copy this one", "The clap moves late in the second half.", tracks: [.kick, .clap, .hat],
-                   edit: [.clap], start: Pattern(kick: [0, 4, 8, 12], hat: [2, 6, 10, 14]),
-                   target: Pattern(kick: [0, 4, 8, 12], clap: [4, 13], hat: [2, 6, 10, 14])),
+            K.fix("Fix the late clap", "The second clap should land a step late, just after beat 4, for swagger. Right now it's still on the beat.",
+                  tracks: [.kick, .clap, .hat], edit: [.clap],
+                  broken: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14]),
+                  target: Pattern(kick: [0, 4, 8, 12], clap: [4, 13], hat: [2, 6, 10, 14]), guide: false),
         ],
         gold: [
             L.gold("the backbone under pressure",
                    "In a full tech house groove the kick and clap fight the percussion for space. Set the kick, then rebuild the whole backbone."),
+            K.quiz("House kick or tech house kick?", "", [
+                K.sound(T.full, [.kickPitch: 0.3, .kickDecay: 0.6, .kickDrive: 0], ["Soft house kick", "Tight tech house kick"], 0),
+                K.sound(T.full, [.kickPitch: 0.25, .kickDecay: 0.25, .kickDrive: 0.6], ["Soft house kick", "Tight tech house kick"], 1,
+                        "Short, driven, punching through the bass."),
+            ]),
             K.lab("Match the kick in the full groove", "Short, fairly low, lots of drive.", [.kickPitch, .kickDecay, .kickDrive], start: [0.8, 0.8, 0.0],
                   target: [0.3, 0.25, 0.65], loop: T.full),
             L.copy("Rebuild this groove", "An extra clap after beat 4. Rims lead into each clap.", tracks: [.kick, .clap, .hat, .perc], edit: [.kick, .clap, .hat, .perc],
@@ -61,6 +73,14 @@ nonisolated enum TechHouseLevels {
         silver: [
             L.silver("shuffle in pockets",
                      "Swing only moves the in-between 16ths. Leave a few out and the shuffle falls into pockets instead of a steady roll."),
+            K.quiz("How much shuffle?", "", [
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: Array(0..<16))], ["Straight", "Tech house shuffle", "Garage swing"], 0,
+                       bars: 2, swing: 0),
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: Array(0..<16))], ["Straight", "Tech house shuffle", "Garage swing"], 1,
+                       bars: 2, swing: 0.18),
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: Array(0..<16))], ["Straight", "Tech house shuffle", "Garage swing"], 2,
+                       bars: 2, swing: 0.38),
+            ]),
             L.copy("Copy these hats", "In-between 16ths, with two gaps.", tracks: [.kick, .clap, .hat], edit: [.hat],
                    start: beat, target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [1, 3, 7, 9, 11, 15])),
             K.swingMake("Shuffle it more", "Past 18%.", tracks: [.kick, .clap, .hat],
@@ -69,6 +89,10 @@ nonisolated enum TechHouseLevels {
         gold: [
             L.gold("closed and open shuffle",
                    "Pro tech house layers a steady shuffle with open hats on the offbeat. Rebuild both, then swing them together."),
+            K.quiz("Quick check", "", [
+                K.ask("Swing only moves some notes. Which ones?", ["The 16ths between the 8ths", "The kicks", "Every note equally"], 0,
+                      "That's why the hats shuffle while the kick and clap stay rock solid."),
+            ]),
             L.copy("Rebuild the hats", "Shuffle hats with one gap, open hats on the offbeats.", tracks: [.kick, .clap, .hat, .openHat], edit: [.hat, .openHat], start: beat,
                    target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [1, 3, 5, 9, 11, 13, 15], openHat: [2, 6, 10, 14]),
                    threshold: 0.9),
@@ -83,10 +107,16 @@ nonisolated enum TechHouseLevels {
         silver: [
             L.silver("percussion that answers",
                      "Good percussion answers the clap. Rims after the clap feel like a reply, rims before it feel like a question."),
+            K.quiz("Question or answer?", "Listen to the rims around the clap.", [
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14], perc: [5, 13])], ["Answer (after)", "Question (before)"], 0, bars: 2),
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14], perc: [3, 11])], ["Answer (after)", "Question (before)"], 1, bars: 2),
+            ]),
             L.copy("Copy the reply rims", "Rims just after each clap.", tracks: [.kick, .clap, .hat, .perc], edit: [.perc],
                    start: T.basic, target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14], perc: [5, 7, 13])),
-            L.copy("Copy the question rims", "Rims leading into each clap.", tracks: [.kick, .clap, .hat, .perc], edit: [.perc],
-                   start: T.basic, target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14], perc: [1, 3, 11])),
+            K.fix("Fix the question rims", "Rims should lead into each clap: on steps 2, 4 and 12. One has drifted after the clap.",
+                  tracks: [.kick, .clap, .hat, .perc], edit: [.perc],
+                  broken: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14], perc: [1, 3, 13]),
+                  target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14], perc: [1, 3, 11]), guide: false),
             L.make("Write your own", "At least 5 rims.", tracks: [.kick, .clap, .hat, .perc], edit: [.perc], start: T.basic,
                    goal: .atLeast(.perc, 5)),
         ],
@@ -107,10 +137,17 @@ nonisolated enum TechHouseLevels {
         silver: [
             L.silver("offbeat variations",
                      "Rims on every offbeat are a base. Drop one or push one late and you get a groove with a hook."),
+            K.quiz("Spot the push", "Rims on the offbeats. Does one move late?", [
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], perc: [2, 6, 10, 14])], ["All on the offbeat", "One moves late"], 0, bars: 2),
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], perc: [2, 6, 10, 15])], ["All on the offbeat", "One moves late"], 1,
+                       "The last one leans into the next bar.", bars: 2),
+            ]),
             L.copy("Copy this variation", "One offbeat rim is missing and one moves early.", tracks: [.kick, .clap, .perc],
                    edit: [.perc], start: beat, target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], perc: [2, 5, 14])),
-            L.copy("Copy the doubled rims", "Every offbeat rim gets a partner.", tracks: [.kick, .clap, .perc], edit: [.perc],
-                   start: beat, target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], perc: [2, 3, 6, 10, 11, 14])),
+            K.fix("Double the rims", "The first and third offbeat rims each get a partner on the very next step. One partner is missing.",
+                  tracks: [.kick, .clap, .perc], edit: [.perc],
+                  broken: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], perc: [2, 3, 6, 10, 14]),
+                  target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], perc: [2, 3, 6, 10, 11, 14]), guide: false),
         ],
         gold: [
             L.gold("offbeats across the kit",
@@ -133,12 +170,19 @@ nonisolated enum TechHouseLevels {
             L.copy("Copy this rolling groove", "Shuffle hats with two gaps. Rims right after each clap.", tracks: kit, edit: [.hat, .openHat, .perc], start: beat,
                    target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [1, 3, 7, 9, 11, 15], openHat: [2, 6, 10, 14],
                                    perc: [5, 13])),
-            L.copy("Copy this one", "The rims move to the end of the bar.", tracks: kit, edit: [.hat, .openHat, .perc],
-                   start: beat, target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: shuffle, openHat: [2, 10],
-                                                perc: [11, 13, 14])),
+            K.fix("Move the rims", "The rims should cluster at the end of the bar: steps 12, 14 and 15. Right now they're stuck after the claps.",
+                  tracks: kit, edit: [.hat, .openHat, .perc],
+                  broken: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: shuffle, openHat: [2, 10], perc: [5, 13, 14]),
+                  target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: shuffle, openHat: [2, 10], perc: [11, 13, 14]), guide: false),
         ],
         gold: [
             L.gold("the whole groove from silence", "Every drum, rebuilt by ear."),
+            K.quiz("Count the layers", "", [
+                K.hear([T.drums], ["Three", "Five"], 1, "Kick, clap, closed hats, open hats and rims.", bars: 2,
+                       question: "How many drum parts are playing?"),
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: shuffle)], ["Three", "Five"], 0, bars: 2,
+                       question: "How many drum parts are playing?"),
+            ]),
             L.copy("Rebuild this groove", "A ghost clap at the end. Rims in the first half only.", tracks: kit, edit: Set(kit),
                    target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12, 15], hat: [1, 3, 5, 9, 11, 13], openHat: [2, 6, 10, 14],
                                    perc: [3, 7]), threshold: 0.9),
@@ -156,13 +200,19 @@ nonisolated enum TechHouseLevels {
             L.silver("offbeats on new notes",
                      "The offbeat bass doesn't have to stay on C. Move one note and the groove starts to move too."),
             bass("Copy this offbeat line", "C, C, E♭, C.", [NoteEvent(2, 36), NoteEvent(6, 36), NoteEvent(10, 39), NoteEvent(14, 36)]),
-            bass("Copy this one", "It dips to low B♭ at the end.",
-                 [NoteEvent(2, 36), NoteEvent(6, 43), NoteEvent(10, 36), NoteEvent(14, 34)]),
+            K.fixNotes("Fix the dip", "C, then up to G, C again, then a dip to low B♭ at the end. The last note didn't dip.", rows: rows,
+                       broken: [NoteEvent(2, 36), NoteEvent(6, 43), NoteEvent(10, 36), NoteEvent(14, 36)],
+                       target: [NoteEvent(2, 36), NoteEvent(6, 43), NoteEvent(10, 36), NoteEvent(14, 34)], backing: T.basic),
             bassMake("Write your own", "At least 4 notes on the offbeats.", backing: T.basic, notes: 4),
         ],
         gold: [
             L.gold("offbeats with pickups",
                    "Add a short note just before an offbeat and the bass gets a kick of its own."),
+            K.quiz("Pickup or not?", "", [
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], bass: K.notes(36, [2, 5, 6, 10, 14]))], ["A pickup leads in", "Just offbeats"], 0,
+                       "A quick note right before step 7.", bars: 2),
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], bass: K.notes(36, [2, 6, 10, 14]))], ["A pickup leads in", "Just offbeats"], 1, bars: 2),
+            ]),
             bass("Copy this line", "Pickups lead into the C on step 7. Then it climbs.", [NoteEvent(2, 36), NoteEvent(5, 36), NoteEvent(6, 36), NoteEvent(10, 39),
                                         NoteEvent(13, 41), NoteEvent(14, 43)], threshold: 0.9),
             bass("Copy this one", "Low B♭ leads into C. An octave jump in the middle.", [NoteEvent(1, 34), NoteEvent(2, 36), NoteEvent(6, 46), NoteEvent(9, 36),
@@ -174,11 +224,17 @@ nonisolated enum TechHouseLevels {
         silver: [
             L.silver("pairs in new places",
                      "Rolling bass is built from pairs. Move where the pairs land and the roll changes direction."),
+            K.quiz("Single or pairs?", "", [
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], bass: K.notes(36, [2, 3, 10, 11]))], ["Pairs", "Single notes"], 0, bars: 2),
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], bass: K.notes(36, [2, 6, 10, 14]))], ["Pairs", "Single notes"], 1, bars: 2),
+            ]),
             bass("Copy these pairs", "Pairs before each clap.", K.notes(36, [2, 3, 10, 11]) + K.notes(39, [6, 7]),
                  backing: bassBed),
-            bass("Copy this roll", "Pairs climbing up through E♭ and F.",
-                 [NoteEvent(2, 36), NoteEvent(3, 36), NoteEvent(6, 39), NoteEvent(7, 39), NoteEvent(10, 41),
-                  NoteEvent(11, 41), NoteEvent(14, 36)], backing: bassBed),
+            K.fixNotes("Fix the climb", "Pairs climbing C, E♭, F, then back to C. The middle pair is on the wrong note.", rows: rows,
+                       broken: [NoteEvent(2, 36), NoteEvent(3, 36), NoteEvent(6, 41), NoteEvent(7, 41), NoteEvent(10, 41),
+                                NoteEvent(11, 41), NoteEvent(14, 36)],
+                       target: [NoteEvent(2, 36), NoteEvent(3, 36), NoteEvent(6, 39), NoteEvent(7, 39), NoteEvent(10, 41),
+                                NoteEvent(11, 41), NoteEvent(14, 36)], backing: bassBed),
         ],
         gold: [
             L.gold("full rolling lines",
@@ -196,6 +252,11 @@ nonisolated enum TechHouseLevels {
         silver: [
             L.silver("bite and resonance",
                      "Envelope gives the bass its bite. Resonance turns the bite into a squelch. Tech house lives right between them."),
+            K.quiz("Hear the bite", "", [
+                K.sound(bassLoop, [.bassEnv: 0.8, .bassResonance: 0.5], ["Squelchy bite", "Soft"], 0),
+                K.sound(bassLoop, [.bassEnv: 0.05, .bassResonance: 0], ["Squelchy bite", "Soft"], 1),
+                K.sound(bassLoop, [.bassCutoff: 0.2, .bassDecay: 0.15], ["Dark and short", "Bright and long"], 0),
+            ]),
             K.lab("Match the squelchy bass", "Bite plus resonance.", [.bassEnv, .bassResonance], start: [0.1, 0.0],
                   target: [0.6, 0.65], loop: Pattern(kick: [0, 4, 8, 12], hat: [2, 6, 10, 14], bass: T.rolling)),
             K.lab("Match the dark, short bass", "Both well down.", [.bassCutoff, .bassDecay], start: [0.9, 0.8], target: [0.2, 0.2],
@@ -203,22 +264,38 @@ nonisolated enum TechHouseLevels {
         ],
         gold: [
             L.gold("the full bass tone", "Four controls, with the whole groove playing."),
+            K.quiz("Does it fit the groove?", "The full groove plays.", [
+                K.sound(T.full, [.bassDecay: 0.9, .bassCutoff: 0.3], ["Notes too long: it hides the kick", "Tight and bouncy"], 0),
+                K.sound(T.full, [.bassDecay: 0.2, .bassCutoff: 0.45, .bassEnv: 0.6], ["Notes too long: it hides the kick", "Tight and bouncy"], 1),
+            ]),
             K.lab("Match this bass", "Short and biting, with some resonance.", [.bassCutoff, .bassEnv, .bassResonance, .bassDecay], start: [0.9, 0.0, 0.0, 0.9],
                   target: [0.35, 0.7, 0.4, 0.2], loop: T.full),
             K.lab("Match this one", "Brighter, less bite, longer notes.", [.bassCutoff, .bassEnv, .bassResonance, .bassDecay], start: [0.1, 0.9, 0.9, 0.1],
                   target: [0.55, 0.3, 0.15, 0.45], loop: T.full),
+            K.lab("Make it yours", "Design your own rolling bass tone with the groove playing.",
+                  [.bassCutoff, .bassEnv, .bassResonance, .bassDecay], start: [0.5, 0.5, 0.5, 0.5], loop: T.full),
         ])
 
     static let u2l4: LevelPair = (
         silver: [
             L.silver("one line, two endings",
                      "Keep the first half of the bassline and change the second half. It's the easiest way to make a loop feel longer."),
+            K.quiz("Which ending?", "Same start each time.", [
+                K.hear([Pattern(kick: [0, 4, 8, 12], hat: [2, 6, 10, 14], bass: [NoteEvent(2, 36), NoteEvent(3, 36), NoteEvent(7, 43),
+                                                                                  NoteEvent(10, 43), NoteEvent(12, 43), NoteEvent(14, 46)])],
+                       ["Bounces on G", "Drops low"], 0, bars: 2),
+                K.hear([Pattern(kick: [0, 4, 8, 12], hat: [2, 6, 10, 14], bass: [NoteEvent(2, 36), NoteEvent(3, 36), NoteEvent(7, 43),
+                                                                                  NoteEvent(10, 34), NoteEvent(14, 34)])],
+                       ["Bounces on G", "Drops low"], 1, bars: 2),
+            ]),
             bass("Copy this ending", "The second half drops down.",
                  [NoteEvent(2, 36), NoteEvent(3, 36), NoteEvent(7, 43), NoteEvent(10, 39), NoteEvent(11, 36),
                   NoteEvent(14, 34), NoteEvent(15, 34)]),
-            bass("Copy this one", "The second half bounces on G.",
-                 [NoteEvent(2, 36), NoteEvent(3, 36), NoteEvent(7, 43), NoteEvent(10, 43), NoteEvent(12, 43),
-                  NoteEvent(14, 46)]),
+            K.fixNotes("Fix the bounce", "The second half should bounce on G, then jump to the top B♭. Two notes in the second half are on C instead.", rows: rows,
+                       broken: [NoteEvent(2, 36), NoteEvent(3, 36), NoteEvent(7, 43), NoteEvent(10, 36), NoteEvent(12, 36),
+                                NoteEvent(14, 46)],
+                       target: [NoteEvent(2, 36), NoteEvent(3, 36), NoteEvent(7, 43), NoteEvent(10, 43), NoteEvent(12, 43),
+                                NoteEvent(14, 46)], backing: T.basic),
         ],
         gold: [
             L.gold("variations in the groove", "Copy two variations with the full groove, then write a third."),
@@ -235,10 +312,17 @@ nonisolated enum TechHouseLevels {
         silver: [
             L.silver("basslines that fit the drums",
                      "A rolling bassline should leave room for the kick. Write lines that sit between the kicks, then check them by ear."),
-            bassMake("Write your own", "At least 5 notes, none on the kicks.", backing: T.basic, notes: 5),
+            K.quiz("On the kick or not?", "", [
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], bass: K.notes(36, [0, 4, 8, 12]))], ["Clashes with the kick", "Leaves room"], 0,
+                       "Bass and kick on the same step turn to mud.", bars: 2),
+                K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12],
+                                bass: [NoteEvent(1, 36), NoteEvent(3, 36), NoteEvent(6, 39), NoteEvent(9, 36), NoteEvent(11, 43), NoteEvent(14, 36)])],
+                       ["Clashes with the kick", "Leaves room"], 1, bars: 2),
+            ]),
             bass("Copy this one", "Every note avoids the kick.",
                  [NoteEvent(1, 36), NoteEvent(3, 36), NoteEvent(6, 39), NoteEvent(9, 36), NoteEvent(11, 43), NoteEvent(14, 36)],
                  backing: T.drums),
+            bassMake("Write your own", "At least 5 notes, none on the kicks.", backing: T.basic, notes: 5),
         ],
         gold: [
             L.gold("bass and percussion together",
@@ -266,12 +350,21 @@ nonisolated enum TechHouseLevels {
         silver: [
             L.silver("tool track structure",
                      "Tool tracks are built around one big idea: long drum intros, a single hook, and simple edges."),
+            K.quiz("Quick check", "", [
+                K.ask("Why are tool tracks arranged so simply?", ["So DJs always know where they are in the track", "To save time",
+                                                                  "Because there are no chords"], 0),
+                K.hear([T.full.keeping([.kick, .hat], bass: false, chords: false)], ["Intro", "Drop"], 0, bars: 2),
+            ]),
             arr("Copy this track", "Kick and hats play throughout. Rims join at the Drop.", .recreate, target: K.grid("xxxx", "-xx-", "xxxx", "--xx", "--x-")),
             arr("Rims only after the Intro", "Switch off the rims in the Intro.", .rule, start: allOn,
                 target: K.grid("xxxx", "xxxx", "xxxx", "-xxx", "xxxx")),
         ],
         gold: [
             L.gold("five-section tool tracks", "Add a second drop and keep the edges simple."),
+            K.quiz("Drop or Drop 2?", "", [
+                K.ask("A track has two drops. What usually makes Drop 2 different?", ["It adds a part or a change the first didn't have",
+                                                                                     "It's exactly the same", "It has no kick"], 0),
+            ]),
             arr("Recreate this track", "Both drops have everything. The hats never stop.", .recreate, sections: club,
                 target: K.grid("xxx-x", "--x-x", "xxxxx", "-xx-x", "--x-x")),
             arr("Make it yours", "Keep the Intro simple, so the drop lands.", .create(.variedSections), sections: club),
@@ -281,12 +374,22 @@ nonisolated enum TechHouseLevels {
         silver: [
             L.silver("builds by subtraction",
                      "You can also build by taking the kick away and letting the percussion carry the tension."),
+            K.quiz("Add or take away?", "Two bars of a build.", [
+                K.hear([T.full, T.full.keeping([.clap, .hat, .perc], bass: false, chords: false)], ["Parts were taken away", "Parts were added"], 0,
+                       "The kick and bass left: that's a build by subtraction.", question: "What happened in bar 2?"),
+                K.hear([T.full.keeping([.kick, .hat], bass: false, chords: false), T.full.keeping([.kick, .clap, .hat], bass: false, chords: false)],
+                       ["Parts were taken away", "Parts were added"], 1, question: "What happened in bar 2?"),
+            ]),
             arr("Copy this build", "No kick in the Build. The bass waits for the Drop.", .recreate, target: K.grid("x-x-", "-xx-", "xxxx", "xxx-", "--x-")),
             arr("No kick in the Build", "Switch off the kick in the Build.", .rule, start: allOn,
                 target: K.grid("x-xx", "xxxx", "xxxx", "xxxx", "xxxx")),
         ],
         gold: [
             L.gold("long builds", "Five sections, adding and removing one part at a time."),
+            K.quiz("Quick check", "", [
+                K.ask("Which builds more tension before a drop?", ["Taking the kick away", "Adding a second kick"], 0,
+                      "Missing the kick makes the floor want it back."),
+            ]),
             arr("Recreate this track", "The kick sits out the Build and the Break.", .recreate, sections: club,
                 target: K.grid("x-x-x", "-xx-x", "xxxxx", "-xxxx", "--x-x")),
             arr("Recreate this one", "The kick skips the Build but stays for the Break.", .recreate, sections: club,
@@ -297,12 +400,22 @@ nonisolated enum TechHouseLevels {
         silver: [
             L.silver("the drop hits harder",
                      "The drop hits harder if the section before it strips back. Take the bass and the kick out of the Build."),
+            K.quiz("Feel the drop", "", [
+                K.hear([T.full.keeping([.clap, .hat, .perc], bass: false, chords: false), T.full], ["Huge", "Small"], 0,
+                       "Kick and bass land together.", question: "How big is the drop in bar 2?"),
+                K.hear([T.full.keeping([.kick, .clap, .hat, .perc], bass: true, chords: false), T.full], ["Huge", "Small"], 1,
+                       "Nothing really changed.", question: "How big is the drop in bar 2?"),
+            ]),
             arr("Bass and kick out of the Build", "Switch both off in the Build column only.", .rule, start: allOn,
                 target: K.grid("x-xx", "xxxx", "xxxx", "xxxx", "x-xx")),
             arr("Copy this track", "No kick in the Build. Bass only in the Drop.", .recreate, target: K.grid("x-xx", "-xx-", "xxxx", "xxxx", "--x-")),
         ],
         gold: [
             L.gold("two drops", "The second drop should hit even harder than the first."),
+            K.quiz("Quick check", "", [
+                K.ask("The Break is rims alone. Why does that help Drop 2?", ["The bigger the gap, the harder the return", "Rims are louder",
+                                                                              "It doesn't"], 0),
+            ]),
             arr("Recreate this track", "The Break is rims alone.", .recreate, sections: club,
                 target: K.grid("x-x-x", "-xx-x", "xxx-x", "-xxxx", "--x-x")),
             arr("Recreate this one", "The hats skip the Build. The clap stays for the Break.", .recreate, sections: club,
@@ -313,12 +426,18 @@ nonisolated enum TechHouseLevels {
         silver: [
             L.silver("different cuts",
                      "A cut is a tiny gap before the next section. Drop the kick, the hats or everything for the last beat."),
+            K.quiz("Cut or roll?", "Bar 2 ends with a fill.", [
+                K.hear([T.basic, Pattern(kick: [0, 4, 8], clap: [4], hat: [1, 3, 5, 7, 9, 11])], ["Cut", "Rim roll"], 0, question: "What kind of fill?"),
+                K.hear([T.basic, Pattern(kick: [0, 4, 8], clap: [4], hat: [1, 3, 5, 7, 9, 11], perc: [3, 12, 13, 14, 15])], ["Cut", "Rim roll"], 1,
+                       question: "What kind of fill?"),
+            ]),
             L.copy("Copy this cut", "The kick and hats stop for the last beat.", tracks: [.kick, .clap, .hat, .perc],
                    edit: [.kick, .hat], start: Pattern(clap: [4, 12], perc: [3, 9, 13]),
                    target: Pattern(kick: [0, 4, 8], clap: [4, 12], hat: [1, 3, 5, 7, 9, 11], perc: [3, 9, 13])),
-            L.copy("Copy this one", "A rim roll fills the last beat.", tracks: [.kick, .clap, .hat, .perc],
-                   edit: [.perc], start: Pattern(kick: [0, 4, 8], clap: [4], hat: [1, 3, 5, 7, 9, 11]),
-                   target: Pattern(kick: [0, 4, 8], clap: [4], hat: [1, 3, 5, 7, 9, 11], perc: [3, 12, 13, 14, 15])),
+            K.fix("Fix the rim roll", "The rims should fill every step of the last beat: 13, 14, 15 and 16. Two are missing.",
+                  tracks: [.kick, .clap, .hat, .perc], edit: [.perc],
+                  broken: Pattern(kick: [0, 4, 8], clap: [4], hat: [1, 3, 5, 7, 9, 11], perc: [3, 12, 15]),
+                  target: Pattern(kick: [0, 4, 8], clap: [4], hat: [1, 3, 5, 7, 9, 11], perc: [3, 12, 13, 14, 15]), guide: false),
         ],
         gold: [
             L.gold("fills from scratch", "Rebuild the whole bar, cut and fill included."),
@@ -336,11 +455,19 @@ nonisolated enum TechHouseLevels {
         silver: [
             L.silver("club tracks by ear",
                      "Hear the whole thing once, then check part by part."),
+            K.quiz("Which section?", "", [
+                K.hear([T.full.keeping([.kick, .hat], bass: false, chords: false)], ["Intro", "Build", "Drop", "Break"], 0, bars: 2),
+                K.hear([T.full.keeping([.clap, .hat, .perc], bass: false, chords: false)], ["Intro", "Build", "Drop", "Break"], 1, "No kick, no bass, waiting.", bars: 2),
+                K.hear([T.full], ["Intro", "Build", "Drop", "Break"], 2, bars: 2),
+            ]),
             arr("Recreate this track", "The kick leaves for the Break. The bass only plays the Drop.", .recreate, target: K.grid("xxx-", "-xx-", "xxxx", "-x-x", "--x-")),
             arr("Recreate this one", "No kick in the Build, and the bass arrives early.", .recreate, target: K.grid("x-xx", "--x-", "xxxx", "xx-x", "-xx-")),
         ],
         gold: [
             L.gold("a full club track", "Five sections. Hear it, rebuild it, then make your own."),
+            K.quiz("Quick check", "", [
+                K.ask("Five sections: Intro, Build, Drop, Break, Drop 2. Where should the energy peak?", ["Drop 2", "The Intro", "The Break"], 0),
+            ]),
             arr("Recreate this track", "The kick skips the Build and the Break.", .recreate, sections: club,
                 target: K.grid("x-x-x", "--xxx", "xxxxx", "x-x-x", "--x-x")),
             arr("Make it yours", "Make Drop 2 hit harder than the first.", .create(.variedSections), sections: club),
