@@ -9,7 +9,10 @@ import SwiftUI
 struct ProfileView: View {
     let genre: Genre
     @Environment(AppState.self) private var app
+    @Environment(AuthStore.self) private var auth
     @State private var confirmReset = false
+    @State private var confirmSignOut = false
+    @State private var confirmDelete = false
 
     var body: some View {
         ZStack {
@@ -31,10 +34,26 @@ struct ProfileView: View {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
                         ForEach(Achievement.allCases) { a in badge(a) }
                     }
-                    Button("Reset all progress") { confirmReset = true }
-                        .font(.label(14, weight: .semibold))
-                        .foregroundStyle(Theme.textTertiary)
-                        .padding(.top, 10)
+                    SectionTitle(text: "Account")
+                    VStack(spacing: 0) {
+                        accountRow
+                        Rectangle().fill(Theme.divider).frame(height: 1)
+                        Button { confirmSignOut = true } label: {
+                            Text("Sign out")
+                                .font(.label(16, weight: .heavy))
+                                .foregroundStyle(Theme.brand)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                        }
+                    }
+                    .card(padding: 4)
+                    HStack(spacing: 18) {
+                        Button("Reset all progress") { confirmReset = true }
+                        Button("Delete account") { confirmDelete = true }
+                    }
+                    .font(.label(14, weight: .semibold))
+                    .foregroundStyle(Theme.textTertiary)
+                    .padding(.top, 10)
                 }
                 .padding(20)
             }
@@ -44,6 +63,21 @@ struct ProfileView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("XP, streaks, lessons and achievements will be erased from this device.")
+        }
+        .confirmationDialog("Sign out?", isPresented: $confirmSignOut, titleVisibility: .visible) {
+            Button("Sign out", role: .destructive) { auth.signOut() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Sign back in with the same account to pick up where you left off.")
+        }
+        .confirmationDialog("Delete your account?", isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button("Delete account", role: .destructive) {
+                app.resetAll()
+                Task { await auth.deleteAccount() }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Your account and all progress will be erased. Signing in again starts onboarding from scratch.")
         }
     }
 
@@ -55,13 +89,35 @@ struct ProfileView: View {
             }
             .frame(width: 76, height: 76)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Producer").font(.display(28)).foregroundStyle(Theme.text)
+                Text(auth.account?.displayName.isEmpty == false ? auth.account!.displayName : "Producer")
+                    .font(.display(28)).foregroundStyle(Theme.text)
+                    .lineLimit(1).minimumScaleFactor(0.7)
                 Text("Level \(app.level(genre)) in \(genre.name)")
                     .font(.label(15, weight: .semibold)).foregroundStyle(genre.color)
             }
             Spacer()
         }
         .padding(.top, 12)
+    }
+
+    private var accountRow: some View {
+        HStack(spacing: 12) {
+            Image(systemName: auth.account?.provider == .google ? "g.circle.fill" : "apple.logo")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(Theme.text)
+                .frame(width: 36, height: 36)
+                .background(Circle().fill(Theme.surfaceRaised))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Signed in with \(auth.account?.provider.name ?? "Apple")")
+                    .font(.label(15, weight: .bold)).foregroundStyle(Theme.text)
+                if let level = auth.account?.level {
+                    Text(level.rank).font(.label(13, weight: .semibold)).foregroundStyle(Theme.textSecondary)
+                }
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
     }
 
     private var stats: some View {

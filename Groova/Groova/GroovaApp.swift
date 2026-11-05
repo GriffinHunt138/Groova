@@ -12,6 +12,7 @@ struct GroovaApp: App {
     @State private var app = AppState()
     @State private var sketches = SketchStore()
     @State private var jams = JamStore()
+    @State private var auth = AuthStore()
 
     var body: some Scene {
         WindowGroup {
@@ -19,6 +20,7 @@ struct GroovaApp: App {
                 .environment(app)
                 .environment(sketches)
                 .environment(jams)
+                .environment(auth)
                 .onAppear { AudioEngine.shared.start() }
         }
     }

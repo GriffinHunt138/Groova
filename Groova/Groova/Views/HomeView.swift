@@ -105,6 +105,13 @@ struct HomeView: View {
         .fullScreenCover(item: $activeRun) { run in
             LessonPlayerView(lesson: run.lesson, genre: genre, tier: run.tier, practice: run.practice)
         }
+        .onChange(of: app.pendingLessonStart, initial: true) { _, start in
+            // The intro guide's last step: open the first lesson straight away.
+            guard start else { return }
+            app.pendingLessonStart = false
+            guard let lesson = app.currentLesson(genre) else { return }
+            activeRun = LessonRun(lesson: lesson, tier: .bronze, practice: nil)
+        }
     }
 
     private var showSkipCard: Bool {

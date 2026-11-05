@@ -50,6 +50,8 @@ nonisolated struct UserProgress: Codable, Sendable {
     var practiceSessions = 0
     /// Chose to skip Core Foundations and go straight to a genre academy.
     var skippedFoundations = false
+    /// Core Foundations units the onboarding placement check let you skip (0 to 8).
+    var placedUnits = 0
 
     init() {}
 
@@ -70,6 +72,7 @@ nonisolated struct UserProgress: Codable, Sendable {
         practiceDay = try c.decodeIfPresent(String.self, forKey: .practiceDay)
         practiceSessions = try c.decodeIfPresent(Int.self, forKey: .practiceSessions) ?? 0
         skippedFoundations = try c.decodeIfPresent(Bool.self, forKey: .skippedFoundations) ?? false
+        placedUnits = try c.decodeIfPresent(Int.self, forKey: .placedUnits) ?? 0
     }
 
     /// Core Foundations progress is shared, so lessons finished inside a genre before the
@@ -271,11 +274,27 @@ final class AppState {
         for (i, unit) in units.enumerated() {
             if let m = unit.mastery, isCompleted(m, in: g) { f = i }
         }
+        let core = units.filter { $0.part == .foundations }.count
         if progress.skippedFoundations {
-            f = max(f, units.filter { $0.part == .foundations }.count - 1)
+            f = max(f, core - 1)
         }
+        f = max(f, min(progress.placedUnits, core) - 1)
         return f
     }
+
+    /// Where onboarding placed you: the number of Core Foundations units you start past.
+    var placedUnits: Int { progress.placedUnits }
+
+    /// Applies the onboarding result: genre, starting point and daily goal.
+    func applyOnboarding(genre: Genre, placedUnits: Int, dailyGoal: Int) {
+        progress.placedUnits = max(0, min(placedUnits, CoreCourse.units.count))
+        progress.skippedFoundations = placedUnits >= CoreCourse.units.count
+        progress.dailyGoal = dailyGoal
+        select(genre)
+    }
+
+    /// Set by the intro guide's last step; the Learn tab opens your first lesson and clears it.
+    var pendingLessonStart = false
 
     func unlockedUnitCount(_ g: Genre) -> Int {
         min(Curriculum.units(for: g).count, frontier(g) + 2)
