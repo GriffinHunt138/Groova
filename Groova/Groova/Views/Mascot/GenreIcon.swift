@@ -2,9 +2,9 @@
 //  GenreIcon.swift
 //  Groova
 //
-//  One object per genre, the gear that genre is built on, drawn in Groova purple with a chunky
-//  darker lip underneath and a soft highlight: House a turntable, Deep House keys, Techno a
-//  drum machine, Tech House a bass speaker, UK Garage an MC's mic. Drawn in a 100 × 100 space.
+//  One object per genre, drawn in Groova purple with a chunky darker lip underneath and a soft
+//  highlight: House a disco ball, Deep House a crescent moon, Techno a robot head, Tech House
+//  a rotary knob, UK Garage a boombox. Drawn in a 100 × 100 space.
 //
 
 import Foundation
@@ -57,11 +57,11 @@ enum GenreArt {
         // Ground shadow
         c.fill(Path(ellipseIn: CGRect(x: 22, y: 88, width: 56, height: 8)), with: .color(.black.opacity(0.08)))
         switch g {
-        case .house: turntable(c)
-        case .deepHouse: keys(c)
-        case .techno: drumMachine(c)
-        case .techHouse: speaker(c)
-        case .ukGarage: microphone(c)
+        case .house: discoBall(c)
+        case .deepHouse: moon(c)
+        case .techno: robot(c)
+        case .techHouse: knob(c)
+        case .ukGarage: boombox(c)
         }
     }
 
@@ -93,124 +93,123 @@ enum GenreArt {
         c.fill(p, with: .color(color))
     }
 
-    // MARK: House: a turntable, where house music was born
+    // MARK: House: a disco ball
 
-    static func turntable(_ c: GraphicsContext) {
-        chunky(c, A.rr(8, 30, 84, 54, 12))
-        c.fill(A.rr(14, 35, 20, 4, 2), with: .color(shine))
-        // Record
-        c.fill(A.dot(42, 58, 21), with: .color(ink))
-        ring(c, 42, 58, 15, .white.opacity(0.16), 1.2)
-        ring(c, 42, 58, 10, .white.opacity(0.16), 1.2)
-        c.fill(A.dot(42, 58, 6.5), with: .color(light))
-        c.fill(A.dot(42, 58, 1.6), with: .color(ink))
-        // Tonearm
-        c.fill(A.dot(77, 40, 5.5), with: .color(light))
-        c.fill(A.dot(77, 40, 2), with: .color(lip))
-        line(c, [CGPoint(x: 77, y: 40), CGPoint(x: 74, y: 58), CGPoint(x: 62, y: 66)], light, 4)
-        let head = A.rr(57, 63, 8, 6, 2).applying(
-            CGAffineTransform(translationX: 61, y: 66).rotated(by: .pi / 6).translatedBy(x: -61, y: -66))
-        c.fill(head, with: .color(.white))
-        // Knobs
-        c.fill(A.dot(72, 75, 3), with: .color(light))
-        c.fill(A.dot(81, 75, 3), with: .color(light))
-    }
-
-    // MARK: Deep house: late-night keys for lush chords
-
-    static func keys(_ c: GraphicsContext) {
-        chunky(c, A.rr(6, 42, 88, 40, 10))
-        c.fill(A.rr(12, 46, 18, 4, 2), with: .color(shine))
-        c.fill(A.rr(12, 54, 76, 22, 4), with: .color(.white))
-        let key: CGFloat = 76 / 6
-        for i in 1..<6 {
-            c.fill(A.rr(12 + CGFloat(i) * key - 0.75, 54, 1.5, 22, 0.75), with: .color(light))
-        }
-        for i in [1, 2, 4, 5] {
-            c.fill(A.rr(12 + CGFloat(i) * key - 4, 54, 8, 13, 2), with: .color(ink))
-        }
-        // Moon
-        let disc = A.dot(72, 20, 13)
-        let moon = disc.subtracting(A.dot(80, 12, 12))
-        c.fill(moon.offsetBy(dx: 0, dy: 3), with: .color(lip))
-        c.fill(moon, with: .color(light))
-        sparkle(c, x: 30, y: 22, r: 7, color: body)
-        sparkle(c, x: 45, y: 12, r: 4, color: light)
-    }
-
-    // MARK: Techno: a drum machine
-
-    static func drumMachine(_ c: GraphicsContext) {
-        chunky(c, A.rr(8, 18, 84, 68, 12))
-        c.fill(A.rr(14, 23, 18, 4, 2), with: .color(shine))
-        // Screen with a waveform
-        c.fill(A.rr(16, 28, 34, 12, 3), with: .color(ink))
-        line(c, [CGPoint(x: 20, y: 34), CGPoint(x: 25, y: 31), CGPoint(x: 30, y: 37),
-                 CGPoint(x: 35, y: 31), CGPoint(x: 40, y: 35), CGPoint(x: 45, y: 33)], light, 1.8)
-        for x: CGFloat in [60, 71, 82] {
-            c.fill(A.dot(x, 34, 4.5), with: .color(ink))
-            c.fill(A.dot(x, 32.5, 1.3), with: .color(light))
-        }
-        // Pads, some lit
-        for (row, y) in [CGFloat(48), 65].enumerated() {
-            for i in 0..<4 {
-                let x = 16 + CGFloat(i) * 18
-                let lit = row == 0 ? (i == 0 || i == 2) : (i == 1 || i == 3)
-                c.fill(A.rr(x, y + 2.5, 14, 13, 3), with: .color(lit ? glow : lip))
-                c.fill(A.rr(x, y, 14, 13, 3), with: .color(lit ? pale : mid))
+    static func discoBall(_ c: GraphicsContext) {
+        line(c, [CGPoint(x: 50, y: 2), CGPoint(x: 50, y: 22)], ink, 3)
+        let ball = A.dot(50, 52, 31)
+        c.fill(ball.offsetBy(dx: 0, dy: 3), with: .color(lip))
+        c.fill(ball, with: .color(body))
+        var tiles = c
+        tiles.clip(to: ball)
+        let shades: [Color] = [light, mid, body, .white, mid, lip, body]
+        for (j, y) in stride(from: CGFloat(21), to: 84, by: 9).enumerated() {
+            for (i, x) in stride(from: CGFloat(19), to: 82, by: 9).enumerated() {
+                tiles.fill(A.rr(x + 0.8, y + 0.8, 7.4, 7.4, 1.5), with: .color(shades[(i * 3 + j * 5) % 7]))
             }
         }
+        c.stroke(ball, with: .color(lip), lineWidth: 2)
+        c.fill(A.rr(30, 30, 10, 5, 2.5), with: .color(shine))
+        sparkle(c, x: 82, y: 22, r: 8, color: light)
+        sparkle(c, x: 16, y: 78, r: 5, color: body)
+        sparkle(c, x: 88, y: 70, r: 4, color: light)
     }
 
-    // MARK: Tech house: a speaker pushing out bass
+    // MARK: Deep house: a sleepy crescent moon
 
-    static func speaker(_ c: GraphicsContext) {
-        chunky(c, A.rr(16, 10, 68, 76, 13))
-        c.fill(A.rr(22, 15, 18, 4, 2), with: .color(shine))
-        c.fill(A.dot(50, 29, 8), with: .color(ink))
-        c.fill(A.dot(50, 29, 3.5), with: .color(light))
-        c.fill(A.dot(50, 60, 22), with: .color(ink))
-        ring(c, 50, 60, 16, lip, 3)
-        c.fill(A.dot(50, 60, 10), with: .color(mid))
-        c.fill(A.dot(50, 60, 4), with: .color(light))
-        // Sound waves
-        let wave = StrokeStyle(lineWidth: 3.5, lineCap: .round)
-        for (x, d, y0, y1, color) in [(10.0, -7.0, 48.0, 72.0, body), (5.0, -9.0, 42.0, 78.0, light),
-                                      (90.0, 7.0, 48.0, 72.0, body), (95.0, 9.0, 42.0, 78.0, light)]
-            as [(CGFloat, CGFloat, CGFloat, CGFloat, Color)] {
-            var w = Path()
-            w.move(to: CGPoint(x: x, y: y0))
-            w.addQuadCurve(to: CGPoint(x: x, y: y1), control: CGPoint(x: x + d, y: (y0 + y1) / 2))
-            c.stroke(w, with: .color(color), style: wave)
+    static func moon(_ c: GraphicsContext) {
+        let disc = A.dot(48, 48, 34)
+        let bite = Path(ellipseIn: CGRect(x: 40, y: 6, width: 54, height: 58))
+        let crescent = disc.subtracting(bite)
+        chunky(c, crescent)
+        c.fill(A.rr(20, 40, 4, 14, 2), with: .color(shine))
+        var eye = Path()
+        eye.move(to: CGPoint(x: 28, y: 58))
+        eye.addQuadCurve(to: CGPoint(x: 40, y: 58), control: CGPoint(x: 34, y: 63))
+        c.stroke(eye, with: .color(ink), style: StrokeStyle(lineWidth: 3.2, lineCap: .round))
+        var smile = Path()
+        smile.move(to: CGPoint(x: 35, y: 70))
+        smile.addQuadCurve(to: CGPoint(x: 46, y: 69), control: CGPoint(x: 41, y: 74))
+        c.stroke(smile, with: .color(ink), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+        c.fill(A.dot(29, 66, 3.6), with: .color(A.cheek.opacity(0.8)))
+        sparkle(c, x: 70, y: 30, r: 8, color: light)
+        sparkle(c, x: 84, y: 48, r: 5, color: body)
+        sparkle(c, x: 60, y: 16, r: 4, color: light)
+    }
+
+    // MARK: Tech house: a rotary knob, turned up
+
+    static func knob(_ c: GraphicsContext) {
+        let cx: CGFloat = 50, cy: CGFloat = 52
+        func at(_ deg: Double, _ r: CGFloat, _ y: CGFloat = 52) -> CGPoint {
+            let a = deg * .pi / 180
+            return CGPoint(x: cx + r * CGFloat(cos(a)), y: y + r * CGFloat(sin(a)))
+        }
+        // Scale ticks, lit up to the pointer
+        for i in 0...10 {
+            let deg = 135 + Double(i) * 27
+            let major = i % 5 == 0
+            line(c, [at(deg, major ? 38 : 39), at(deg, major ? 44 : 42)], i > 7 ? lip : body, major ? 3 : 2.4)
+        }
+        let cap = A.dot(cx, cy, 32)
+        chunky(c, cap)
+        c.fill(A.dot(cx, cy + 3, 23), with: .color(ink))
+        c.fill(A.dot(cx, cy - 1, 23), with: .color(mid))
+        // Grip ridges
+        for i in 0..<16 {
+            let deg = Double(i) * 22.5
+            line(c, [at(deg, 20, cy - 1), at(deg, 23, cy - 1)], body, 2)
+        }
+        line(c, [CGPoint(x: cx, y: cy - 1), at(135 + 7 * 27, 15, cy - 1)], .white, 5)
+        c.fill(A.rr(30, 28, 10, 4, 2), with: .color(shine))
+    }
+
+    // MARK: Techno: a robot head
+
+    static func robot(_ c: GraphicsContext) {
+        line(c, [CGPoint(x: 50, y: 8), CGPoint(x: 50, y: 22)], ink, 3)
+        c.fill(A.dot(50, 8, 5), with: .color(light))
+        // Ears
+        c.fill(A.rr(10, 44, 8, 18, 3), with: .color(lip))
+        c.fill(A.rr(82, 44, 8, 18, 3), with: .color(lip))
+        chunky(c, A.rr(16, 22, 68, 62, 16))
+        c.fill(A.rr(22, 27, 16, 4, 2), with: .color(shine))
+        // Visor and eyes
+        c.fill(A.rr(24, 34, 52, 30, 9), with: .color(ink))
+        for x: CGFloat in [38, 62] {
+            c.fill(A.dot(x, 47, 6), with: .color(light))
+            c.fill(A.dot(x + 1.5, 45.5, 2), with: .color(.white))
+        }
+        // Grille mouth
+        for i in 0..<4 {
+            c.fill(A.rr(36 + CGFloat(i) * 7.5, 70, 5, 7, 1.5), with: .color(light))
         }
     }
 
-    // MARK: UK garage: an MC's microphone
+    // MARK: UK garage: a boombox
 
-    static func microphone(_ c: GraphicsContext) {
+    static func boombox(_ c: GraphicsContext) {
         var handle = Path()
-        handle.move(to: CGPoint(x: 40, y: 50))
-        handle.addLine(to: CGPoint(x: 60, y: 50))
-        handle.addLine(to: CGPoint(x: 55, y: 82))
-        handle.addQuadCurve(to: CGPoint(x: 45, y: 82), control: CGPoint(x: 50, y: 86))
-        handle.closeSubpath()
-        chunky(c, handle)
-        c.fill(A.rr(44, 56, 3, 18, 1.5), with: .color(shine))
-        // Collar
-        c.fill(A.rr(33, 44, 34, 9, 4), with: .color(lip))
-        c.fill(A.rr(33, 42, 34, 8, 4), with: .color(light))
-        // Grille
-        let head = A.dot(50, 27, 19)
-        c.fill(head.offsetBy(dx: 0, dy: 3), with: .color(lip))
-        c.fill(head, with: .color(body))
-        var mesh = c
-        mesh.clip(to: head)
-        for y: CGFloat in [18, 24, 30, 36] { line(mesh, [CGPoint(x: 30, y: y), CGPoint(x: 70, y: y)], lip, 1.6) }
-        for x: CGFloat in [42, 50, 58] { line(mesh, [CGPoint(x: x, y: 8), CGPoint(x: x, y: 46)], lip, 1.6) }
-        c.stroke(head, with: .color(body), lineWidth: 3)
-        c.fill(A.rr(38, 14, 8, 4, 2), with: .color(shine))
-        sparkle(c, x: 80, y: 22, r: 7, color: light)
-        sparkle(c, x: 20, y: 40, r: 4, color: body)
+        handle.move(to: CGPoint(x: 30, y: 40))
+        handle.addLine(to: CGPoint(x: 30, y: 26))
+        handle.addQuadCurve(to: CGPoint(x: 36, y: 20), control: CGPoint(x: 30, y: 20))
+        handle.addLine(to: CGPoint(x: 64, y: 20))
+        handle.addQuadCurve(to: CGPoint(x: 70, y: 26), control: CGPoint(x: 70, y: 20))
+        handle.addLine(to: CGPoint(x: 70, y: 40))
+        c.stroke(handle, with: .color(ink), style: StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round))
+        chunky(c, A.rr(10, 36, 80, 48, 14))
+        c.fill(A.rr(18, 41, 18, 4, 2), with: .color(shine))
+        for x: CGFloat in [31, 69] {
+            c.fill(A.dot(x, 64, 14), with: .color(ink))
+            c.fill(A.dot(x, 64, 9), with: .color(mid))
+            c.fill(A.dot(x, 64, 4), with: .color(light))
+        }
+        // Tape deck and buttons
+        c.fill(A.rr(44, 42, 12, 8, 2), with: .color(pale))
+        c.fill(A.rr(46, 54, 8, 4, 2), with: .color(lip))
+        c.fill(A.rr(46, 61, 8, 4, 2), with: .color(lip))
+        sparkle(c, x: 86, y: 24, r: 6, color: light)
+        sparkle(c, x: 14, y: 22, r: 4, color: body)
     }
 }
 
