@@ -94,7 +94,7 @@ nonisolated enum AcademyKit {
     }
 
     /// The columns of a grid as loops, so a quiz can play one section at a time.
-    private static func section(_ s: AcademyStyle, _ col: Int) -> Pattern {
+    static func section(_ s: AcademyStyle, _ col: Int) -> Pattern {
         let t = ArrangementTask(prompt: "", hint: "", mode: .rule, sections: s.sections, lanes: s.lanes, loop: s.full,
                                 target: s.anatomy)
         let p = t.patterns(s.anatomy)
@@ -144,7 +144,7 @@ nonisolated enum AcademyKit {
         return K.lesson("\(s.id).acad.chopRhythm", "Chop Rhythms", "Syncopated vocals", "metronome.fill", .rhythm, 30, [
             K.intro("Rhythm first",
                     "A vocal hook is a rhythm before it's a melody. Put chops just before or after the kick and they push and pull against the beat. Keep one or two in the same place every bar so the ear has something to hold on to.",
-                    []),
+                    [], demo: s.full),
             K.chops("Copy this vocal rhythm", "Some chops land on the beat, some dodge it. Count the steps.", .recreate, v.chops,
                     backing: v.backing, target: v.rhythm2, length: max(1, v.length - 1), vox: v.vox),
             K.chops("Make it bounce", "Place at least four chops, mostly off the beat.", .create(.chordsAtLeast(4)), v.chops,
@@ -219,6 +219,10 @@ nonisolated enum AcademyKit {
     static func mixPump(_ s: AcademyStyle) -> Lesson {
         K.lesson("\(s.id).acad.pump", "Pump & Glue", "Sidechain, \(s.name) style", "waveform.path.ecg", .mixing, 35, [
             K.intro("The pump", s.pumpText, [], demo: s.full),
+            K.quiz("Pump or no pump?", "Listen to the bass and chords between the kicks.", [
+                K.faders(s.mix.pumpLoop, [.sidechain: 0], ["No pump", "Pumping"], 0, "Steady: the bass never moves."),
+                K.faders(s.mix.pumpLoop, [.sidechain: 0.8], ["No pump", "Pumping"], 1, "Everything ducks on the kick, then swells back."),
+            ]),
             K.mix("Set the pump", "Turn up Pump until it matches the reference.", [.bass, .chords, .sidechain],
                   start: [K.u, K.u, 0], target: [K.u, K.u, s.mix.pump], loop: s.mix.pumpLoop),
             K.mix("Bass, pump and kick", "The kick leads. Find the bass level and the pump together.",
@@ -229,6 +233,13 @@ nonisolated enum AcademyKit {
 
     static func mixSpace(_ s: AcademyStyle) -> Lesson {
         K.lesson("\(s.id).acad.space", "Space & Tone", "Reverb, filter & polish", "sparkles.rectangle.stack.fill", .mixing, 35, [
+            K.intro("Space and tone",
+                    "Two tools finish a mix. Reverb gives each sound a room to live in, and a filter decides how bright or dark it is. Use a little of each and the loop sounds like a record.",
+                    [], demo: s.full),
+            K.quiz("Dry or wet?", "", [
+                K.reverb(s.full, amount: 0, ["Dry", "Wet"], 0, "Close and punchy, no room at all."),
+                K.reverb(s.full, amount: 0.8, ["Dry", "Wet"], 1, "Everything sits further back, in a big room."),
+            ]),
             K.space("Add some space",
                     "Reverb puts a sound in a room. A little makes the mix feel real. Too much pushes everything to the back. Find the amount that suits \(s.name).",
                     s.full),
