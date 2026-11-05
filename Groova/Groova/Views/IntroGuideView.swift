@@ -3,7 +3,8 @@
 //  Groova
 //
 //  A three-stop tour the first time you land in the app: your path, the Sandbox, then your
-//  first lesson. Each stop switches to the tab it's talking about, with Woofer explaining.
+//  first lesson. Each stop switches to the tab it's talking about. Woofer sits in a compact
+//  card above the tab bar so the screen he's describing stays in view.
 //
 
 import Foundation
@@ -51,55 +52,56 @@ struct IntroGuideView: View {
     var body: some View {
         let stop = stops[step]
         ZStack(alignment: .bottom) {
-            Color.black.opacity(0.45)
+            // Keeps taps off the screen behind while touring, but leaves it in full view.
+            Color.black.opacity(0.12)
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
                 .onTapGesture {}
-            VStack(spacing: 0) {
-                VStack(spacing: 8) {
-                    Text(stop.title)
-                        .font(.display(24))
-                        .foregroundStyle(Theme.text)
-                        .multilineTextAlignment(.center)
-                    Text(stop.line)
-                        .font(.label(16, weight: .semibold))
-                        .foregroundStyle(Theme.text)
-                        .lineSpacing(3)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .top, spacing: 12) {
+                    WooferView(mood: step == stops.count - 1 ? .party : .happy, size: 64, bouncing: true)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(stop.title)
+                            .font(.display(19))
+                            .foregroundStyle(Theme.text)
+                        Text(stop.line)
+                            .font(.label(14, weight: .semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .id(step)
+                    .transition(.opacity)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 18)
-                .padding(.bottom, 18 + DownBubble.tail)
-                .frame(maxWidth: .infinity)
-                .background(DownBubble().fill(Theme.surface))
-                .id(step)
-                .transition(.opacity.combined(with: .scale(scale: 0.96)))
-                WooferView(mood: step == stops.count - 1 ? .party : .happy, size: 120, bouncing: true)
-                    .padding(.top, 4)
-                VStack(spacing: 12) {
-                    HStack(spacing: 6) {
+                HStack(spacing: 12) {
+                    HStack(spacing: 5) {
                         ForEach(0..<stops.count, id: \.self) { i in
                             Capsule()
                                 .fill(i == step ? Theme.brand : Theme.surfaceHigh)
-                                .frame(width: i == step ? 22 : 8, height: 8)
+                                .frame(width: i == step ? 18 : 7, height: 7)
                         }
                     }
-                    Button(stop.button, action: advance)
-                        .buttonStyle(ChunkyButtonStyle(color: Theme.brand))
-                    Button(step == stops.count - 1 ? "I'll look around first" : "Skip tour") {
+                    Button(step == stops.count - 1 ? "Later" : "Skip") {
                         Haptics.tap()
                         onFinish(false)
                     }
                     .font(.label(15, weight: .bold))
                     .foregroundStyle(Theme.textSecondary)
+                    .padding(.leading, 4)
+                    Spacer(minLength: 4)
+                    Button(stop.button, action: advance)
+                        .buttonStyle(ChunkyButtonStyle(color: Theme.brand, height: 44))
+                        .fixedSize()
                 }
-                .padding(20)
-                .background(RoundedRectangle(cornerRadius: 28, style: .continuous).fill(Theme.surface))
-                .padding(.top, 10)
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 24)
+            .padding(16)
+            .background(RoundedRectangle(cornerRadius: 24, style: .continuous).fill(Theme.surface))
+            .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).strokeBorder(Theme.stroke, lineWidth: Theme.border))
+            .shadow(color: .black.opacity(0.12), radius: 16, y: 6)
+            .padding(.horizontal, 12)
+            // Sits just above the tab bar, so the tab it's talking about stays visible.
+            .padding(.bottom, 84)
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.85), value: step)
         .onAppear { tab = stops[0].tab }
