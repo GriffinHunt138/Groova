@@ -150,9 +150,69 @@ nonisolated enum K {
 
     /// A listening round: loops played in order, `bars` bars each.
     static func hear(_ loops: [Pattern], _ options: [String], _ answer: Int, _ explain: String = "",
-                     bars: Int = 1, bpm: Double? = nil, swing: Double? = nil, genre: Genre? = nil) -> EarRound {
+                     bars: Int = 1, bpm: Double? = nil, swing: Double? = nil, genre: Genre? = nil,
+                     question: String? = nil, fx: EarFX? = nil) -> EarRound {
         EarRound(chords: [], options: options, answer: answer, explain: explain, loops: loops, bars: bars, bpm: bpm,
-                 swing: swing, genre: genre)
+                 swing: swing, genre: genre, question: question, fx: fx)
+    }
+
+    /// A quick check of an idea: a question to answer, nothing to play.
+    static func ask(_ question: String, _ options: [String], _ answer: Int, _ explain: String = "") -> EarRound {
+        EarRound(chords: [], options: options, answer: answer, explain: explain, question: question)
+    }
+
+    /// A chord or phrase round with its own question.
+    static func round(_ chords: [ChordShape], _ options: [String], _ answer: Int, _ explain: String = "",
+                      question: String) -> EarRound {
+        EarRound(chords: chords, options: options, answer: answer, explain: explain, question: question)
+    }
+
+    /// A listening round played with Sound Lab knob settings: "is this bass bright or dark?"
+    static func sound(_ loop: Pattern, _ knobs: [SoundParam: Double], _ options: [String], _ answer: Int,
+                      _ explain: String = "", question: String? = nil) -> EarRound {
+        hear([loop], options, answer, explain, bars: 2, question: question, fx: EarFX(sound: knobs))
+    }
+
+    /// A listening round played with these fader positions: "which part is too loud?"
+    static func faders(_ loop: Pattern, _ levels: [MixChannel: Double], _ options: [String], _ answer: Int,
+                       _ explain: String = "", question: String? = nil) -> EarRound {
+        hear([loop], options, answer, explain, bars: 2, question: question, fx: EarFX(mix: levels))
+    }
+
+    /// A listening round played through the master filter.
+    static func filtered(_ loop: Pattern, cutoff: Double, resonance: Double = 0, _ options: [String], _ answer: Int,
+                         _ explain: String = "", question: String? = nil) -> EarRound {
+        hear([loop], options, answer, explain, bars: 2, question: question,
+             fx: EarFX(cutoff: cutoff, resonance: resonance))
+    }
+
+    /// A listening round played with reverb.
+    static func reverb(_ loop: Pattern, amount: Double, _ options: [String], _ answer: Int,
+                       _ explain: String = "", question: String? = nil) -> EarRound {
+        hear([loop], options, answer, explain, bars: 2, question: question, fx: EarFX(reverb: amount))
+    }
+
+    /// Find a tempo by ear within a tighter window.
+    static func tempoByEar(_ prompt: String, _ body: String, loop: Pattern, target: Double, start: Double,
+                           tolerance: Double = 3, swing: Double? = nil) -> LessonStep {
+        .tempo(TempoTask(prompt: prompt, body: body, loop: loop, target: target, start: start, byEar: true,
+                         tolerance: tolerance, swing: swing))
+    }
+
+    // MARK: Fix it
+
+    /// Something in this groove is wrong. Hear the reference and fix it. Starts from the broken version.
+    static func fix(_ prompt: String, _ hint: String, tracks: [DrumTrack], edit: Set<DrumTrack>, broken: Pattern,
+                    target: Pattern, guide: Bool = true, threshold: Double = 0.9) -> LessonStep {
+        .sequencer(SequencerTask(prompt: prompt, hint: hint, mode: .recreate, tracks: tracks, editable: edit,
+                                 start: broken, target: target, showBeatGuide: guide, threshold: threshold))
+    }
+
+    /// A bassline or melody with mistakes in it. Starts from the broken notes.
+    static func fixNotes(_ prompt: String, _ hint: String, rows: [Int], broken: [NoteEvent], target: [NoteEvent],
+                         backing: Pattern, voice: RollVoice = .bass, threshold: Double = 0.9) -> LessonStep {
+        .pianoRoll(PianoRollTask(prompt: prompt, hint: hint, mode: .recreate, rows: rows, target: target,
+                                 backing: backing, threshold: threshold, start: broken, voice: voice))
     }
 
     /// Find a tempo: by number, or by ear against a reference.

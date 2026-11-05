@@ -211,8 +211,27 @@ nonisolated struct EarRound: Sendable {
     var swing: Double? = nil
     /// Play the loops with another genre's sounds and tempo.
     var genre: Genre? = nil
+    /// Asked in this round, under the step's prompt ("Which drum moved?"). A round with a question
+    /// and nothing to play is a quick check of an idea.
+    var question: String? = nil
+    /// Listening rounds only: play the loops with these knob, fader, filter or reverb settings.
+    var fx: EarFX? = nil
 
     var isListening: Bool { !loops.isEmpty }
+    var isQuestion: Bool { loops.isEmpty && chords.isEmpty }
+}
+
+/// Settings a listening round plays with, so ears can be trained on sounds and mixes, not just notes.
+nonisolated struct EarFX: Sendable {
+    /// Sound Lab knobs, 0...1.
+    var sound: [SoundParam: Double] = [:]
+    /// Fader positions, 0...1, where 2/3 is as designed. Sidechain is the pump amount.
+    var mix: [MixChannel: Double] = [:]
+    /// Master low-pass filter in Hz, with its resonance.
+    var cutoff: Double? = nil
+    var resonance: Double = 0
+    /// Reverb amount, 0...1, in a hall.
+    var reverb: Double? = nil
 }
 
 nonisolated struct EarChoiceTask: Sendable {

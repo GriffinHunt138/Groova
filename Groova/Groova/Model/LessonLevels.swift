@@ -113,7 +113,7 @@ nonisolated enum Levels {
 
     static let registry: [String: LevelPair] = {
         var r: [String: LevelPair] = [:]
-        let sources: [[String: LevelPair]] = [HouseLevels.all, HouseLevels2.all, TechnoLevels.all,
+        let sources: [[String: LevelPair]] = [CoreLevels.all, HouseLevels.all, HouseLevels2.all, TechnoLevels.all,
                                                GarageLevels.all, DeepHouseLevels.all, TechHouseLevels.all]
         for d in sources { r.merge(d) { first, _ in first } }
         return r
@@ -282,10 +282,13 @@ nonisolated enum Levels {
             return [.earChoice(n)]
 
         case .earChoice(let t):
+            // Quick checks of an idea were answered at Bronze; only the musical rounds move to new keys.
+            let musical = t.rounds.filter { !$0.isQuestion }
+            guard !musical.isEmpty else { return [] }
             var n = t
             let rounds = gold
-                ? t.rounds.map { transpose($0, 9) } + t.rounds.map { transpose($0, 2) }
-                : t.rounds.map { transpose($0, 5) }
+                ? musical.map { transpose($0, 9) } + musical.map { transpose($0, 2) }
+                : musical.map { transpose($0, 5) }
             n.rounds = Array(rng.shuffled(rounds).map { shuffleOptions($0, &rng) }.prefix(6))
             n.body = gold ? "More rounds in new keys. Trust the colour, not the pitch." : "Same question, new keys. " + t.body
             return [.earChoice(n)]

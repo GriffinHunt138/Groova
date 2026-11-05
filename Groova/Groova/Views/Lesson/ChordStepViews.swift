@@ -188,7 +188,17 @@ struct EarChoiceStepView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     StepPrompt(title: task.prompt, detail: task.body,
-                               badge: "\(current.isListening ? "Listening" : "Ear training") · \(round + 1) of \(task.rounds.count)")
+                               badge: "\(current.isQuestion ? "Quick check" : current.isListening ? "Listening" : "Ear training") · \(round + 1) of \(task.rounds.count)")
+                    if let q = current.question {
+                        Text(q)
+                            .font(.display(22))
+                            .foregroundStyle(Theme.text)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .id(round)
+                    }
+                    if !current.isQuestion {
                     Button(action: play) {
                         VStack(spacing: 10) {
                             Image(systemName: playing ? "speaker.wave.3.fill" : "play.fill")
@@ -205,6 +215,7 @@ struct EarChoiceStepView: View {
                     }
                     .buttonStyle(LipStyle(fill: genre.color, lip: Theme.lip(for: genre.color), border: .clear,
                                           radius: 22, depth: 5))
+                    }
 
                     VStack(spacing: 12) {
                         ForEach(Array(current.options.enumerated()), id: \.offset) { i, option in
@@ -219,10 +230,16 @@ struct EarChoiceStepView: View {
                        onRetry: { withAnimation { feedback = nil; picked = nil } })
         }
         .task(id: round) {
+            guard !current.isQuestion else { return }
             try? await Task.sleep(for: .milliseconds(450))
             play()
         }
-        .onDisappear { if current.isListening { Transport.shared.stop() } }
+        .onDisappear {
+            if current.isListening {
+                Transport.shared.stop()
+                AudioEngine.shared.resetEffects()
+            }
+        }
     }
 
     private func optionButton(_ i: Int, _ option: String) -> some View {
@@ -248,6 +265,7 @@ struct EarChoiceStepView: View {
     }
 
     private func play() {
+        if current.isQuestion { return }
         if current.isListening {
             playLoops()
             return
@@ -275,8 +293,33 @@ struct EarChoiceStepView: View {
         let bpm = r.bpm ?? g.bpm
         let bars = max(1, r.bars) * r.loops.count
         playing = true
+        // Each round starts clean, then applies its own sound, mix and effects.
+        AudioEngine.shared.resetEffects()
+        var kit: DrumKit? = nil
+        if let fx = r.fx {
+            if !fx.sound.isEmpty {
+                var k = Transport.shared.kit(for: g)
+                for (param, value) in fx.sound { param.apply(value, to: &k) }
+                kit = k
+            }
+            if !fx.mix.isEmpty {
+                var drums: [DrumTrack: Double] = [:]
+                var bass = 1.0, chords = 1.0, side = 0.0
+                for (channel, value) in fx.mix {
+                    switch channel {
+                    case .drum(let t): drums[t] = MixerTask.level(value)
+                    case .bass: bass = MixerTask.level(value)
+                    case .chords: chords = MixerTask.level(value)
+                    case .sidechain: side = value
+                    }
+                }
+                AudioEngine.shared.setMix(drums: drums, bass: bass, chords: chords, sidechain: side)
+            }
+            if let cutoff = fx.cutoff { AudioEngine.shared.setFilter(cutoff: cutoff, resonance: fx.resonance) }
+            if let mix = fx.reverb { AudioEngine.shared.setReverb(mix: mix, space: .hall) }
+        }
         Transport.shared.play(r.loops[0], genre: g, source: .reference, bars: bars, swing: r.swing ?? g.swing,
-                              bpm: bpm, sequence: r.loops.count > 1 ? r.loops : [], barsPerSection: max(1, r.bars))
+                              bpm: bpm, kit: kit, sequence: r.loops.count > 1 ? r.loops : [], barsPerSection: max(1, r.bars))
         let seconds = Double(bars) * 4 * 60 / bpm
         let thisRound = round
         Task {
@@ -287,7 +330,10 @@ struct EarChoiceStepView: View {
 
     private func check() {
         guard let picked else { return }
-        if current.isListening { Transport.shared.stop() }
+        if current.isListening {
+            Transport.shared.stop()
+            AudioEngine.shared.resetEffects()
+        }
         if picked == current.answer {
             if !missedThisRound { firstTry += 1 }
             AudioEngine.shared.playSuccess()
