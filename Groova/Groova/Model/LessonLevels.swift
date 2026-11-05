@@ -114,7 +114,8 @@ nonisolated enum Levels {
     static let registry: [String: LevelPair] = {
         var r: [String: LevelPair] = [:]
         let sources: [[String: LevelPair]] = [CoreLevels.all, HouseLevels.all, HouseLevels2.all, TechnoLevels.all,
-                                               GarageLevels.all, DeepHouseLevels.all, TechHouseLevels.all]
+                                               GarageLevels.all, DeepHouseLevels.all, TechHouseLevels.all,
+                                               ProductionLevels.all]
         for d in sources { r.merge(d) { first, _ in first } }
         return r
     }()
