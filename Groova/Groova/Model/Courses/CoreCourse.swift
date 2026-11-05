@@ -246,6 +246,9 @@ nonisolated enum CoreCourse {
 
     static let unit4 = K.core("core.u4", 4, "Notes & Melody", "Keys, scales & playing by ear", [
         K.lesson("core.u4.l1", "Meet the Keys", "Notes on a keyboard", "pianokeys", .theory, 25, [
+            K.intro("Notes have names",
+                    "Drums are rhythm. Notes are pitch: how high or low a sound is. Basslines, chords and melodies are all made of notes, and on a keyboard each key is one note. Learn where they are and you can play anything you hear.",
+                    []),
             K.play("Play C, D and E",
                    "A keyboard repeats the same 12 notes over and over. The white keys are named A to G. C sits just left of each pair of black keys. Play C, then the next two white keys.",
                    [60, 62, 64], low: 55, high: 67),
@@ -259,6 +262,9 @@ nonisolated enum CoreCourse {
                    [64, 62, 60, 62, 64, 64, 64], low: 55, high: 67),
         ]),
         K.lesson("core.u4.l2", "Octaves & Semitones", "How notes are spaced", "arrow.up.and.down", .theory, 25, [
+            K.intro("How far apart?",
+                    "Notes are measured in steps. The smallest step, from one key to the very next, is a semitone. Twelve semitones up, the note comes back with the same name: an octave. Basslines jump octaves all the time because it adds energy without changing the harmony.",
+                    []),
             K.play("Play C, then the next C up",
                    "Twelve keys later, a note comes back higher. That's an octave: same name, same feel, just higher. Play C, then the C above it.",
                    [60, 72], low: 55, high: 74),
@@ -273,6 +279,9 @@ nonisolated enum CoreCourse {
             ]),
         ]),
         K.lesson("core.u4.l3", "Major & Minor", "Bright and dark", "sun.max.fill", .theory, 25, [
+            K.intro("Bright and dark",
+                    "A scale is a set of notes that sound good together. Major scales sound bright. Minor scales sound dark and moody, and most dance music uses them. Same white keys, different starting note, completely different feel.",
+                    []),
             K.play("Play the C major scale",
                    "A scale is the set of notes a melody uses. C major is every white key from C up to C. It sounds bright and happy.",
                    [60, 62, 64, 65, 67, 69, 71, 72], low: 60, high: 72),
@@ -288,6 +297,9 @@ nonisolated enum CoreCourse {
         ]),
     ] + house("house.mel.l1") + [
         K.lesson("core.u4.l5", "Steps & Leaps", "Intervals", "chart.line.uptrend.xyaxis", .theory, 25, [
+            K.intro("Steps and leaps",
+                    "Melodies move in two ways. Steps go to the next note in the scale and sound smooth, like singing. Leaps jump further and sound bold. Good hooks use mostly steps with one leap for drama.",
+                    [], demo: K.withLead(melodyBed, K.line([(0, 60), (2, 62), (4, 64), (8, 57)]))),
             K.quiz("Step or leap?",
                    "The gap between two notes is an interval. Small gaps sound smooth, like singing. Big leaps sound bold and dramatic.", [
                 K.round(K.phrase([60, 62]), ["Step", "Leap"], 0),

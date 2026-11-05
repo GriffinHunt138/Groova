@@ -548,7 +548,7 @@ nonisolated enum Curriculum {
                              pads: [.kick, .clap])),
             .sequencer(SequencerTask(
                 prompt: "Add a clap on beats 2 and 4",
-                hint: "Beat 2 is step 5, beat 4 is step 13 — on top of those kicks.",
+                hint: "Beat 2 is step 5, beat 4 is step 13, on top of those kicks.",
                 mode: .rule, tracks: [.kick, .clap], editable: [.clap],
                 start: fourFloor, target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12]))),
             .sequencer(SequencerTask(
@@ -573,7 +573,7 @@ nonisolated enum Curriculum {
                 target: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], openHat: [2, 6, 10, 14]))),
             .sequencer(SequencerTask(
                 prompt: "Sprinkle closed hats to add movement",
-                hint: "There's no wrong answer. Try the gaps between other sounds — drag across the row to paint.",
+                hint: "There's no wrong answer. Try the gaps between other sounds. Drag across the row to paint.",
                 mode: .create(.atLeast(.hat, 3)), tracks: [.kick, .clap, .hat, .openHat], editable: [.hat],
                 start: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], openHat: [2, 6, 10, 14]))),
             .sequencer(SequencerTask(
@@ -586,9 +586,14 @@ nonisolated enum Curriculum {
     static let houseL4 = Lesson(
         id: "house.u1.l4", title: "Bounce the Bass", subtitle: "Syncopation with the piano roll",
         symbol: "pianokeys", skill: .theory, xp: 25, steps: [
+            .intro(IntroStep(title: "Meet the bass",
+                             body: "The bass fills the low end and moves the groove. In house it usually dodges the kick, landing on the offbeats in between, so kick and bass take turns. You'll write it in the piano roll: rows are notes, columns are steps.",
+                             pads: [],
+                             demo: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14],
+                                           bass: [2, 6, 10, 14].map { NoteEvent($0, 33) }))),
             .keyboard(KeyboardTask(
                 prompt: "Play A, then C, then E",
-                body: "These three notes are the heart of A minor — the moody home key of this groove.",
+                body: "These three notes are the heart of A minor, the moody home key of this groove.",
                 sequence: [45, 48, 52], lowNote: 45, highNote: 57)),
             .pianoRoll(PianoRollTask(
                 prompt: "Put an A on every offbeat",
@@ -597,7 +602,7 @@ nonisolated enum Curriculum {
                 target: [2, 6, 10, 14].map { NoteEvent($0, 33) },
                 backing: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14]))),
             .pianoRoll(PianoRollTask(
-                prompt: "Make it bounce — copy this bassline",
+                prompt: "Make it bounce: copy this bassline",
                 hint: "It starts on the offbeat A, then climbs. Drag a note sideways to make it longer.",
                 mode: .recreate, rows: bassRows,
                 target: [NoteEvent(2, 33), NoteEvent(6, 33), NoteEvent(7, 36), NoteEvent(10, 33),
@@ -619,6 +624,9 @@ nonisolated enum Curriculum {
     static let houseL5 = Lesson(
         id: "house.u1.l5", title: "Filter & Space", subtitle: "Shape sound with effects",
         symbol: "dial.medium.fill", skill: .soundDesign, xp: 25, steps: [
+            .intro(IntroStep(title: "Shape the sound",
+                             body: "Effects change how a sound feels without changing the notes. A filter removes the bright top end, like hearing a party through a wall. Reverb puts the sound in a room, from a small booth to a huge hall.",
+                             pads: [], demo: fxLoop)),
             .filter(FilterTask(
                 prompt: "Sweep the filter",
                 body: "A low-pass filter removes high frequencies. Close it right down, then open it all the way.",
@@ -656,6 +664,10 @@ nonisolated enum Curriculum {
     static let houseU2L1 = Lesson(
         id: "house.u2.l1", title: "Your First Chord", subtitle: "Three notes, one sound",
         symbol: "pianokeys.inverse", skill: .theory, xp: 25, steps: [
+            .intro(IntroStep(title: "Meet the chord",
+                             body: "A chord is several notes played at once. It sets the mood of a track: major chords sound bright and happy, minor chords sound dark and moody. Most house is in a minor key.",
+                             pads: [],
+                             demo: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], chords: [K.ch(0, .am, 4), K.ch(8, .c, 4)]))),
             .chordBuilder(ChordBuilderTask(
                 prompt: "Build A minor",
                 body: "A chord is three or more notes played together. A minor is built on A, its root, plus C and E. Tap A, C and E.",
@@ -681,6 +693,11 @@ nonisolated enum Curriculum {
     static let houseU2L2 = Lesson(
         id: "house.u2.l2", title: "Minor 7ths", subtitle: "The sound of house chords",
         symbol: "music.quarternote.3", skill: .theory, xp: 25, steps: [
+            .intro(IntroStep(title: "Add a fourth note",
+                             body: "House chords rarely stop at three notes. Add a 7th on top and a minor chord turns soft and jazzy. Am7 is one of the most-used chords in house.",
+                             pads: [],
+                             demo: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14],
+                                           chords: [K.ch(0, .am, 4), K.ch(8, .am7, 4)]))),
             .chordBuilder(ChordBuilderTask(
                 prompt: "Add a G to make Am7",
                 body: "A, C and E are already there. One more note, G, turns it into a minor 7th: softer and jazzier.",
@@ -705,6 +722,11 @@ nonisolated enum Curriculum {
     static let houseU2L3 = Lesson(
         id: "house.u2.l3", title: "The Stab", subtitle: "Short chords, big groove",
         symbol: "bolt.horizontal.fill", skill: .rhythm, xp: 25, steps: [
+            .intro(IntroStep(title: "The stab",
+                             body: "A stab is a chord hit cut short, like a horn blast or a piano punch. Played between the kicks it becomes part of the rhythm, as much drum as chord.",
+                             pads: [],
+                             demo: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14],
+                                           chords: [K.ch(2, .am7), K.ch(6, .am7), K.ch(10, .am7), K.ch(14, .am7)]))),
             .chordLane(ChordLaneTask(
                 prompt: "Stab Am7 on every offbeat",
                 hint: "A stab is a short, punchy chord hit. Offbeats sit between the kicks: steps 3, 7, 11 and 15.",
@@ -719,11 +741,25 @@ nonisolated enum Curriculum {
                 prompt: "Write your own stab rhythm",
                 hint: "Place at least four stabs. Stabs between the kicks push the groove forward.",
                 mode: .create(.chordsAtLeast(4)), palette: [.am7], backing: chordBacking)),
+            .earChoice(EarChoiceTask(
+                prompt: "Stab or held chord?",
+                body: "Same chord, two ways.",
+                rounds: [
+                    K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], chords: [K.ch(2, .am7), K.ch(6, .am7), K.ch(10, .am7), K.ch(14, .am7)])],
+                           ["Stabs", "Held chord"], 0, "Short hits between the kicks.", bars: 2),
+                    K.hear([Pattern(kick: [0, 4, 8, 12], clap: [4, 12], chords: [K.ch(0, .am7, 16)])],
+                           ["Stabs", "Held chord"], 1, "One chord ringing for the whole bar.", bars: 2),
+                ])),
         ])
 
     static let houseU2L4 = Lesson(
         id: "house.u2.l4", title: "Moving Chords", subtitle: "Your first progression",
         symbol: "arrow.left.arrow.right", skill: .theory, xp: 30, steps: [
+            .intro(IntroStep(title: "Chords that move",
+                             body: "One chord on repeat gets stale. A progression moves between two or more chords, and every change pulls the listener forward. The classic house move is Am7 to Dm7.",
+                             pads: [],
+                             demo: Pattern(kick: [0, 4, 8, 12], clap: [4, 12], hat: [2, 6, 10, 14],
+                                           chords: [K.ch(2, .am7), K.ch(6, .am7), K.ch(10, .dm7), K.ch(14, .dm7)]))),
             .chordLane(ChordLaneTask(
                 prompt: "Switch to Dm7 for the second half",
                 hint: "Pick Dm7, then tap the stabs on steps 11 and 15 to change them.",
