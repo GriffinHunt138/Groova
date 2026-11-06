@@ -44,6 +44,9 @@ struct LessonPlayerView: View {
             } else {
                 VStack(spacing: 0) {
                     topBar
+                    if let phases = TierPhase.map(steps) {
+                        PhaseStrip(current: phases[min(index, phases.count - 1)], accent: genre.color)
+                    }
                     stepView
                         .id(index)
                         .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),
@@ -129,6 +132,7 @@ struct LessonPlayerView: View {
         case .tempo(let t): TempoStepView(task: t, genre: genre, onComplete: advance)
         case .tap(let t): TapStepView(task: t, genre: genre, onComplete: advance)
         case .order(let t): OrderStepView(task: t, genre: genre, onComplete: advance)
+        case .game(let t): GameStepView(task: t, genre: genre, onComplete: advance)
         }
     }
 
@@ -154,6 +158,39 @@ struct LessonPlayerView: View {
             Transport.shared.flavor = flavor(at: index + 1)
             withAnimation(.spring(response: 0.45, dampingFraction: 0.88)) { index += 1 }
         }
+    }
+}
+
+// MARK: - Phase strip
+
+/// Teach, Studio, Game: where you are in a Foundations tier.
+struct PhaseStrip: View {
+    let current: TierPhase?
+    let accent: Color
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(TierPhase.allCases, id: \.self) { p in
+                let on = p == current
+                let past = (current?.rawValue ?? -1) > p.rawValue
+                HStack(spacing: 5) {
+                    Image(systemName: past ? "checkmark" : p.symbol)
+                        .font(.system(size: 11, weight: .black))
+                    Text(p.name.uppercased())
+                        .font(.label(11, weight: .black)).tracking(0.6)
+                }
+                .foregroundStyle(on ? Theme.onBrand : (past ? accent : Theme.textTertiary))
+                .padding(.horizontal, 10)
+                .frame(height: 26)
+                .background(Capsule().fill(on ? accent : (past ? accent.opacity(0.12) : Theme.surfaceRaised)))
+                if p != .game {
+                    Rectangle().fill(past ? accent.opacity(0.5) : Theme.divider).frame(width: 10, height: 2)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.bottom, 4)
+        .animation(.spring(response: 0.35), value: current)
     }
 }
 

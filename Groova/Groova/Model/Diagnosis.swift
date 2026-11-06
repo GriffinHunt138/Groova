@@ -233,7 +233,7 @@ nonisolated enum PathStats {
         for step in Curriculum.units(for: genre).flatMap(\.lessons).flatMap(\.steps) {
             switch step {
             case .earChoice: listen += 1
-            case .sequencer, .keyboard, .pianoRoll, .chordBuilder, .chordLane, .tap, .tempo: play += 1
+            case .sequencer, .keyboard, .pianoRoll, .chordBuilder, .chordLane, .tap, .tempo, .game: play += 1
             case .filter, .reverb, .soundLab, .mixer: shape += 1
             case .arrangement, .order: arrange += 1
             case .intro, .mastery: break

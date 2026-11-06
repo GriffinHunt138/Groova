@@ -100,6 +100,7 @@ nonisolated enum LessonStep: Sendable {
     case tempo(TempoTask)
     case tap(TapTask)
     case order(OrderTask)
+    case game(GameTask)
 }
 
 /// How a step is judged.

@@ -187,7 +187,7 @@ nonisolated enum Levels {
             // Already learned at Bronze. Higher levels go straight to the work.
             return []
 
-        case .mastery:
+        case .mastery, .game:
             return [step]
 
         case .sequencer(let t):
@@ -828,6 +828,8 @@ nonisolated enum Levels {
             return "tap \(t.targets) \(t.guideBars)"
         case .order(let t):
             return "order \(t.mode) \(t.tiles.map(\.name)) \(t.answer)"
+        case .game(let t):
+            return "game \(t.name) \(t.tagline)"
         case .intro, .keyboard, .reverb, .mastery:
             return "other"
         }
