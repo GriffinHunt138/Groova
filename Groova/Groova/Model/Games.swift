@@ -27,6 +27,10 @@ nonisolated enum GameKind: Sendable {
     case forensics([ForensicsRound])
     case gravity([GravityRound])
     case grooveDNA([DNARound])
+    case glider([GliderRound])
+    case radar([RadarRound])
+    /// Keyboard Maze, Harmonic Gravity and Echo Chase: tap notes on a surface.
+    case notes(NoteSurface, [NoteRound])
 }
 
 // MARK: - Blackout (F0.1)
@@ -283,6 +287,101 @@ nonisolated struct DNARound: Sendable {
     var bpm: Double = 92
     /// Show a target band on the ribbon.
     var showRange = true
+}
+
+// MARK: - Pitch Glider (F2.1)
+
+nonisolated enum GliderMode: Sendable, Equatable {
+    /// Hear the notes while the glider flies them, then fly them yourself. `trail` leaves the path showing.
+    case follow(trail: Bool)
+    /// Hear `first`, then the round's notes, which change at the end. Fly the second one.
+    case changed(first: [Int])
+    /// A guide tone repeats. Steer the glider until you match it, and hold.
+    case hold(target: Int)
+    /// Gold: draw five notes in one flight.
+    case draw
+    /// Gold: your drawn melody plays; redraw the last two notes for a new ending.
+    case redraw
+    /// Gold: pick a backing and keep your flight.
+    case showcase
+}
+
+nonisolated struct GliderRound: Sendable {
+    var title: String
+    var body: String
+    var mode: GliderMode
+    /// The melody, one note per beat.
+    var notes: [Int] = []
+    var bpm: Double = 84
+}
+
+// MARK: - Interval Radar (F2.3)
+
+nonisolated enum RadarMode: Sendable, Equatable {
+    /// Pull the second dot out and hear the distance grow.
+    case grow
+    /// Hear each pair and drop the dot into SAME, NEAR or FAR.
+    case zones([Int])
+    /// Hear a reference distance, then turn the dial through `choices` to match it. Signed if `direction`.
+    case match(target: Int, choices: [Int], direction: Bool)
+    /// Match these distances one after another, making a phrase.
+    case chain([Int])
+    /// Gold: pick a signature jump from these.
+    case pick([Int])
+    /// Gold: two signed distances from the root make a three-note motif.
+    case motif
+    /// Gold: change one distance of your motif to answer it.
+    case reply
+}
+
+nonisolated struct RadarRound: Sendable {
+    var title: String
+    var body: String
+    var mode: RadarMode
+    var root: Int = 60
+}
+
+// MARK: - Note surfaces: Keyboard Maze (F2.2), Harmonic Gravity (F2.4), Echo Chase (F2.5)
+
+nonisolated enum NoteSurface: Sendable, Equatable {
+    /// Five touch lanes, low to high.
+    case strip([Int])
+    /// A piano keyboard from `low` to `high`.
+    case keyboard(low: Int, high: Int)
+    /// Notes in orbit round a home note. One outside note can be unlocked.
+    case orbit(home: Int, notes: [Int], outside: Int?)
+}
+
+nonisolated enum NoteMode: Sendable, Equatable {
+    /// Play anything, this many notes.
+    case explore(Int)
+    /// Play exactly these notes in order. Letters show after each right one if `reveal`.
+    case find([Int], reveal: Bool)
+    /// Hear the notes, then play them back. `show` lights them as they play. `gapBars` waits in silence first.
+    case echo([Int], show: Bool, gapBars: Int)
+    /// Hear `a` then `b`. Tap which note in `b` changed.
+    case spot(a: [Int], b: [Int])
+    /// Hear the phrase end on each option, then pick one. `answer` nil means any pick is fine.
+    case ending(lead: [Int], options: [Int], answer: Int?)
+    /// Gold: write `count` notes. Start and end on these if given; `shape` asks for a step and a leap.
+    case compose(count: Int, start: Int?, end: [Int], shape: Bool)
+    /// Gold: answer your call. Keep its first `keep` notes, change the rest.
+    case answer(keep: Int)
+    /// Gold: your phrase plays with the surface dark. Play it back.
+    case retrace
+    /// Gold: call and answer, back to back.
+    case duet
+}
+
+nonisolated struct NoteRound: Sendable {
+    var title: String
+    var body: String
+    var mode: NoteMode
+    /// Overrides the game's surface for this round.
+    var surface: NoteSurface? = nil
+    var labels = true
+    var backing: Pattern = Pattern()
+    var bpm: Double = 90
 }
 
 // MARK: - Helpers

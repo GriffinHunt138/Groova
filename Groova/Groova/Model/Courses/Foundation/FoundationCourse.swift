@@ -19,7 +19,7 @@ nonisolated enum FoundationCourse {
 
     static let levels: [String: LevelPair] = {
         var r: [String: LevelPair] = [:]
-        for d in [F0Games.levels, F1Games.levels, F0F1.levels, F2F3.levels, F4F5.levels] { r.merge(d) { a, _ in a } }
+        for d in [F0Games.levels, F1Games.levels, F2Games.levels, F0F1.levels, F2F3.levels, F4F5.levels] { r.merge(d) { a, _ in a } }
         return r
     }()
 }

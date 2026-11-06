@@ -29,6 +29,10 @@ struct GameStepView: View {
         case .forensics(let rounds): ForensicsGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
         case .gravity(let rounds): GravityGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
         case .grooveDNA(let rounds): GrooveDNAGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .glider(let rounds): PitchGliderGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .radar(let rounds): IntervalRadarGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .notes(let surface, let rounds):
+            NoteSurfaceGame(task: task, surface: surface, rounds: rounds, genre: genre, onComplete: onComplete)
         }
     }
 }
