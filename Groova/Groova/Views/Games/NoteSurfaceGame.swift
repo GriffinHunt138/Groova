@@ -15,15 +15,6 @@
 import Foundation
 import SwiftUI
 
-/// "C", "F#" and so on. With `octave`, "C4".
-nonisolated func noteName(_ midi: Int, octave: Bool = false) -> String {
-    let names = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
-    let n = names[((midi % 12) + 12) % 12]
-    return octave ? "\(n)\(midi / 12 - 1)" : n
-}
-
-nonisolated func isBlackKey(_ midi: Int) -> Bool { [1, 3, 6, 8, 10].contains(((midi % 12) + 12) % 12) }
-
 struct NoteSurfaceGame: View {
     let task: GameTask
     let surface: NoteSurface
@@ -105,6 +96,7 @@ struct NoteSurfaceGame: View {
         case .keyboard: return 300
         case .orbit: return 360
         case .strip: return 330
+        case .pads: return 320
         }
     }
 
@@ -136,6 +128,7 @@ struct NoteSurfaceGame: View {
             case .strip(let notes): strip(notes)
             case .keyboard(let low, let high): keyboard(low: low, high: high)
             case .orbit(let home, let notes, let outside): orbit(home: home, notes: notes, outside: outside)
+            case .pads(let notes): hotline(notes)
             }
             Spacer(minLength: 0)
         }
@@ -204,6 +197,41 @@ struct NoteSurfaceGame: View {
                     .accessibilityAddTraits(.isButton)
             }
         }
+    }
+
+    // MARK: Hook Hotline: five pads in an arc
+
+    private func hotline(_ notes: [Int]) -> some View {
+        GeometryReader { geo in
+            let w = geo.size.width, h = geo.size.height
+            ZStack {
+                ForEach(Array(notes.enumerated()), id: \.offset) { i, n in
+                    let u = Double(i) / Double(max(1, notes.count - 1))
+                    let a = (200 + u * 140) * .pi / 180
+                    let x = w / 2 + CGFloat(cos(a)) * w * 0.4
+                    let y = h * 0.92 + CGFloat(sin(a)) * h * 0.78
+                    let on = lit == n && showLights
+                    let color = [GameStyle.kick, GameStyle.hat, Theme.success, GameStyle.lead, GameStyle.snare][i % 5]
+                    ZStack {
+                        Circle().fill(wrong == n ? Theme.miss : color.opacity(on ? 1 : 0.35))
+                        Circle().strokeBorder(Color.white.opacity(on ? 0.9 : 0.15), lineWidth: 3)
+                        Circle().stroke(color.opacity(on ? 0.6 : 0), lineWidth: 6).scaleEffect(on ? 1.5 : 1)
+                        Text(round.labels ? noteName(n) : "")
+                            .font(.label(15, weight: .black))
+                            .foregroundStyle(on ? Color.black.opacity(0.7) : GameStyle.nightText)
+                    }
+                    .frame(width: 68, height: 68)
+                    .scaleEffect(on ? 1.12 : 1)
+                    .shadow(color: on ? color : .clear, radius: 18)
+                    .animation(.spring(response: 0.22, dampingFraction: 0.55), value: on)
+                    .position(x: x, y: y)
+                    .onTapGesture { tap(n) }
+                    .accessibilityLabel("Pad \(i + 1)")
+                    .accessibilityAddTraits(.isButton)
+                }
+            }
+        }
+        .frame(height: 230)
     }
 
     // MARK: Keyboard Maze: the map
@@ -597,10 +625,10 @@ struct NoteSurfaceGame: View {
         Haptics.tap()
         listen(lead + [o])
         if let answer, o != answer {
-            game.miss("Both are allowed, but here \(noteName(answer)) sounds more settled. It's the home note.", score: 0.5)
+            game.miss("Both are allowed, but here \(noteName(answer)) sounds more settled over what's underneath.", score: 0.5)
             withAnimation { phase = .done }
         } else {
-            finish(1, answer == nil ? "Good pick. Both endings work, they just feel different." : "\(noteName(o)) is home, so the phrase comes to rest.")
+            finish(1, answer == nil ? "Good pick. Both endings work, they just feel different." : "\(noteName(o)) fits what's underneath, so the phrase comes to rest.")
         }
     }
 

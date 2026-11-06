@@ -33,6 +33,10 @@ struct GameStepView: View {
         case .radar(let rounds): IntervalRadarGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
         case .notes(let surface, let rounds):
             NoteSurfaceGame(task: task, surface: surface, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .chordLock(let rounds): ChordLockGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .impostor(let rounds): ChordImpostorGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .resolution(let rounds): ResolutionRunGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .tether(let rounds): TetherGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
         }
     }
 }

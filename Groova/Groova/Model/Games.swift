@@ -31,6 +31,10 @@ nonisolated enum GameKind: Sendable {
     case radar([RadarRound])
     /// Keyboard Maze, Harmonic Gravity and Echo Chase: tap notes on a surface.
     case notes(NoteSurface, [NoteRound])
+    case chordLock([LockRound])
+    case impostor([ImpostorRound])
+    case resolution([RunRound])
+    case tether([TetherRound])
 }
 
 // MARK: - Blackout (F0.1)
@@ -350,6 +354,8 @@ nonisolated enum NoteSurface: Sendable, Equatable {
     case keyboard(low: Int, high: Int)
     /// Notes in orbit round a home note. One outside note can be unlocked.
     case orbit(home: Int, notes: [Int], outside: Int?)
+    /// Hook Hotline: five big round pads in an arc.
+    case pads([Int])
 }
 
 nonisolated enum NoteMode: Sendable, Equatable {
@@ -382,6 +388,137 @@ nonisolated struct NoteRound: Sendable {
     var labels = true
     var backing: Pattern = Pattern()
     var bpm: Double = 90
+}
+
+/// "C", "F#" and so on. With `octave`, "C4".
+nonisolated func noteName(_ midi: Int, octave: Bool = false) -> String {
+    let names = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
+    let n = names[((midi % 12) + 12) % 12]
+    return octave ? "\(n)\(midi / 12 - 1)" : n
+}
+
+nonisolated func isBlackKey(_ midi: Int) -> Bool { [1, 3, 6, 8, 10].contains(((midi % 12) + 12) % 12) }
+
+// MARK: - Triads
+
+/// A root-position triad, major or minor.
+nonisolated struct Triad: Sendable, Hashable {
+    var root: Int
+    var minor = false
+
+    var pitches: [Int] { [root, root + (minor ? 3 : 4), root + 7] }
+    var name: String { noteName(root) + (minor ? "m" : "") }
+    var flipped: Triad { Triad(root: root, minor: !minor) }
+    var shape: ChordShape { ChordShape(name: name, pitches: pitches) }
+
+    static let c = Triad(root: 60), f = Triad(root: 65), g = Triad(root: 67), d = Triad(root: 62)
+    static let am = Triad(root: 57, minor: true), dm = Triad(root: 62, minor: true), em = Triad(root: 64, minor: true)
+    static let a = Triad(root: 57), e = Triad(root: 64), bb = Triad(root: 58), cm = Triad(root: 60, minor: true)
+}
+
+// MARK: - Chord Lock (F3.1)
+
+nonisolated enum LockMode: Sendable, Equatable {
+    /// One beam, then all three.
+    case reveal(Triad)
+    /// Slide the unlocked beams to the chord. `ghost` shows where they go.
+    case build(Triad, locked: [Bool], ghost: Bool)
+    /// One beam is off. Tap it, then fix it.
+    case wrongBeam(Triad, wrong: Int, by: Int)
+    /// Several chords, each missing one voice, back to back.
+    case chain([Triad], missing: [Int])
+    /// Gold: choose a root and quality and build it.
+    case voicing
+    /// Gold: move one voice an octave. Same chord, new shape.
+    case revoice
+    /// Gold: alternate both voicings and keep one.
+    case alternate
+}
+
+nonisolated struct LockRound: Sendable {
+    var title: String
+    var body: String
+    var mode: LockMode
+}
+
+// MARK: - Chord Impostor (F3.2)
+
+nonisolated enum ImpostorMode: Sendable, Equatable {
+    /// Swipe the middle ribbon to flip the third.
+    case morph(Triad)
+    /// Chords play one by one. Tap the cup hiding the odd one out.
+    case lineup([Triad])
+    /// Hear two versions. Tap the chord that changed.
+    case edit(a: [Triad], b: [Triad])
+    /// Catch the odd one, then flip its third with the lever to match the rest.
+    case reverse([Triad])
+    /// Gold: pick a phrase.
+    case choose([[Triad]])
+    /// Gold: flip the third of one chord in the second pass.
+    case twist
+    /// Gold: hear the original, then the twist.
+    case reveal
+}
+
+nonisolated struct ImpostorRound: Sendable {
+    var title: String
+    var body: String
+    var mode: ImpostorMode
+    var bpm: Double = 96
+}
+
+// MARK: - Resolution Run (F3.3)
+
+nonisolated enum RunMode: Sendable, Equatable {
+    /// The route plays up to a gate. Audition the options, then open the gate with one.
+    case gate(lead: [Triad], options: [Triad], answer: Int?, reference: [Triad])
+    /// One block is missing from the route. Fill it.
+    case slot(route: [Triad], missing: Int, options: [Triad])
+    /// The route plays. Tap HOME when it arrives.
+    case follow([Triad], home: Triad)
+    /// Gold: choose the destination.
+    case destination([Triad])
+    /// Gold: pick the two middle blocks.
+    case route([Triad])
+    /// Gold: two final chords, keep one.
+    case endings
+}
+
+nonisolated struct RunRound: Sendable {
+    var title: String
+    var body: String
+    var mode: RunMode
+    var bpm: Double = 100
+}
+
+// MARK: - Kick-Bass Tether (F3.4)
+
+nonisolated enum TetherMode: Sendable, Equatable {
+    /// Kick and bass land together.
+    case together
+    /// Slide one bass note to these steps, off the kick.
+    case slide(from: Int, to: Int)
+    /// Follow the chord roots, bar by bar.
+    case roots
+    /// Place bass hits on these steps.
+    case rhythm([Int])
+    /// Shorten the held bass to this many steps so the kick comes through.
+    case length(Int)
+    /// Gold: pick a chord loop.
+    case chooseLoop([[Triad]])
+    /// Gold: record four bars on bass pads.
+    case perform
+    /// Gold: yours against roots on the beat.
+    case compare
+}
+
+nonisolated struct TetherRound: Sendable {
+    var title: String
+    var body: String
+    var mode: TetherMode
+    var chords: [Triad] = [.c]
+    var kick: Pattern = Pattern(kick: [0, 4, 8, 12])
+    var bpm: Double = 100
 }
 
 // MARK: - Helpers
