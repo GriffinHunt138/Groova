@@ -99,7 +99,7 @@ struct LiveTakeGame: View {
 
     private func pattern(_ s: Int) -> Pattern {
         var p = Self.scenePattern(s)
-        if muted.contains(0), s >= 0 { for t in DrumTrack.allCases { p[track: t] = Array(repeating: false, count: 16) } }
+        if muted.contains(0), s >= 0 { for t in DrumTrack.allCases { p[t] = Array(repeating: false, count: 16) } }
         if muted.contains(1) { p.bass = [] }
         if muted.contains(2) { p.chords = [] }
         return p
@@ -110,7 +110,7 @@ struct LiveTakeGame: View {
         var p = p
         if next == 1, scene != 1, let f = fill ?? defaultFill {
             let src = f == 0 ? SongKit.fill : Pattern(kick: [0, 8, 12, 14, 15], clap: [4], hat: [0, 2, 4, 6])
-            for t in DrumTrack.allCases { for s in 8..<16 { p[track: t][s] = src[track: t][s] } }
+            for t in DrumTrack.allCases { for s in 8..<16 { p[t][s] = src[t][s] } }
         }
         if next == 2, (breath ?? defaultBreath) != nil {
             p = SongKit.splice(p, Pattern(), at: 12)
@@ -492,7 +492,7 @@ struct LiveTakeGame: View {
         if case .load = round.mode {
             heardChannels.insert(c)
             var p = Self.scenePattern(1)
-            if c != 0 { for t in DrumTrack.allCases { p[track: t] = Array(repeating: false, count: 16) } }
+            if c != 0 { for t in DrumTrack.allCases { p[t] = Array(repeating: false, count: 16) } }
             if c != 1 { p.bass = [] }
             if c != 2 { p.chords = [] }
             transport.play(p, genre: genre, source: .demo, bars: 1, bpm: round.bpm, kit: kit)

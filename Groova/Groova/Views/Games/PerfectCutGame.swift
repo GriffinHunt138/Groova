@@ -93,14 +93,14 @@ struct PerfectCutGame: View {
             for t in DrumTrack.allCases {
                 for s in 8..<16 {
                     let at = s - (16 - end) + shift
-                    if at >= 0, at < 16 { p[track: t][at] = f[track: t][s] }
+                    if at >= 0, at < 16 { p[t][at] = f[t][s] }
                 }
             }
             // A late fill also delays the arrival of B by an eighth.
             if late {
                 for t in DrumTrack.allCases where jb + 1 < 4 {
-                    out[jb + 1][track: t][0] = false
-                    out[jb + 1][track: t][1] = false
+                    out[jb + 1][t][0] = false
+                    out[jb + 1][t][1] = false
                 }
             }
             out[jb] = p

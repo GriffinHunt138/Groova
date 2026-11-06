@@ -393,8 +393,8 @@ nonisolated enum SongKit {
         var p = Pattern()
         for t in DrumTrack.allCases {
             var lane = [Bool](repeating: false, count: 16)
-            for s in 0..<16 { lane[s] = s < cut ? a[track: t][s] : b[track: t][s] }
-            p[track: t] = lane
+            for s in 0..<16 { lane[s] = s < cut ? a[t][s] : b[t][s] }
+            p[t] = lane
         }
         p.bass = a.bass.filter { $0.step < cut }.map { NoteEvent($0.step, $0.pitch, min($0.length, cut - $0.step)) }
             + b.bass.filter { $0.step >= cut }
