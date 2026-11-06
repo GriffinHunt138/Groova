@@ -172,6 +172,8 @@ struct NoteSurfaceGame: View {
 
     // MARK: Echo Chase: five lanes
 
+    private var idleOpacity: Double { phase == .listening && !showLights ? 0.12 : 0.32 }
+
     private func strip(_ notes: [Int]) -> some View {
         HStack(alignment: .bottom, spacing: 8) {
             ForEach(Array(notes.enumerated()), id: \.offset) { i, n in
@@ -180,7 +182,7 @@ struct NoteSurfaceGame: View {
                 let u = Double(i) / Double(max(1, notes.count - 1))
                 let color = Color(hue: 0.74 - u * 0.62, saturation: 0.7, brightness: 0.95)
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(bad ? Theme.miss : color.opacity(on ? 1 : (phase == .listening && !showLights ? 0.12 : 0.32)))
+                    .fill(bad ? Theme.miss : color.opacity(on ? 1.0 : idleOpacity))
                     .overlay(alignment: .top) {
                         Circle().fill(Color.white.opacity(on ? 0.95 : 0.2)).frame(width: 16, height: 16).padding(.top, 12)
                             .shadow(color: .white.opacity(on ? 1 : 0), radius: 10)
@@ -207,9 +209,12 @@ struct NoteSurfaceGame: View {
             ZStack {
                 ForEach(Array(notes.enumerated()), id: \.offset) { i, n in
                     let u = Double(i) / Double(max(1, notes.count - 1))
-                    let a = (200 + u * 140) * .pi / 180
-                    let x = w / 2 + CGFloat(cos(a)) * w * 0.4
-                    let y = h * 0.92 + CGFloat(sin(a)) * h * 0.78
+                    let degrees: Double = 200 + u * 140
+                    let a: Double = degrees * Double.pi / 180
+                    let dx: CGFloat = CGFloat(cos(a)) * w * 0.4
+                    let dy: CGFloat = CGFloat(sin(a)) * h * 0.78
+                    let x: CGFloat = w / 2 + dx
+                    let y: CGFloat = h * 0.92 + dy
                     let on = lit == n && showLights
                     let color = [GameStyle.kick, GameStyle.hat, Theme.success, GameStyle.lead, GameStyle.snare][i % 5]
                     ZStack {
@@ -308,8 +313,11 @@ struct NoteSurfaceGame: View {
             let point: (Int) -> CGPoint = { n in
                 if n == home { return c }
                 guard let i = all.firstIndex(of: n) else { return c }
-                let a = Double(i) / Double(all.count) * 2 * .pi - .pi / 2
-                return CGPoint(x: c.x + r * CGFloat(cos(a)), y: c.y + r * CGFloat(sin(a)))
+                let turn: Double = Double(i) / Double(all.count)
+                let a: Double = turn * 2 * Double.pi - Double.pi / 2
+                let px: CGFloat = c.x + r * CGFloat(cos(a))
+                let py: CGFloat = c.y + r * CGFloat(sin(a))
+                return CGPoint(x: px, y: py)
             }
             ZStack {
                 Circle().stroke(GameStyle.nightLine, lineWidth: 2).frame(width: r * 2, height: r * 2).position(c)
