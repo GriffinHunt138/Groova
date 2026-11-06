@@ -603,14 +603,26 @@ struct NoteSurfaceGame: View {
         return d.contains { $0 > 0 && $0 <= 2 } && d.contains { $0 >= 3 }
     }
 
+    /// How many steps between notes move the same direction in both lines.
+    private static func sameMoves(_ a: [Int], _ b: [Int]) -> Int {
+        var count = 0
+        let n = min(a.count, b.count)
+        guard n > 1 else { return 0 }
+        for i in 1..<n {
+            let up: Int = (a[i] - a[i - 1]).signum()
+            let target: Int = (b[i] - b[i - 1]).signum()
+            if up == target { count += 1 }
+        }
+        return count
+    }
+
     private func grade(_ mine: [Int], against t: [Int]) {
         let right = zip(mine, t).filter { $0 == $1 }.count
         let score = Double(right) / Double(max(1, t.count))
         if score >= 0.75 {
             finish(score, right == t.count ? "Every note caught." : "\(right) of \(t.count) notes caught.")
         } else {
-            let shapeRight = zip(zip(mine, mine.dropFirst()), zip(t, t.dropFirst()))
-                .filter { ($0.1 - $0.0).signum() == ($1.1 - $1.0).signum() }.count
+            let shapeRight = Self.sameMoves(mine, t)
             let hint = shapeRight >= t.count - 1 ? " The shape was right, the notes were a little off." : " Hum it back first, then play."
             game.miss("\(right) of \(t.count) notes caught." + hint, score: score)
             withAnimation { phase = .done }
