@@ -24,6 +24,11 @@ struct GameStepView: View {
             ControlRoomGame(task: task, score: score, rounds: rounds, genre: genre, onComplete: onComplete)
         case .reactor(let layers, let rounds):
             LoopReactorGame(task: task, layers: layers, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .downbeat(let rounds): DownbeatGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .slicer(let rounds): TimeSlicerGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .forensics(let rounds): ForensicsGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .gravity(let rounds): GravityGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .grooveDNA(let rounds): GrooveDNAGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
         }
     }
 }

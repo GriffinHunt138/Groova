@@ -260,7 +260,11 @@ nonisolated final class AudioEngine: @unchecked Sendable {
         setFilter(cutoff: 20_000, resonance: 0)
         reverb.wetDryMix = 0
         setMix()
+        update(hatAccent: [])
     }
+
+    /// Per-step hi-hat loudness for accent games. Pass [] for the normal feel.
+    func update(hatAccent: [Float]) { withCore { $0.hatAccent = hatAccent } }
 
     // MARK: Spectrum
 

@@ -242,6 +242,8 @@ nonisolated final class DSPCore: @unchecked Sendable {
     var kit = DrumKit.house
     var bpm: Double = 124
     var swing: Double = 0              // 0 ... 0.5 of a 16th
+    /// Per-step hi-hat loudness (16 values, 0...1). Empty uses the built-in accent on the offbeat.
+    var hatAccent: [Float] = []
     var mutedDrums = Set<DrumTrack>()
     var bassMuted = false
     var chordsMuted = false
@@ -593,7 +595,7 @@ nonisolated final class DSPCore: @unchecked Sendable {
     private func fire(_ p: Pattern, step s: Int) {
         for track in DrumTrack.allCases where p[track][s] && !mutedDrums.contains(track) {
             var vel: Float = 1
-            if track == .hat { vel = (s % 4 == 2) ? 1.0 : 0.72 }
+            if track == .hat { vel = hatAccent.count == Pattern.steps ? hatAccent[s] : ((s % 4 == 2) ? 1.0 : 0.72) }
             let level = drumLevels[track.rawValue]
             if level > 0.001 { startDrum(track, velocity: vel * level, kit: kit) }
             if track == .kick { duckEnv = 1 }

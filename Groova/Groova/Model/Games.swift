@@ -22,6 +22,11 @@ nonisolated enum GameKind: Sendable {
     case drumDuel([DuelRound])
     case controlRoom(ControlRoomScore, [ControlRound])
     case reactor([ReactorLayer], [ReactorRound])
+    case downbeat([DownbeatRound])
+    case slicer([SliceRound])
+    case forensics([ForensicsRound])
+    case gravity([GravityRound])
+    case grooveDNA([DNARound])
 }
 
 // MARK: - Blackout (F0.1)
@@ -155,6 +160,129 @@ nonisolated struct ReactorRound: Sendable {
     var body: String
     var mode: ReactorMode
     var bpm: Double = 100
+}
+
+// MARK: - Downbeat Hunter (F1.1)
+
+nonisolated enum DownbeatMode: Sendable, Equatable {
+    /// Tap LOCK each time the 1 comes round, with the dial showing you.
+    case anchor
+    /// The dial starts this many beats out. Turn it until its 1 lands on the real downbeat.
+    case align(offset: Int)
+    /// The clip starts mid-bar on this beat (0...3). Tap LOCK on the real 1.
+    case lock(startBeat: Int)
+    /// Tap every 1, including through these bars where the drums drop out.
+    case follow(breakBars: [Int])
+    /// Gold: your LOCK taps play a kick and a crash. Accent every downbeat.
+    case accent
+}
+
+nonisolated struct DownbeatRound: Sendable {
+    var title: String
+    var body: String
+    var mode: DownbeatMode
+    var loop: Pattern
+    /// What plays in break bars.
+    var breakLoop: Pattern = Pattern()
+    var bars: Int = 4
+    var bpm: Double = 96
+    /// Gold: pick one of these loops first.
+    var choices: [(name: String, loop: Pattern)] = []
+}
+
+// MARK: - Time Slicer (F1.2)
+
+nonisolated enum SliceMode: Sendable, Equatable {
+    /// Match the target slices. Shown, or by ear.
+    case match
+    /// One beat has a slice too many. Join it back up.
+    case fix
+    /// Gold: shape the density, flat, rising or falling, with one sparse and one busy beat.
+    case shape
+}
+
+nonisolated struct SliceRound: Sendable {
+    var title: String
+    var body: String
+    var mode: SliceMode
+    /// Hits per beat (1, 2 or 4) for the four beats.
+    var start: [Int] = [1, 1, 1, 1]
+    var target: [Int] = []
+    var showTarget = true
+    var backing: Pattern = Pattern(kick: [0, 8], clap: [4, 12])
+    var bpm: Double = 96
+}
+
+// MARK: - Drum Forensics (F1.3)
+
+nonisolated enum ForensicsMode: Sendable, Equatable {
+    /// Hear each drum's fingerprint.
+    case fingerprints
+    /// Three hidden channels. Solo them and label them. Plays with kit number `kit`.
+    case identify(kit: Int)
+    /// Open the muted strips in order: kick, snare, hat.
+    case restore
+    /// A filter has hidden one drum. Which?
+    case filtered
+    /// The second version adds one drum. Which?
+    case added(DrumTrack)
+    /// Gold: choose each drum's sound from two kits.
+    case chooseKit
+    /// Gold: bring the strips in one by one over four bars.
+    case entrance
+}
+
+nonisolated struct ForensicsRound: Sendable {
+    var title: String
+    var body: String
+    var mode: ForensicsMode
+    var groove: Pattern
+    var bpm: Double = 96
+}
+
+// MARK: - Gravity Groove (F1.4)
+
+nonisolated enum GravityMode: Sendable, Equatable {
+    /// Watch the kick puck bounce, flick freely.
+    case watch
+    /// Land claps on these steps of every bar, with or without the landing zone shown.
+    case land(steps: [Int], showZone: Bool)
+    /// Hear a bar of kick and clap, then copy the clap.
+    case copy(steps: [Int])
+    /// Gold: four bars, at least two landings between the beats.
+    case perform
+}
+
+nonisolated struct GravityRound: Sendable {
+    var title: String
+    var body: String
+    var mode: GravityMode
+    var kick: Pattern = Pattern(kick: [0, 4, 8, 12])
+    var bars: Int = 2
+    var bpm: Double = 88
+}
+
+// MARK: - Groove DNA (F1.5)
+
+nonisolated enum DNAMode: Sendable, Equatable {
+    /// Stretch the ribbon to add swing. With a target, match it.
+    case swing(target: Double?)
+    /// Bring these beats forward (0...3) with accents.
+    case accent(target: Set<Int>)
+    /// Push the swing too far, hear it fall apart, then find the pocket.
+    case sloppy
+    /// Gold: two feels from the same notes, then pick your favourite blind.
+    case fingerprint
+}
+
+nonisolated struct DNARound: Sendable {
+    var title: String
+    var body: String
+    var mode: DNAMode
+    var groove: Pattern = Pattern(kick: [0, 8], clap: [4, 12], hat: Array(0..<16))
+    var bpm: Double = 92
+    /// Show a target band on the ribbon.
+    var showRange = true
 }
 
 // MARK: - Helpers
