@@ -84,6 +84,10 @@ nonisolated struct Account: Codable, Sendable, Equatable {
     var createdAt: Date
     /// The in-app intro tour has been shown.
     var seenGuide = false
+    /// Making music or understanding it, from onboarding.
+    var purpose: LearnerGoal? = nil
+    /// Onboarding diagnostic answers: question id to option id.
+    var diagnosis: [String: String]? = nil
 }
 
 nonisolated struct AuthSession: Codable, Sendable, Equatable {

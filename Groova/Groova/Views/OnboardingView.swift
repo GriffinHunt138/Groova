@@ -2,9 +2,9 @@
 //  OnboardingView.swift
 //  Groova
 //
-//  Runs once, after the first sign in with no account: name, genre, experience, a quick
-//  placement check, a daily goal, then the plan. The check skips Foundations units
-//  you already know, capped by how much producing you said you've done.
+//  Runs once, after the first sign in with no account: name, why you're here (making music
+//  or understanding it), genre, experience, four diagnostic questions with an insight after
+//  each, a daily goal, then the plan. The diagnostic lives in Onboarding/DiagnosticViews.swift.
 //
 
 import Foundation
@@ -14,28 +14,19 @@ struct OnboardingView: View {
     @Environment(AppState.self) private var app
     @Environment(AuthStore.self) private var auth
 
-    enum Page: Int { case hello, name, genre, experience, check, goal, result }
+    enum Page: Int { case hello, name, purpose, genre, experience, diagnose, goal, result }
 
     @State private var page: Page = .hello
     @State private var forward = true
     @State private var name = ""
     @State private var genre: Genre?
     @State private var level: ProducerLevel?
-    /// Questions answered right in a row from the start of the check.
-    @State private var streak = 0
+    @State private var purpose: LearnerGoal?
+    /// Diagnostic answers: question id to option id.
+    @State private var answers: [String: String] = [:]
     @State private var dailyGoal = 50
-    @State private var startFromTop = false
 
-    private var flow: [Page] {
-        level == .newcomer
-            ? [.hello, .name, .genre, .experience, .goal, .result]
-            : [.hello, .name, .genre, .experience, .check, .goal, .result]
-    }
-
-    private var placement: Int {
-        guard let level else { return 0 }
-        return min(streak, level.maxPlacement)
-    }
+    private let flow: [Page] = [.hello, .name, .purpose, .genre, .experience, .diagnose, .goal, .result]
 
     var body: some View {
         ZStack {
@@ -46,8 +37,9 @@ struct OnboardingView: View {
                     switch page {
                     case .hello: HelloPage(next: next)
                     case .name: NamePage(name: $name, next: next)
+                    case .purpose: PurposePage(name: firstName, goal: $purpose, next: next)
                     case .genre:
-                        GenrePicker(choice: $genre, title: "What do you want to make?",
+                        GenrePicker(choice: $genre, title: purpose == .knowledge ? "What do you listen to?" : "What do you want to make?",
                                     subtitle: "Pick a sound to start with, \(firstName). You can switch any time, and each genre keeps its own progress.") { g in
                             Transport.shared.stop()
                             Haptics.select()
@@ -55,16 +47,12 @@ struct OnboardingView: View {
                             next()
                         }
                     case .experience: ExperiencePage(name: firstName, level: $level, next: next)
-                    case .check:
-                        PlacementCheck(genre: genre ?? .house, limit: level?.maxPlacement ?? 0) { right in
-                            streak = right
-                            next()
-                        }
+                    case .diagnose:
+                        DiagnosticFlow(goal: purpose ?? .production, genre: genre ?? .house, answers: $answers, done: next)
                     case .goal: GoalPage(goal: $dailyGoal, next: next)
                     case .result:
                         PlanPage(name: firstName, level: level ?? .newcomer, genre: genre ?? .house,
-                                 placement: placement, dailyGoal: dailyGoal,
-                                 startFromTop: $startFromTop, finish: finish)
+                                 purpose: purpose ?? .production, focus: focus, dailyGoal: dailyGoal, finish: finish)
                     }
                 }
                 .id(page)
@@ -77,6 +65,12 @@ struct OnboardingView: View {
             AudioEngine.shared.start()
             if name.isEmpty, let n = auth.session?.displayName, !n.isEmpty { name = n }
         }
+    }
+
+    /// The answer to the last diagnostic question: what they most want out of it.
+    private var focus: String? {
+        guard let q = Diagnosis.questions(for: purpose ?? .production).last, let id = answers[q.id] else { return nil }
+        return q.options.first { $0.id == id }?.title
     }
 
     private var firstName: String {
@@ -95,8 +89,6 @@ struct OnboardingView: View {
             }
             .buttonStyle(PressScaleStyle())
             .accessibilityLabel("Back")
-            .opacity(page == .check ? 0 : 1)
-            .disabled(page == .check)
             ProgressBar(value: Double(i) / Double(flow.count - 1), color: Theme.brand)
         }
         .padding(.horizontal, 16)
@@ -115,20 +107,18 @@ struct OnboardingView: View {
         Haptics.tap()
         Transport.shared.stop()
         forward = false
-        var target = flow[i - 1]
-        if target == .check { target = .experience } // retaking the check starts it over
-        withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) { page = target }
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) { page = flow[i - 1] }
     }
 
     private func finish() {
         guard let session = auth.session, let genre else { return }
-        let placed = startFromTop ? 0 : placement
         Haptics.success()
-        app.applyOnboarding(genre: genre, placedUnits: placed, dailyGoal: dailyGoal)
+        app.applyOnboarding(genre: genre, placedUnits: 0, dailyGoal: dailyGoal)
         let account = Account(userID: session.userID, provider: session.provider,
                               displayName: name.trimmingCharacters(in: .whitespacesAndNewlines),
                               email: session.email, level: level ?? .newcomer, genre: genre,
-                              placedUnits: placed, dailyGoal: dailyGoal, createdAt: .now)
+                              placedUnits: 0, dailyGoal: dailyGoal, createdAt: .now,
+                              purpose: purpose, diagnosis: answers)
         Task { await auth.finishOnboarding(account) }
     }
 }
@@ -220,7 +210,7 @@ private struct ExperiencePage: View {
             OnboardingTitle(text: "How much have you produced?")
             ScrollView {
                 VStack(spacing: 12) {
-                    WooferCoach(line: "Be honest, \(name). If you've done some already, I'll check what you know and skip ahead.",
+                    WooferCoach(line: "Be honest, \(name). It changes how fast I take you through the basics.",
                                 mood: .happy, size: 56)
                         .padding(.bottom, 6)
                     ForEach(ProducerLevel.allCases) { l in
@@ -280,38 +270,25 @@ private struct GoalPage: View {
     }
 }
 
-/// The last screen: your rank, where you start, and the button into the app.
+/// The last screen: your rank, what you're focusing on, and the button into the app.
 private struct PlanPage: View {
     let name: String
     let level: ProducerLevel
     let genre: Genre
-    let placement: Int
+    let purpose: LearnerGoal
+    let focus: String?
     let dailyGoal: Int
-    @Binding var startFromTop: Bool
     let finish: () -> Void
 
     @State private var appeared = false
 
-    private var placed: Int { startFromTop ? 0 : placement }
-
-    private var startTitle: String {
-        let core = FoundationCourse.units
-        if placed >= core.count {
-            return "\(genre.name) course"
-        }
-        return "\(core[placed].title)"
-    }
+    private var startTitle: String { FoundationCourse.units.first?.title ?? "Foundations" }
 
     private var line: String {
-        if placed >= FoundationCourse.units.count {
-            return "You know your stuff, \(name). You're skipping Foundations and going straight to the \(genre.name) course. The foundations stay open if you want a refresher."
-        }
-        if placed > 0 {
-            return "Nice work, \(name). You already know the first \(placed == 1 ? "unit" : "\(placed) units"), so I've opened \(placed == 1 ? "it" : "them") up. Jump back any time."
-        }
+        let aim = purpose == .production ? "making music you're proud of" : "really understanding the music you hear"
         return level == .newcomer
-            ? "Everyone starts somewhere, \(name). We'll begin with the very basics and build from there, one beat at a time."
-            : "We'll start at the beginning, \(name). The early lessons go quickly if you know them, and you can test out of any unit."
+            ? "Everyone starts somewhere, \(name). We'll begin with the basics and build up to \(aim), one small win at a time."
+            : "Let's go, \(name). The early lessons fly by if you know them, and you can skip Foundations from your path any time. Next stop: \(aim)."
     }
 
     var body: some View {
@@ -340,11 +317,16 @@ private struct PlanPage: View {
                         .frame(maxWidth: .infinity)
                         .background(DownBubble().fill(Theme.brandSoft))
                         .padding(.top, 20)
-                        .animation(.easeInOut(duration: 0.2), value: startFromTop)
                     WooferView(mood: .party, size: 150, bouncing: true)
                         .scaleEffect(appeared ? 1 : 0.6)
                         .padding(.top, 4)
                     VStack(spacing: 0) {
+                        planRow(purpose.symbol, "Here to", purpose.title)
+                        Rectangle().fill(Theme.divider).frame(height: 1)
+                        if let focus {
+                            planRow("scope", "Focus", focus)
+                            Rectangle().fill(Theme.divider).frame(height: 1)
+                        }
                         planRow("music.note.house.fill", "Genre", genre.name)
                         Rectangle().fill(Theme.divider).frame(height: 1)
                         planRow("flag.fill", "You start at", startTitle)
@@ -353,15 +335,6 @@ private struct PlanPage: View {
                     }
                     .card(padding: 4)
                     .padding(.top, 16)
-                    if placement > 0 {
-                        Button(startFromTop ? "Use my placement" : "Start from the beginning instead") {
-                            Haptics.tap()
-                            withAnimation(.spring(response: 0.35)) { startFromTop.toggle() }
-                        }
-                        .font(.label(15, weight: .bold))
-                        .foregroundStyle(Theme.textSecondary)
-                        .padding(.top, 14)
-                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
@@ -396,206 +369,9 @@ private struct PlanPage: View {
     }
 }
 
-// MARK: - Placement check
-
-/// One question per Foundations unit, in order. A right answer means you can skip that
-/// unit. It stops at the first miss (or "I'm not sure"), or once you've reached the most
-/// your experience allows, so beginners get a short check and nobody is over-placed.
-nonisolated struct PlacementQuestion: Sendable {
-    enum Sound: Sendable { case none, kickOrHat, majorOrMinor }
-    let unit: Int
-    let prompt: String
-    let sound: Sound
-    let options: [String]
-    let answer: Int
-    /// Woofer's one-line lesson, shown after you answer either way.
-    let why: String
-
-    static let all: [PlacementQuestion] = [
-        .init(unit: 1, prompt: "Which sound is the kick drum?", sound: .kickOrHat,
-              options: ["Sound A", "Sound B"], answer: 0,
-              why: "The kick is the low thump that holds the beat down. The hi-hat is the short, bright tick."),
-        .init(unit: 2, prompt: "What does BPM measure?", sound: .none,
-              options: ["How loud a track is", "How fast a track is", "How long a track is"], answer: 1,
-              why: "BPM is beats per minute: the tempo. Hip-hop often sits around 85 to 95, pop around 100 to 120, house around 124."),
-        .init(unit: 3, prompt: "How many semitones are in an octave?", sound: .none,
-              options: ["7", "8", "12"], answer: 2,
-              why: "Twelve. Count every white and black key from one C up to the next."),
-        .init(unit: 4, prompt: "Which chord sounds sadder?", sound: .majorOrMinor,
-              options: ["Chord A", "Chord B"], answer: 1,
-              why: "Chord B is minor. Its middle note sits one semitone lower than the major chord, and that darkens it."),
-        .init(unit: 5, prompt: "What does a low-pass filter do?", sound: .none,
-              options: ["Cuts the highs and lets the lows through", "Cuts the lows and lets the highs through", "Makes the sound longer"], answer: 0,
-              why: "A low-pass lets the lows pass. Close it down and the sound gets darker and more muffled."),
-        .init(unit: 6, prompt: "Why does a verse usually have fewer layers than the chorus?", sound: .none,
-              options: ["To save space on the computer", "So the chorus hits harder when it arrives", "Because verses are shorter"], answer: 1,
-              why: "Holding back in the verse leaves room to grow. When the chorus adds layers, it feels like a payoff."),
-    ]
-}
-
-private struct PlacementCheck: View {
-    let genre: Genre
-    /// The most units this person can skip; the check ends once they reach it.
-    let limit: Int
-    let done: (Int) -> Void
-
-    @State private var index = 0
-    @State private var choice: Int?
-    @State private var feedback: StepFeedback?
-    @State private var streak = 0
-
-    private var q: PlacementQuestion { PlacementQuestion.all[index] }
-    private var count: Int { min(limit, PlacementQuestion.all.count) }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("QUICK CHECK · \(index + 1) OF \(count)")
-                        .font(.label(14, weight: .black)).tracking(0.6)
-                        .foregroundStyle(Theme.brand)
-                        .padding(.top, 16)
-                    Text(q.prompt)
-                        .font(.display(26))
-                        .foregroundStyle(Theme.text)
-                        .fixedSize(horizontal: false, vertical: true)
-                    if index == 0 {
-                        WooferCoach(line: "Don't guess. If you're not sure, say so and I'll start you there.", mood: .hint, size: 52)
-                    }
-                    if q.sound != .none { soundButtons.padding(.vertical, 4) }
-                    ForEach(Array(q.options.enumerated()), id: \.offset) { i, option in
-                        AnswerRow(text: option, selected: choice == i, result: result(for: i)) {
-                            guard feedback == nil else { return }
-                            Haptics.select()
-                            choice = i
-                        }
-                    }
-                    Button("I'm not sure") { answer(nil) }
-                        .font(.label(15, weight: .bold))
-                        .foregroundStyle(Theme.textSecondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 6)
-                        .opacity(feedback == nil ? 1 : 0)
-                        .disabled(feedback != nil)
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
-            }
-            StepFooter(feedback: feedback, primaryTitle: "Check", primaryEnabled: choice != nil,
-                       onPrimary: { answer(choice) }, onContinue: advance, onRetry: {})
-                .environment(\.accent, Theme.brand)
-        }
-        .id(index)
-        .onDisappear { Transport.shared.stop() }
-    }
-
-    private func result(for i: Int) -> AnswerRow.Result? {
-        guard feedback != nil else { return nil }
-        if i == q.answer { return .right }
-        if i == choice { return .wrong }
-        return nil
-    }
-
-    @ViewBuilder
-    private var soundButtons: some View {
-        HStack(spacing: 12) {
-            ForEach(0..<2, id: \.self) { i in
-                Button {
-                    Haptics.tap()
-                    play(i)
-                } label: {
-                    Label(q.options[i], systemImage: "speaker.wave.2.fill")
-                }
-                .buttonStyle(GhostButtonStyle(textColor: Theme.brand))
-            }
-        }
-    }
-
-    private func play(_ i: Int) {
-        switch q.sound {
-        case .kickOrHat:
-            AudioEngine.shared.trigger(i == 0 ? .kick : .hat, kit: genre.kit)
-        case .majorOrMinor:
-            AudioEngine.shared.playChord(i == 0 ? [60, 64, 67] : [60, 63, 67], seconds: 0.9, patch: .keys)
-        case .none:
-            break
-        }
-    }
-
-    private func answer(_ picked: Int?) {
-        let right = picked == q.answer
-        if right {
-            streak += 1
-            AudioEngine.shared.playSuccess()
-            feedback = StepFeedback(kind: .success, title: "Nice!", message: q.why, score: nil)
-        } else {
-            choice = picked
-            AudioEngine.shared.playNudge()
-            feedback = StepFeedback(kind: .reveal, title: picked == nil ? "No problem" : "Not quite",
-                                    message: q.why, score: nil)
-        }
-    }
-
-    private func advance() {
-        let missed = feedback?.kind != .success
-        if missed || index + 1 >= count {
-            done(streak)
-            return
-        }
-        withAnimation(.easeInOut(duration: 0.25)) {
-            index += 1
-            choice = nil
-            feedback = nil
-        }
-    }
-}
-
-private struct AnswerRow: View {
-    enum Result { case right, wrong }
-    let text: String
-    let selected: Bool
-    let result: Result?
-    let tap: () -> Void
-
-    private var shape: RoundedRectangle { RoundedRectangle(cornerRadius: 16, style: .continuous) }
-
-    private var tint: Color {
-        switch result {
-        case .right: Theme.success
-        case .wrong: Theme.miss
-        case nil: selected ? Theme.brand : Theme.stroke
-        }
-    }
-
-    private var fill: Color {
-        switch result {
-        case .right: Theme.successSoft
-        case .wrong: Theme.missSoft
-        case nil: selected ? Theme.brandSoft : Theme.surface
-        }
-    }
-
-    var body: some View {
-        Button(action: tap) {
-            Text(text)
-                .font(.label(17, weight: .bold))
-                .foregroundStyle(Theme.text)
-                .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 15)
-                .background(shape.fill(fill))
-                .overlay(shape.strokeBorder(tint, lineWidth: selected || result != nil ? 2.5 : Theme.border))
-                .background(shape.fill(result == nil && !selected ? Theme.stroke : Theme.lip(for: tint)).offset(y: 4))
-        }
-        .buttonStyle(PressScaleStyle(scale: 0.98))
-    }
-}
-
 // MARK: - Shared pieces
 
-private struct OnboardingTitle: View {
+struct OnboardingTitle: View {
     let text: String
 
     var body: some View {
