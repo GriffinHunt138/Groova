@@ -139,36 +139,48 @@ struct DrumDuelGame: View {
     }
 
     private func pad(_ t: DrumTrack, pos: Double) -> some View {
-        let color = GameStyle.color(t)
-        let lit = flash[t] ?? 0
+        let color: Color = GameStyle.color(t)
+        let lit: Double = flash[t] ?? 0
         // Cue: glow just before a hit you should play.
-        let cue = round.cues && inAnswer && targets.contains { $0.track == t && $0.pos - pos > -0.4 && $0.pos - pos < 1.6 }
-        let hideName = round.hideLabels && phase == .playing && !inAnswer && currentBar > 0
-        return VStack(spacing: 10) {
+        let cue: Bool = round.cues && inAnswer && targets.contains { $0.track == t && $0.pos - pos > -0.4 && $0.pos - pos < 1.6 }
+        let hideName: Bool = round.hideLabels && phase == .playing && !inAnswer && currentBar > 0
+        let face = padFace(t, color: color, lit: lit, cue: cue, hideName: hideName)
+        return face
+            .contentShape(Rectangle())
+            .gesture(DragGesture(minimumDistance: 0)
+                .onChanged { _ in press(t) }
+                .onEnded { _ in release(t) })
+            .accessibilityLabel(t.name)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { press(t); release(t) }
+    }
+
+    private func release(_ t: DrumTrack) {
+        held.remove(t)
+    }
+
+    private func padFace(_ t: DrumTrack, color: Color, lit: Double, cue: Bool, hideName: Bool) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 24, style: .continuous)
+        let textOpacity: Double = 0.9 + lit * 0.1
+        let fillOpacity: Double = 0.32 + lit * 0.68
+        let border: Color = cue ? Color.white : color.opacity(0.6)
+        let borderWidth: CGFloat = cue ? 4 : 2
+        let scale: CGFloat = 1 - CGFloat(lit) * 0.05
+        let label = VStack(spacing: 10) {
             Image(systemName: t.symbol)
                 .font(.system(size: 30, weight: .black))
             Text(hideName ? "?" : t.name.uppercased())
                 .font(.label(14, weight: .black)).tracking(0.6)
         }
-        .foregroundStyle(Color.white.opacity(0.9 + lit * 0.1))
-        .frame(maxWidth: .infinity)
-        .frame(height: 210)
-        .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(color.opacity(0.32 + lit * 0.68))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .strokeBorder(cue ? Color.white : color.opacity(0.6), lineWidth: cue ? 4 : 2)
-        )
-        .background(RoundedRectangle(cornerRadius: 24, style: .continuous).fill(color.opacity(0.5)).offset(y: 6))
-        .shadow(color: color.opacity(lit), radius: 24)
-        .scaleEffect(1 - lit * 0.05)
-        .contentShape(Rectangle())
-        .gesture(DragGesture(minimumDistance: 0).onChanged { _ in press(t) }.onEnded { _ in _ = held.remove(t) })
-        .accessibilityLabel(t.name)
-        .accessibilityAddTraits(.isButton)
-        .accessibilityAction { press(t); _ = held.remove(t) }
+        return label
+            .foregroundStyle(Color.white.opacity(textOpacity))
+            .frame(maxWidth: .infinity)
+            .frame(height: 210)
+            .background(shape.fill(color.opacity(fillOpacity)))
+            .overlay(shape.strokeBorder(border, lineWidth: borderWidth))
+            .background(shape.fill(color.opacity(0.5)).offset(y: 6))
+            .shadow(color: color.opacity(lit), radius: 24)
+            .scaleEffect(scale)
     }
 
     @State private var held: Set<DrumTrack> = []
