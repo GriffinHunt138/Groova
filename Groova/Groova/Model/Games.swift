@@ -35,6 +35,16 @@ nonisolated enum GameKind: Sendable {
     case impostor([ImpostorRound])
     case resolution([RunRound])
     case tether([TetherRound])
+    case xray([XRayRound])
+    case surgery([SurgeryRound])
+    case architect([ArchitectRound])
+    case traffic([TrafficRound])
+    case casting([CastRound])
+    case detective([DetectiveRound])
+    case surfer([SurferRound])
+    case cut([CutRound])
+    case jigsaw([SongSection], [JigsawRound])
+    case live([LiveRound])
 }
 
 // MARK: - Blackout (F0.1)

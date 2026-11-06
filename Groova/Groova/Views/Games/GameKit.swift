@@ -37,6 +37,17 @@ struct GameStepView: View {
         case .impostor(let rounds): ChordImpostorGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
         case .resolution(let rounds): ResolutionRunGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
         case .tether(let rounds): TetherGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .xray(let rounds): SoundXRayGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .surgery(let rounds): SynthSurgeryGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .architect(let rounds): AcousticArchitectGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .traffic(let rounds): MixTrafficGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .casting(let rounds): SoundCastingGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .detective(let rounds): StructureDetectiveGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .surfer(let rounds): EnergySurferGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .cut(let rounds): PerfectCutGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .jigsaw(let cards, let rounds):
+            SongJigsawGame(task: task, cards: cards, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .live(let rounds): LiveTakeGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
         }
     }
 }
