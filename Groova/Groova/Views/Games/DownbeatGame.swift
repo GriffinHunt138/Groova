@@ -49,6 +49,7 @@ struct DownbeatGame: View {
     private var loop: Pattern { round.choices.isEmpty ? round.loop : round.choices[min(choice, round.choices.count - 1)].loop }
     private var isAlign: Bool { if case .align = round.mode { return true }; return false }
     private var startBeat: Int { if case .lock(let b) = round.mode { return b }; return 0 }
+    private var isLock: Bool { if case .lock = round.mode { return true }; return false }
     private var breakBars: [Int] { if case .follow(let b) = round.mode { return b }; return [] }
 
     /// Where the real 1s fall, in transport steps. Bar 0 is for listening.
@@ -138,7 +139,7 @@ struct DownbeatGame: View {
         }()
         return ZStack {
             Color.black.opacity(inBreak ? 0.4 : 0).animation(.easeInOut(duration: 0.4), value: inBreak)
-            dial(lit: lit, glow: glow, pulse: round.mode == .lock && phase == .playing ? glow : 0)
+            dial(lit: lit, glow: glow, pulse: isLock && phase == .playing ? glow : 0)
             VStack {
                 HStack {
                     StageTag(text: tag, color: bar > 0 && !inBreak ? accent : GameStyle.nightDim)
@@ -166,7 +167,7 @@ struct DownbeatGame: View {
                 let on = lit == i
                 let one = i == 0
                 let color = one ? Theme.gold : accent
-                let showLabel = round.mode != .lock
+                let showLabel = !isLock
                 ZStack {
                     Circle()
                         .fill(on ? color : GameStyle.night)

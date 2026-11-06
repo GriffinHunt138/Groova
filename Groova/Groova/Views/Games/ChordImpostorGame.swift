@@ -42,6 +42,7 @@ struct ChordImpostorGame: View {
     }
 
     private var round: ImpostorRound { rounds[min(game.index, rounds.count - 1)] }
+    private var isReverse: Bool { if case .reverse = round.mode { return true }; return false }
     private var gap: Double { 60 / round.bpm * 2 }
 
     /// The odd one out: the only cup whose quality differs from the rest.
@@ -157,7 +158,7 @@ struct ChordImpostorGame: View {
             Text(showName ? t.name : "\(i + 1)")
                 .font(.display(showName ? 17 : 20))
                 .foregroundStyle(GameStyle.nightText)
-            if round.mode == .reverse, caught == i, phase == .playing {
+            if isReverse, caught == i, phase == .playing {
                 Button { flip(i) } label: {
                     Image(systemName: "arrow.up.arrow.down").font(.system(size: 14, weight: .black))
                         .frame(width: 40, height: 30)
@@ -306,7 +307,7 @@ struct ChordImpostorGame: View {
         withAnimation { cups[i] = cups[i].flipped }
         sound(cups[i], seconds: 1.2)
         flips += 1
-        if round.mode == .reverse, odd(cups) == nil {
+        if isReverse, odd(cups) == nil {
             withAnimation { phase = .done }
             game.pass(1, "Flipped back. One note, the third, turned it from \(cups[i].minor ? "major to minor" : "minor to major").")
             play(cups)
@@ -330,7 +331,7 @@ struct ChordImpostorGame: View {
                 return odd(cups)
             }()
             if s == answer {
-                if round.mode == .reverse {
+                if isReverse {
                     caught = s
                     Haptics.success()
                     return
