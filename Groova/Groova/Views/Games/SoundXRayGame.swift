@@ -115,7 +115,7 @@ struct SoundXRayGame: View {
         let color = Self.colors[i % Self.colors.count]
         return Button(action: action) {
             VStack(spacing: 8) {
-                Fingerprint(patch: v.patch, color: color, playedAt: playedAt[i], hidden: hidden)
+                SoundFingerprint(patch: v.patch, color: color, playedAt: playedAt[i], hidden: hidden)
                     .frame(height: 110)
                     .padding(.horizontal, 6)
                 HStack(spacing: 5) {
@@ -139,7 +139,7 @@ struct SoundXRayGame: View {
         return GeometryReader { g in
             let w = g.size.width - 32, h = g.size.height - 90
             ZStack(alignment: .topLeading) {
-                Fingerprint(patch: v.patch, color: GameStyle.lead, hold: 0.9, playedAt: playedAt[9])
+                SoundFingerprint(patch: v.patch, color: GameStyle.lead, hold: 0.9, playedAt: playedAt[9])
                     .frame(width: w, height: h)
                     .position(x: 16 + w / 2, y: 50 + h / 2)
                 ForEach(0..<3, id: \.self) { z in
@@ -185,7 +185,7 @@ struct SoundXRayGame: View {
                 heard.insert(99)
             } label: {
                 HStack(spacing: 12) {
-                    Fingerprint(patch: mystery[0].patch, color: .white, playedAt: playedAt[99], hidden: game.feedback?.kind != .success)
+                    SoundFingerprint(patch: mystery[0].patch, color: .white, playedAt: playedAt[99], hidden: game.feedback?.kind != .success)
                         .frame(width: 120, height: 70)
                     VStack(alignment: .leading, spacing: 4) {
                         Text("MYSTERY SOUND").font(.label(12, weight: .black)).tracking(1).foregroundStyle(accent)
@@ -258,8 +258,8 @@ struct SoundXRayGame: View {
                 Button(action: playHybrid) {
                     VStack(spacing: 6) {
                         ZStack {
-                            if let f = front { Fingerprint(patch: f.patch, color: GameStyle.snare, playedAt: playedAt[50]).opacity(1 - blend * 0.7) }
-                            if let t = tail { Fingerprint(patch: t.patch, color: GameStyle.chords, playedAt: playedAt[50]).opacity(0.3 + blend * 0.7) }
+                            if let f = front { SoundFingerprint(patch: f.patch, color: GameStyle.snare, playedAt: playedAt[50]).opacity(1 - blend * 0.7) }
+                            if let t = tail { SoundFingerprint(patch: t.patch, color: GameStyle.chords, playedAt: playedAt[50]).opacity(0.3 + blend * 0.7) }
                             if front == nil || tail == nil {
                                 Text("Pick a front\nand a tail").font(.label(13, weight: .heavy)).multilineTextAlignment(.center)
                                     .foregroundStyle(GameStyle.nightDim)
@@ -334,8 +334,8 @@ struct SoundXRayGame: View {
                 } label: {
                     VStack(spacing: 8) {
                         ZStack {
-                            if let f = front { Fingerprint(patch: f.patch, color: GameStyle.snare, playedAt: playedAt[2]).opacity(1 - blend * 0.7) }
-                            if let t = tail { Fingerprint(patch: t.patch, color: GameStyle.chords, playedAt: playedAt[2]).opacity(0.3 + blend * 0.7) }
+                            if let f = front { SoundFingerprint(patch: f.patch, color: GameStyle.snare, playedAt: playedAt[2]).opacity(1 - blend * 0.7) }
+                            if let t = tail { SoundFingerprint(patch: t.patch, color: GameStyle.chords, playedAt: playedAt[2]).opacity(0.3 + blend * 0.7) }
                         }
                         .frame(height: 110).padding(.horizontal, 6)
                         Text(name.isEmpty ? "Yours" : name).font(.label(13, weight: .heavy)).foregroundStyle(Theme.gold)

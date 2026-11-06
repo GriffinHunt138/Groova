@@ -179,7 +179,7 @@ struct EnvelopeShape: Shape {
 
 /// A sound's fingerprint: its envelope as a glowing silhouette, textured by how bright it is.
 /// A playhead sweeps across it after `playedAt`.
-struct Fingerprint: View {
+struct SoundFingerprint: View {
     let patch: SynthPatch
     var color: Color
     var hold: Double = 0.45
