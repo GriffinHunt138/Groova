@@ -126,7 +126,7 @@ struct MasteryChallengeView: View {
                 Text("MASTERY CHALLENGE").font(.label(12, weight: .heavy)).tracking(1.4).foregroundStyle(Theme.gold)
             }
             Text(task.prompt).font(.display(26)).foregroundStyle(Theme.text)
-            Text("Listen to the \(task.bars)-bar reference, then rebuild the kick, clap, hats and bass by ear. Score 80% to unlock the next unit.")
+            Text("Listen to the \(task.bars)-bar reference, then rebuild the kick, snare, hats and bass by ear. Score 80% to unlock the next unit.")
                 .font(.label(15, weight: .medium)).foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -188,7 +188,7 @@ struct MasteryChallengeView: View {
     private func hint(for part: Instrument) -> String {
         switch part {
         case .drum(.kick): "Solo the kick in the reference and count the hits against the step numbers."
-        case .drum(.clap): "Claps usually answer the kick on 2 and 4. Listen for anything extra."
+        case .drum(.clap): "The snare usually answers the kick on 2 and 4. Listen for anything extra."
         case .drum(.hat), .drum(.openHat): "Solo the hats and listen for gaps and doubles."
         case .drum(.perc): "Rims hide between the other hits. Solo them in the reference."
         case .bass: "Bass notes dodge the kick. Listen for when the line moves, and for any long notes."

@@ -201,7 +201,7 @@ struct PartHeader: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(part == .foundations ? "PART 1 · CORE FOUNDATIONS" : "PART 2 · \(genre.name.uppercased()) ACADEMY")
+            Text(part == .foundations ? "PART 1 · FOUNDATIONS" : "PART 2 · \(genre.name.uppercased())")
                 .font(.label(12, weight: .black)).tracking(1.2)
                 .foregroundStyle(genre.color)
             Text(part == .foundations
@@ -237,10 +237,10 @@ struct SkipFoundationsCard: View {
         VStack(alignment: .leading, spacing: 10) {
             Label("Already making music?", systemImage: "forward.fill")
                 .font(.label(16, weight: .heavy)).foregroundStyle(Theme.text)
-            Text("Skip Core Foundations and start the \(genre.name) Academy. The foundation lessons stay open, so you can dip back in any time. You can also tap any crown to test out of a single unit.")
+            Text("Skip Foundations and start the \(genre.name) course. The foundation lessons stay open, so you can dip back in any time. You can also tap any crown to test out of a single unit.")
                 .font(.label(14, weight: .medium)).foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
-            Button("Skip to the \(genre.name) Academy") {
+            Button("Skip to \(genre.name)") {
                 Haptics.success()
                 withAnimation { app.skipFoundations() }
             }

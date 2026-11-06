@@ -30,7 +30,7 @@ nonisolated enum JamPart: String, Codable, CaseIterable, Identifiable, Hashable,
 
     var blurb: String {
         switch self {
-        case .drums: "Kick, clap, hats & rim"
+        case .drums: "Kick, snare, hats & rim"
         case .bass: "The low end"
         case .keys: "Chords"
         case .lead: "Melodies & riffs"
@@ -458,6 +458,7 @@ nonisolated enum JamSound {
     static let kits: [Kit] = [
         Kit(name: "House", kit: .house), Kit(name: "Deep", kit: .deepHouse), Kit(name: "Techno", kit: .techno),
         Kit(name: "Tech", kit: .techHouse), Kit(name: "Garage", kit: .ukGarage),
+        Kit(name: "Boom bap", kit: .hipHop), Kit(name: "Silk", kit: .rnb), Kit(name: "Pop", kit: .pop),
     ]
 
     static let bassPresets: [Preset] = [
@@ -507,20 +508,31 @@ nonisolated enum JamSound {
     ]
 
     static func defaultPreset(_ part: JamPart, _ g: Genre) -> Int {
-        let order: [Genre] = [.house, .deepHouse, .techno, .techHouse, .ukGarage]
-        let i = order.firstIndex(of: g) ?? 0
+        // Indexes into kits, bassPresets and keyPresets.
+        let (drums, bass, keys): (Int, Int, Int)
+        switch g {
+        case .house: (drums, bass, keys) = (0, 0, 0)
+        case .deepHouse: (drums, bass, keys) = (1, 1, 1)
+        case .techno: (drums, bass, keys) = (2, 2, 3)
+        case .techHouse: (drums, bass, keys) = (3, 2, 3)
+        case .ukGarage: (drums, bass, keys) = (4, 3, 1)
+        case .hipHop: (drums, bass, keys) = (5, 5, 1)
+        case .rnb: (drums, bass, keys) = (6, 1, 1)
+        case .pop: (drums, bass, keys) = (7, 0, 0)
+        }
         switch part {
-        case .drums: return i
-        case .bass: return [0, 1, 2, 2, 3][i]
-        case .keys: return [0, 1, 3, 3, 1][i]
+        case .drums: return drums
+        case .bass: return bass
+        case .keys: return keys
         case .lead, .vox: return 0
         }
     }
 
-    /// The key's root as a pitch class: A minor for house and techno, and so on.
+    /// The key's root as a pitch class: A minor for house and techno, D minor for hip-hop, and so on.
     static func keyRoot(_ g: Genre) -> Int {
         switch g {
-        case .house, .techno: 9
+        case .house, .techno, .rnb, .pop: 9
+        case .hipHop: 2
         case .ukGarage: 4
         case .deepHouse: 5
         case .techHouse: 0

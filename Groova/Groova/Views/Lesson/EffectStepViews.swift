@@ -215,7 +215,7 @@ struct FilterStepView: View {
             lastScore = 1
             withAnimation {
                 feedback = StepFeedback(kind: .success, title: "Filter unlocked",
-                                        message: "Closed = warm and muffled. Open = bright and present. Producers automate this to build tension into a drop.",
+                                        message: "Closed = warm and muffled. Open = bright and present. Producers move it over time to build tension before a big moment.",
                                         score: nil)
             }
             AudioEngine.shared.playSuccess(); Haptics.success()
@@ -341,7 +341,7 @@ struct ReverbStepView: View {
         switch mix {
         case ..<0.12: "Dry: tight and up-front."
         case ..<0.35: "A touch of room. Still punchy."
-        case ..<0.6: "Spacious. The clap blooms."
+        case ..<0.6: "Spacious. The snare blooms."
         default: "Huge and dreamy — perfect for a breakdown."
         }
     }

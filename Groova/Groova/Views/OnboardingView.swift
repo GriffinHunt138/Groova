@@ -3,7 +3,7 @@
 //  Groova
 //
 //  Runs once, after the first sign in with no account: name, genre, experience, a quick
-//  placement check, a daily goal, then the plan. The check skips Core Foundations units
+//  placement check, a daily goal, then the plan. The check skips Foundations units
 //  you already know, capped by how much producing you said you've done.
 //
 
@@ -145,7 +145,7 @@ private struct HelloPage: View {
             Text("Hi, I'm Woofer!")
                 .font(.display(30))
                 .foregroundStyle(Theme.text)
-            Text("I'll teach you to make music. First, a few quick questions so I can set up your path. It takes about two minutes.")
+            Text("I'll teach you to make music: beats, chords, melodies, whole songs. First, a few quick questions so I can set up your path. It takes about two minutes.")
                 .font(.label(17, weight: .semibold))
                 .foregroundStyle(Theme.text)
                 .lineSpacing(3)
@@ -295,16 +295,16 @@ private struct PlanPage: View {
     private var placed: Int { startFromTop ? 0 : placement }
 
     private var startTitle: String {
-        let core = CoreCourse.units
+        let core = FoundationCourse.units
         if placed >= core.count {
-            return "\(genre.name) Academy"
+            return "\(genre.name) course"
         }
-        return "Unit \(placed + 1): \(core[placed].title)"
+        return "\(core[placed].title)"
     }
 
     private var line: String {
-        if placed >= CoreCourse.units.count {
-            return "You know your stuff, \(name). You're skipping Core Foundations and going straight to the \(genre.name) Academy. The foundations stay open if you want a refresher."
+        if placed >= FoundationCourse.units.count {
+            return "You know your stuff, \(name). You're skipping Foundations and going straight to the \(genre.name) course. The foundations stay open if you want a refresher."
         }
         if placed > 0 {
             return "Nice work, \(name). You already know the first \(placed == 1 ? "unit" : "\(placed) units"), so I've opened \(placed == 1 ? "it" : "them") up. Jump back any time."
@@ -354,7 +354,7 @@ private struct PlanPage: View {
                     .card(padding: 4)
                     .padding(.top, 16)
                     if placement > 0 {
-                        Button(startFromTop ? "Use my placement" : "Start from Unit 1 instead") {
+                        Button(startFromTop ? "Use my placement" : "Start from the beginning instead") {
                             Haptics.tap()
                             withAnimation(.spring(response: 0.35)) { startFromTop.toggle() }
                         }
@@ -398,7 +398,7 @@ private struct PlanPage: View {
 
 // MARK: - Placement check
 
-/// One question per Core Foundations unit, in order. A right answer means you can skip that
+/// One question per Foundations unit, in order. A right answer means you can skip that
 /// unit. It stops at the first miss (or "I'm not sure"), or once you've reached the most
 /// your experience allows, so beginners get a short check and nobody is over-placed.
 nonisolated struct PlacementQuestion: Sendable {
@@ -412,30 +412,24 @@ nonisolated struct PlacementQuestion: Sendable {
     let why: String
 
     static let all: [PlacementQuestion] = [
-        .init(unit: 1, prompt: "What does BPM measure?", sound: .none,
-              options: ["How loud a track is", "How fast a track is", "How long a track is"], answer: 1,
-              why: "BPM is beats per minute: the tempo. House usually sits around 120 to 128."),
-        .init(unit: 2, prompt: "Which sound is the kick drum?", sound: .kickOrHat,
+        .init(unit: 1, prompt: "Which sound is the kick drum?", sound: .kickOrHat,
               options: ["Sound A", "Sound B"], answer: 0,
               why: "The kick is the low thump that holds the beat down. The hi-hat is the short, bright tick."),
-        .init(unit: 3, prompt: "What does swing do to a beat?", sound: .none,
-              options: ["Makes it louder", "Pushes some notes slightly late", "Doubles the tempo"], answer: 1,
-              why: "Swing delays every other sixteenth a little, so a stiff beat starts to bounce."),
-        .init(unit: 4, prompt: "How many semitones are in an octave?", sound: .none,
+        .init(unit: 2, prompt: "What does BPM measure?", sound: .none,
+              options: ["How loud a track is", "How fast a track is", "How long a track is"], answer: 1,
+              why: "BPM is beats per minute: the tempo. Hip-hop often sits around 85 to 95, pop around 100 to 120, house around 124."),
+        .init(unit: 3, prompt: "How many semitones are in an octave?", sound: .none,
               options: ["7", "8", "12"], answer: 2,
               why: "Twelve. Count every white and black key from one C up to the next."),
-        .init(unit: 5, prompt: "Which chord sounds sadder?", sound: .majorOrMinor,
+        .init(unit: 4, prompt: "Which chord sounds sadder?", sound: .majorOrMinor,
               options: ["Chord A", "Chord B"], answer: 1,
               why: "Chord B is minor. Its middle note sits one semitone lower than the major chord, and that darkens it."),
-        .init(unit: 6, prompt: "What does a low-pass filter do?", sound: .none,
+        .init(unit: 5, prompt: "What does a low-pass filter do?", sound: .none,
               options: ["Cuts the highs and lets the lows through", "Cuts the lows and lets the highs through", "Makes the sound longer"], answer: 0,
               why: "A low-pass lets the lows pass. Close it down and the sound gets darker and more muffled."),
-        .init(unit: 7, prompt: "Why do producers sidechain the bass to the kick?", sound: .none,
-              options: ["To make the bass louder", "So the bass ducks out of the kick's way", "To add reverb"], answer: 1,
-              why: "Sidechain turns the bass down each time the kick hits, so they don't fight and the groove pumps."),
-        .init(unit: 8, prompt: "In a club track, what usually happens in the breakdown?", sound: .none,
-              options: ["The drums drop out and tension builds", "Everything plays at once", "The track ends"], answer: 0,
-              why: "The breakdown strips the drums away and builds tension, so the drop hits harder when they come back."),
+        .init(unit: 6, prompt: "Why does a verse usually have fewer layers than the chorus?", sound: .none,
+              options: ["To save space on the computer", "So the chorus hits harder when it arrives", "Because verses are shorter"], answer: 1,
+              why: "Holding back in the verse leaves room to grow. When the chorus adds layers, it feels like a payoff."),
     ]
 }
 

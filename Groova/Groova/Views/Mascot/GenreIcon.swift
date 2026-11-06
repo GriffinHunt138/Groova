@@ -3,8 +3,9 @@
 //  Groova
 //
 //  One object per genre, drawn in Groova purple with a chunky darker lip underneath and a soft
-//  highlight: House a disco ball, Deep House a crescent moon, Techno a robot head, Tech House
-//  a rotary knob, UK Garage a boombox. Drawn in a 100 × 100 space.
+//  highlight: House a disco ball, Hip-Hop a boombox, R&B a crescent moon, Pop a microphone.
+//  The archived genres keep their art: Techno a robot head, Tech House a rotary knob.
+//  Drawn in a 100 × 100 space.
 //
 
 import Foundation
@@ -58,10 +59,11 @@ enum GenreArt {
         c.fill(Path(ellipseIn: CGRect(x: 22, y: 88, width: 56, height: 8)), with: .color(.black.opacity(0.08)))
         switch g {
         case .house: discoBall(c)
-        case .deepHouse: moon(c)
+        case .hipHop, .ukGarage: boombox(c)
+        case .rnb, .deepHouse: moon(c)
+        case .pop: mic(c)
         case .techno: robot(c)
         case .techHouse: knob(c)
-        case .ukGarage: boombox(c)
         }
     }
 
@@ -184,6 +186,36 @@ enum GenreArt {
         for i in 0..<4 {
             c.fill(A.rr(36 + CGFloat(i) * 7.5, 70, 5, 7, 1.5), with: .color(light))
         }
+    }
+
+    // MARK: Pop: a microphone
+
+    static func mic(_ c: GraphicsContext) {
+        // Handle
+        var handle = Path()
+        handle.move(to: CGPoint(x: 44, y: 54))
+        handle.addLine(to: CGPoint(x: 56, y: 54))
+        handle.addLine(to: CGPoint(x: 53, y: 88))
+        handle.addLine(to: CGPoint(x: 47, y: 88))
+        handle.closeSubpath()
+        chunky(c, handle, ink, ink, depth: 2)
+        c.fill(A.rr(42, 56, 16, 6, 3), with: .color(lip))
+        // Head
+        let head = A.dot(50, 34, 24)
+        chunky(c, head)
+        var grille = c
+        grille.clip(to: head)
+        for y in stride(from: CGFloat(16), to: 56, by: 7) {
+            for x in stride(from: CGFloat(28), to: 74, by: 7) {
+                let shift: CGFloat = Int((y - 16) / 7) % 2 == 0 ? 0 : 3.5
+                grille.fill(A.dot(x + shift, y, 1.8), with: .color(light))
+            }
+        }
+        c.fill(A.rr(30, 46, 40, 6, 3), with: .color(lip))
+        c.fill(A.rr(33, 18, 10, 5, 2.5), with: .color(shine))
+        sparkle(c, x: 82, y: 22, r: 8, color: light)
+        sparkle(c, x: 18, y: 70, r: 5, color: body)
+        sparkle(c, x: 84, y: 66, r: 4, color: light)
     }
 
     // MARK: UK garage: a boombox

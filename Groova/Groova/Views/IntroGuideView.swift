@@ -30,12 +30,12 @@ struct IntroGuideView: View {
     private var stops: [Stop] {
         let placed = app.placedUnits
         let path: String
-        if placed >= CoreCourse.units.count {
-            path = "This is your path. You've skipped Core Foundations, so you start in the \(genre.name) Academy. Every circle is a lesson, and each unit ends with a mastery test."
+        if placed >= FoundationCourse.units.count {
+            path = "This is your path. You've skipped Foundations, so you start in the \(genre.name) course. Every circle is a lesson, and each unit ends with a boss."
         } else if placed > 0 {
-            path = "This is your path. I've opened the first \(placed == 1 ? "unit" : "\(placed) units") from your check, so you start at Unit \(placed + 1). Every circle is a lesson, and each unit ends with a mastery test."
+            path = "This is your path. I've opened the first \(placed == 1 ? "unit" : "\(placed) units") from your check, so you start at \(FoundationCourse.units[min(placed, FoundationCourse.units.count - 1)].title). Every circle is a lesson, and each unit ends with a boss."
         } else {
-            path = "This is your path. Every circle is a lesson, and each unit ends with a mastery test. Pass it and the next unit opens."
+            path = "This is your path. Every circle is a lesson, and each unit ends with a boss. Beat it and the next unit opens."
         }
         let first = app.currentLesson(genre)?.title ?? "your first lesson"
         return [

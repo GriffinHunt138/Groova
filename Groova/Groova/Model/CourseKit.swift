@@ -78,9 +78,10 @@ nonisolated enum K {
                                  backing: backing, threshold: threshold))
     }
 
-    static func bassMake(_ prompt: String, _ hint: String, rows: [Int], backing: Pattern, notes: Int = 4) -> LessonStep {
+    static func bassMake(_ prompt: String, _ hint: String, rows: [Int], backing: Pattern, notes: Int = 4,
+                         start: [NoteEvent] = []) -> LessonStep {
         .pianoRoll(PianoRollTask(prompt: prompt, hint: hint, mode: .create(.notesAtLeast(notes)), rows: rows,
-                                 backing: backing))
+                                 backing: backing, start: start))
     }
 
     // MARK: Melody (played on the keys)

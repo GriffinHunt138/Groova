@@ -52,6 +52,9 @@ nonisolated enum Studio {
     static func palette(_ g: Genre) -> [ChordShape] {
         switch g {
         case .house: [.am7, .dm7, .em7, .fmaj7]
+        case .hipHop: [.dm7, .gm7, .bbmaj7, .am7]
+        case .rnb: [.cmaj9, .am9, .dm9, .em9]
+        case .pop: [.c, .g, .am, .f]
         case .techno: [.am7, .dm7]
         case .ukGarage: [.em9, .am9, .cmaj9, .dm9]
         case .deepHouse: [.fm9, .dbmaj7, .bbm7, .cm7]
@@ -64,6 +67,8 @@ nonisolated enum Studio {
         let base: [Int]
         switch g {
         case .house, .techno: base = [45, 43, 40, 38, 36, 33]
+        case .hipHop: base = [50, 48, 45, 43, 41, 38]
+        case .rnb, .pop: base = [48, 45, 43, 41, 40, 36]
         case .ukGarage: base = [47, 45, 43, 40, 38, 35]
         case .deepHouse: base = [48, 46, 44, 41, 39, 36]
         case .techHouse: base = [46, 43, 41, 39, 36, 34]

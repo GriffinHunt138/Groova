@@ -544,7 +544,7 @@ struct ArrangementStepView: View {
             let first = grid.map { $0.first ?? false }.filter { $0 }.count
             let most = (0..<task.sections.count).map { s in grid.filter { $0[s] }.count }.max() ?? 0
             let msg = most > first
-                ? "Starting small and building up gives the drop its punch. That's arrangement."
+                ? "Starting small and building up gives the big moment its punch. That's arrangement."
                 : "Every section feels different. Try starting with fewer parts so the big moments hit harder."
             withAnimation { feedback = StepFeedback(kind: .success, title: Cheer.win(), message: msg, score: nil) }
             AudioEngine.shared.playSuccess()

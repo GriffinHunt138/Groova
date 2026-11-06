@@ -127,6 +127,8 @@ struct LessonPlayerView: View {
         case .mixer(let t): MixerStepView(task: t, genre: genre, onComplete: advance)
         case .arrangement(let t): ArrangementStepView(task: t, genre: genre, onComplete: advance)
         case .tempo(let t): TempoStepView(task: t, genre: genre, onComplete: advance)
+        case .tap(let t): TapStepView(task: t, genre: genre, onComplete: advance)
+        case .order(let t): OrderStepView(task: t, genre: genre, onComplete: advance)
         }
     }
 

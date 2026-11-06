@@ -113,7 +113,8 @@ nonisolated enum Levels {
 
     static let registry: [String: LevelPair] = {
         var r: [String: LevelPair] = [:]
-        let sources: [[String: LevelPair]] = [CoreLevels.all, HouseLevels.all, HouseLevels2.all, TechnoLevels.all,
+        let sources: [[String: LevelPair]] = [FoundationCourse.levels, HouseAcademy.levels, HipHopAcademy.levels,
+                                               RnBAcademy.levels, PopAcademy.levels, CoreLevels.all, HouseLevels.all, HouseLevels2.all, TechnoLevels.all,
                                                GarageLevels.all, DeepHouseLevels.all, TechHouseLevels.all,
                                                ProductionLevels.all, AcademyLevels.all]
         for d in sources { r.merge(d) { first, _ in first } }
@@ -313,6 +314,25 @@ nonisolated enum Levels {
             n.prompt = gold ? "Find this tempo by ear, within 2 BPM" : "Find this tempo by ear"
             n.body = "Play the reference, then tap along or drag until your loop locks in with it."
             return [.tempo(n)]
+
+        case .tap(let t):
+            // Same idea, fewer lights: Silver fades them after a bar, Gold plays without them.
+            var n = t
+            n.guideBars = gold ? 0 : 1
+            n.tolerance = gold ? 1 : 1.1
+            n.prompt = gold ? t.prompt + ", no lights" : t.prompt + ", lights fade"
+            return [.tap(n)]
+
+        case .order(let t):
+            guard case .create = t.mode else {
+                var n = t
+                n.start = []
+                n.mode = .recreate
+                n.prompt = "Rebuild it by ear"
+                n.hint = "Listen to the reference, then put the tiles in the order you hear. Bronze idea: \(t.prompt)."
+                return [.order(n)]
+            }
+            return [step]
 
         case .filter(let t):
             var n = t
@@ -804,6 +824,10 @@ nonisolated enum Levels {
             return "mix \(t.channels.map(\.label)) \(t.target ?? [])"
         case .filter(let t):
             return "filter \(t.target.map { "\($0.cutoff)/\($0.resonance)" } ?? "explore")"
+        case .tap(let t):
+            return "tap \(t.targets) \(t.guideBars)"
+        case .order(let t):
+            return "order \(t.mode) \(t.tiles.map(\.name)) \(t.answer)"
         case .intro, .keyboard, .reverb, .mastery:
             return "other"
         }

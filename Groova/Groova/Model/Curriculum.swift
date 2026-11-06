@@ -98,6 +98,8 @@ nonisolated enum LessonStep: Sendable {
     case mixer(MixerTask)
     case arrangement(ArrangementTask)
     case tempo(TempoTask)
+    case tap(TapTask)
+    case order(OrderTask)
 }
 
 /// How a step is judged.
@@ -450,6 +452,89 @@ nonisolated struct ArrangementTask: Sendable {
     }
 }
 
+// MARK: Tap pad
+
+/// Tap a big pad in time with the music: the pulse, the downbeat, a backbeat, or the moment a
+/// section changes. Graded on timing.
+nonisolated struct TapTask: Sendable {
+    var prompt: String
+    var body: String
+    /// Loops played one after another, `barsEach` bars each. One loop is a steady groove.
+    var loops: [Pattern]
+    var barsEach: Int
+    /// When to tap, in 16th steps from the start: bar * 16 + step.
+    var targets: [Int]
+    /// The beat lights glow for this many bars, then fade so you keep time on your own.
+    var guideBars: Int = 1000
+    /// How far off a tap may land and still count, in 16th steps.
+    var tolerance: Double = 1.2
+    var threshold: Double = 0.75
+    var bpm: Double? = nil
+    var swing: Double? = nil
+    /// The sound the pad makes, so you hear yourself. nil is silent.
+    var sound: DrumTrack? = .perc
+    /// What the pad says.
+    var padLabel: String = "Tap"
+    /// Shown on the result: "beats", "changes", "snares".
+    var unit: String = "taps"
+
+    var totalBars: Int { loops.count * barsEach }
+    var totalSteps: Int { totalBars * Pattern.steps }
+}
+
+// MARK: Tile arranger
+
+/// One tile in an arranger: a named bar (or bars) of music.
+nonisolated struct OrderTile: Sendable {
+    var name: String
+    var loop: Pattern
+    /// A short line under the name: "Bright", "Low", "Chorus".
+    var tag: String = ""
+}
+
+/// Put tiles in order: chords into a progression, slices into a flip, sections into a song.
+/// Tap a tile to hear it and drop it in the next slot; tap a slot to clear it.
+nonisolated struct OrderTask: Sendable {
+    var prompt: String
+    var hint: String
+    var mode: TaskMode
+    var tiles: [OrderTile]
+    var slots: Int
+    /// Tile indexes, one per slot, for rule and recreate.
+    var answer: [Int] = []
+    /// Slots filled when the step opens.
+    var start: [Int?] = []
+    /// Slots that can't be changed (a given first chord, an intro).
+    var locked: Set<Int> = []
+    var barsEach: Int = 1
+    var bpm: Double? = nil
+    var swing: Double? = nil
+    /// Plays under every tile, like a drum loop under a chord progression.
+    var bed: Pattern? = nil
+    var threshold = 0.99
+    /// Slot labels: "1", "2" or "Intro", "Verse".
+    var slotNames: [String] = []
+
+    func pattern(_ i: Int?) -> Pattern {
+        var p = i.map { tiles[$0].loop } ?? Pattern()
+        if let bed { p = p.merged(with: bed) }
+        return p
+    }
+}
+
+extension Pattern {
+    /// Both patterns at once. Drums combine; bass and chords from both play.
+    nonisolated func merged(with other: Pattern) -> Pattern {
+        var p = self
+        for t in DrumTrack.allCases {
+            p[t] = zip(self[t], other[t]).map { $0 || $1 }
+        }
+        if p.bass.isEmpty { p.bass = other.bass }
+        p.chords += other.chords
+        return p
+    }
+}
+
 nonisolated struct MasteryTask: Sendable {
     var prompt: String
     var reference: Pattern
@@ -461,12 +546,15 @@ nonisolated struct MasteryTask: Sendable {
 // MARK: - Content
 
 nonisolated enum Curriculum {
-    /// Part 1, Core Foundations, then the genre's academy.
-    static func units(for genre: Genre) -> [Unit] { byGenre[genre] ?? CoreCourse.units }
+    /// Part 1, Foundations, then the genre's course.
+    static func units(for genre: Genre) -> [Unit] { byGenre[genre] ?? FoundationCourse.units }
 
     static func academy(for genre: Genre) -> [Unit] {
         switch genre {
-        case .house: HouseCourse.academy
+        case .house: HouseAcademy.units
+        case .hipHop: HipHopAcademy.units
+        case .rnb: RnBAcademy.units
+        case .pop: PopAcademy.units
         case .techno: TechnoCourse.academy
         case .ukGarage: GarageCourse.academy
         case .deepHouse: DeepHouseCourse.academy
@@ -477,7 +565,7 @@ nonisolated enum Curriculum {
     private static let byGenre: [Genre: [Unit]] = {
         var out: [Genre: [Unit]] = [:]
         for g in Genre.allCases {
-            out[g] = CoreCourse.units + academy(for: g).enumerated().map { i, u in
+            out[g] = FoundationCourse.units + academy(for: g).enumerated().map { i, u in
                 u.with(part: .academy, code: g.academyCode, number: i + 1)
             }
         }
@@ -486,7 +574,7 @@ nonisolated enum Curriculum {
 
     /// Progress for Core Foundations lessons is shared by every genre.
     static let coreKey = "core"
-    static let coreIDs: Set<String> = Set(CoreCourse.units.flatMap { $0.lessons.map(\.id) })
+    static let coreIDs: Set<String> = Set(FoundationCourse.units.flatMap { $0.lessons.map(\.id) })
     static func isCore(_ lessonID: String) -> Bool { coreIDs.contains(lessonID) }
 
     /// Every lesson that exists, by id, so units can be put together from lessons written elsewhere.

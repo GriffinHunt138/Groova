@@ -41,6 +41,17 @@ nonisolated struct SynthPatch: Sendable, Hashable {
     static let stab = SynthPatch(saw: 0.7, square: 0.1, sine: 0.15, detuneCents: 9, cutoff: 700, envAmount: 3800,
                                  filterDecay: 0.09, resonance: 0.35, attack: 0.002, decay: 0.16, sustain: 0.25,
                                  release: 0.12, gain: 0.16)
+    static let hipHopBass = SynthPatch(saw: 0.12, square: 0.05, sine: 0.95, cutoff: 300, envAmount: 450,
+                                       filterDecay: 0.2, resonance: 0.08, decay: 0.45, sustain: 0.85, release: 0.08,
+                                       gain: 0.58)
+    static let popBass = SynthPatch(saw: 0.4, square: 0.1, sine: 0.7, cutoff: 420, envAmount: 900,
+                                    filterDecay: 0.14, resonance: 0.15, decay: 0.3, sustain: 0.7, gain: 0.5)
+    static let rhodes = SynthPatch(saw: 0.04, square: 0, sine: 0.92, detuneCents: 5, cutoff: 1700, envAmount: 2200,
+                                   filterDecay: 0.25, resonance: 0.06, attack: 0.003, decay: 0.9, sustain: 0.18,
+                                   release: 0.4, gain: 0.24)
+    static let popPiano = SynthPatch(saw: 0.22, square: 0, sine: 0.75, detuneCents: 3, cutoff: 2000, envAmount: 3200,
+                                     filterDecay: 0.3, resonance: 0.05, attack: 0.002, decay: 1.0, sustain: 0.08,
+                                     release: 0.4, gain: 0.22)
     static let deepChord = SynthPatch(saw: 0.45, square: 0, sine: 0.5, detuneCents: 12, cutoff: 600, envAmount: 1400,
                                       filterDecay: 0.35, resonance: 0.15, attack: 0.01, decay: 0.6, sustain: 0.35,
                                       release: 0.35, gain: 0.13)
@@ -73,6 +84,21 @@ nonisolated struct DrumKit: Sendable, Hashable {
     var chords: SynthPatch = .stab
 
     static let house = DrumKit()
+    /// Boom-bap: a round, heavy kick, a fat snare, dusty hats, a warm sub and electric piano.
+    static let hipHop = DrumKit(kickStartHz: 140, kickEndHz: 46, kickPitchDecay: 0.04, kickDecay: 0.42,
+                                kickDrive: 1.9, kickClick: 0.25, kickGain: 1.0, clapTone: 900, clapDecay: 0.2,
+                                clapGain: 0.8, hatTone: 6200, hatDecay: 0.035, openHatDecay: 0.22, hatGain: 0.33,
+                                percHz: 700, percDecay: 0.05, percGain: 0.5, bass: .hipHopBass, chords: .rhodes)
+    /// Soft, round kick, a gentle snare, quiet hats, a smooth bass and lush keys.
+    static let rnb = DrumKit(kickStartHz: 120, kickEndHz: 44, kickPitchDecay: 0.045, kickDecay: 0.38,
+                             kickDrive: 1.1, kickClick: 0.1, kickGain: 0.95, clapTone: 1050, clapDecay: 0.24,
+                             clapGain: 0.6, hatTone: 6800, hatDecay: 0.03, openHatDecay: 0.2, hatGain: 0.26,
+                             percHz: 640, percDecay: 0.07, percGain: 0.42, bass: .deepBass, chords: .rhodes)
+    /// Tight, punchy kick, a bright snare, crisp hats, a clean bass and piano.
+    static let pop = DrumKit(kickStartHz: 175, kickEndHz: 52, kickPitchDecay: 0.03, kickDecay: 0.3,
+                             kickDrive: 1.6, kickClick: 0.35, kickGain: 0.95, clapTone: 1500, clapDecay: 0.16,
+                             clapGain: 0.75, hatTone: 8800, hatDecay: 0.035, openHatDecay: 0.2, hatGain: 0.36,
+                             percHz: 900, percDecay: 0.05, percGain: 0.45, bass: .popBass, chords: .popPiano)
     static let deepHouse = DrumKit(kickStartHz: 130, kickEndHz: 46, kickPitchDecay: 0.04, kickDecay: 0.36,
                                    kickDrive: 1.0, kickClick: 0.1, kickGain: 0.9, clapTone: 1000, clapDecay: 0.22,
                                    clapGain: 0.55, hatTone: 6000, hatDecay: 0.035, openHatDecay: 0.2, hatGain: 0.3,

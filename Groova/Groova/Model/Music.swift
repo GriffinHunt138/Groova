@@ -18,7 +18,7 @@ nonisolated enum DrumTrack: Int, CaseIterable, Codable, Hashable, Sendable, Iden
     var name: String {
         switch self {
         case .kick: "Kick"
-        case .clap: "Clap"
+        case .clap: "Snare"
         case .hat: "Hi-hat"
         case .openHat: "Open hat"
         case .perc: "Rim"
@@ -112,6 +112,9 @@ nonisolated struct ChordShape: Hashable, Sendable {
     static let cm7 = ChordShape(name: "Cm7", pitches: [55, 58, 60, 63])
     static let ebmaj7 = ChordShape(name: "E♭maj7", pitches: [55, 58, 62, 63])
     static let gm7 = ChordShape(name: "Gm7", pitches: [55, 58, 62, 65])
+    static let f = ChordShape(name: "F", pitches: [57, 60, 65])
+    static let g = ChordShape(name: "G", pitches: [55, 59, 62])
+    static let bbmaj7 = ChordShape(name: "B♭maj7", pitches: [57, 58, 62, 65])
 
     static let known: [ChordShape] = [.am, .c, .em, .dm, .am7, .dm7, .em7, .fmaj7, .cmaj7, .am9, .dm9, .em9, .cmaj9,
                                       .fm7, .fm9, .dbmaj7, .bbm7, .cm7, .ebmaj7, .gm7]

@@ -57,7 +57,10 @@ nonisolated struct UserProgress: Codable, Sendable {
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        selectedGenre = try c.decodeIfPresent(Genre.self, forKey: .selectedGenre)
+        // A genre that's no longer offered falls back to House.
+        selectedGenre = (try? c.decodeIfPresent(Genre.self, forKey: .selectedGenre)).flatMap { g in
+            Genre.allCases.contains(g) ? g : .house
+        }
         genres = try c.decodeIfPresent([String: GenreProgress].self, forKey: .genres) ?? [:]
         totalXP = try c.decodeIfPresent(Int.self, forKey: .totalXP) ?? 0
         streak = try c.decodeIfPresent(Int.self, forKey: .streak) ?? 0
@@ -287,8 +290,8 @@ final class AppState {
 
     /// Applies the onboarding result: genre, starting point and daily goal.
     func applyOnboarding(genre: Genre, placedUnits: Int, dailyGoal: Int) {
-        progress.placedUnits = max(0, min(placedUnits, CoreCourse.units.count))
-        progress.skippedFoundations = placedUnits >= CoreCourse.units.count
+        progress.placedUnits = max(0, min(placedUnits, FoundationCourse.units.count))
+        progress.skippedFoundations = placedUnits >= FoundationCourse.units.count
         progress.dailyGoal = dailyGoal
         select(genre)
     }

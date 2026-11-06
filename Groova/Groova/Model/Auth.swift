@@ -34,7 +34,7 @@ nonisolated enum ProducerLevel: String, Codable, CaseIterable, Identifiable, Sen
 
     var detail: String {
         switch self {
-        case .newcomer: "Never opened a DAW, or only just started"
+        case .newcomer: "Never made a beat, or only just started"
         case .tinkerer: "Made a few loops, never finished one"
         case .builder: "I can take an idea to a full track"
         case .releasing: "My music is out there"
@@ -60,12 +60,12 @@ nonisolated enum ProducerLevel: String, Codable, CaseIterable, Identifiable, Sen
         }
     }
 
-    /// The most Core Foundations units the placement check can skip for this level.
+    /// The most Foundations units the placement check can skip for this level.
     var maxPlacement: Int {
         switch self {
         case .newcomer: 0
-        case .tinkerer: 4
-        case .builder, .releasing: 8
+        case .tinkerer: 3
+        case .builder, .releasing: 6
         }
     }
 }
@@ -78,7 +78,7 @@ nonisolated struct Account: Codable, Sendable, Equatable {
     var email: String?
     var level: ProducerLevel
     var genre: Genre
-    /// Core Foundations units skipped by the placement check (0 to 8).
+    /// Foundations units skipped by the placement check (0 to 6).
     var placedUnits: Int
     var dailyGoal: Int
     var createdAt: Date
