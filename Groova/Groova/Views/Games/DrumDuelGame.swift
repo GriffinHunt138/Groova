@@ -154,7 +154,7 @@ struct DrumDuelGame: View {
     }
 
     private func pad(_ t: DrumTrack, pos: Double) -> some View {
-        let color: Color = GameStyle.color(t)
+        let color: Color = Theme.brand
         let lit: Double = flash[t] ?? 0
         // Cue: glow just before a hit you should play.
         let cue: Bool = round.cues && inAnswer && targets.contains { $0.track == t && $0.pos - pos > -0.4 && $0.pos - pos < 1.6 }

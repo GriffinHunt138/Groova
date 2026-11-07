@@ -102,10 +102,10 @@ nonisolated enum F0Games {
                    "The hats are already ticking. Put kicks on steps 1 and 9 and snares on 5 and 13, then play it.",
                    tracks: [.kick, .clap, .hat], edit: [.kick, .clap], start: Pattern(hat: F.eighths), target: F.beat),
         K.game(duelName, duelLine, .drumDuel([
-            DuelRound(title: "Hear each voice", body: "Tap each pad and listen. Kick thumps, snare cracks, hi-hat ticks.",
-                      mode: .free, backing: rim, bpm: 90),
-            DuelRound(title: "Answer the drums", body: "Watch the pads light up while I play. When it says Your turn, play the same thing back.",
+            DuelRound(title: "Kick and snare", body: "Watch the pads light up while I play. When it says Your turn, play the same thing back.",
                       mode: .echo, call: [Pattern(kick: [0, 8], clap: [4, 12])], cues: true, bpm: 80),
+            DuelRound(title: "Add the hats", body: "Same kick and snare, now with two hi-hat ticks in between. Listen, then answer.",
+                      mode: .echo, call: [Pattern(kick: [0, 8], clap: [4, 12], hat: [2, 10])], cues: true, bpm: 80),
             DuelRound(title: "Take your turn", body: "Two bars with all three drums. Watch the call, then answer. The pads glow just before each hit.",
                       mode: .echo, call: [Pattern(kick: [0, 8], clap: [4, 12], hat: [2, 10]),
                                           Pattern(kick: [0, 6, 8], clap: [4, 12], hat: [2, 10])], cues: true, bpm: 85),
