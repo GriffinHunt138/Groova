@@ -48,7 +48,9 @@ struct BlackoutGame: View {
                 VStack(spacing: 18) {
                     GameHeader(task: task, round: game.index, total: rounds.count, title: round.title, detail: round.body)
                     if !round.paces.isEmpty && phase == .ready { pacePicker }
-                    GameStage(light: true) { stage }
+                    stage
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 400)
                     if phase == .done {
                         TimingStrip(targets: targets.map { $0 * 4 }, hits: hits, taps: taps.map { $0 * 4 },
                                     length: Double(totalBars * 16))
@@ -87,20 +89,17 @@ struct BlackoutGame: View {
         let guided = phase == .playing && b >= 0 && !round.hiddenStart && (whole < 4 || whole - 4 < round.guideBeats)
         let pulse = guided ? max(0, 1 - phaseInBeat * 3) : 0
         let decoy = round.decoys && phase == .playing && whole >= 4 && whole % 2 == 1 && abs(phaseInBeat - 0.5) < 0.12
-        let dark = phase == .playing && !guided && whole >= 0
         let label: String = {
             switch phase {
             case .ready: return "Press start"
             case .done: return "\(hits.count) of \(round.beats)"
             case .playing:
                 if b < 0 { return "Listen" }
-                if whole < 4 { return round.hiddenStart ? "Find it" : "\(whole + 1)" }
+                if whole < 4 { return round.hiddenStart ? "Find it" : (whole == 0 ? "Ready" : "\(4 - whole)") }
                 return guided ? "Tap" : "Keep going"
             }
         }()
         return ZStack {
-            // The room dims when the guide goes out.
-            Theme.surfaceRaised.opacity(dark ? 1 : 0).animation(.easeInOut(duration: 0.6), value: dark)
             ZStack {
                 // Segments: one per beat you need to keep.
                 ForEach(0..<round.beats, id: \.self) { i in
@@ -108,47 +107,38 @@ struct BlackoutGame: View {
                     Circle()
                         .trim(from: Double(i) / Double(round.beats) + gap, to: Double(i + 1) / Double(round.beats) - gap)
                         .stroke(hits.contains(i) ? accent : Theme.surfaceHigh,
-                                style: StrokeStyle(lineWidth: 18, lineCap: .round))
+                                style: StrokeStyle(lineWidth: 24, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                         .shadow(color: hits.contains(i) ? accent.opacity(0.45) : .clear, radius: 8)
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: hits.contains(i))
                 }
-                .frame(width: 230, height: 230)
+                .frame(width: 320, height: 320)
                 // The guide light.
                 Circle()
                     .stroke(pulse > 0 ? accent.opacity(0.25 + pulse * 0.75) : Theme.stroke, lineWidth: 4 + pulse * 6)
-                    .frame(width: 186 + pulse * 10, height: 186 + pulse * 10)
+                    .frame(width: 262 + pulse * 12, height: 262 + pulse * 12)
                     .shadow(color: accent.opacity(pulse), radius: 20 * pulse)
                 if decoy {
                     Circle()
                         .stroke(Theme.gold.opacity(0.85), lineWidth: 8)
-                        .frame(width: 196, height: 196)
+                        .frame(width: 272, height: 272)
                         .shadow(color: Theme.gold, radius: 18)
                 }
                 // The pad.
                 Circle()
                     .fill(RadialGradient(colors: [accent.opacity(0.18 + tapFlash * 0.6), Theme.surfaceRaised],
-                                         center: .center, startRadius: 4, endRadius: 90))
-                    .frame(width: 160, height: 160)
+                                         center: .center, startRadius: 4, endRadius: 125))
+                    .frame(width: 226, height: 226)
                     .scaleEffect(1 - tapFlash * 0.06)
                     .overlay(
                         Text(label)
-                            .font(.display(label.count > 3 ? 22 : 40))
+                            .font(.display(label.count > 3 ? 28 : 56))
                             .foregroundStyle(Theme.text)
                             .contentTransition(.numericText())
                     )
             }
             .contentShape(Circle())
             .gesture(DragGesture(minimumDistance: 0).onChanged { _ in if !touching { touchDown() } }.onEnded { _ in touching = false })
-            VStack {
-                HStack {
-                    StageTag(text: dark ? "Blackout" : (phase == .playing ? "Guided" : task.name), light: true)
-                    Spacer()
-                    if round.decoys { StageTag(text: "Ignore the gold", color: Theme.gold, light: true) }
-                }
-                Spacer()
-            }
-            .padding(14)
         }
     }
 
