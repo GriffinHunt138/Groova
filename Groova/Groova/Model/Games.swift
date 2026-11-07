@@ -49,6 +49,8 @@ nonisolated enum GameKind: Sendable {
     case echo(EchoConfig)
     /// Core game: notes fall toward a line, play your part in time with the band.
     case playAlong(PlayAlongConfig)
+    /// Core game: hear it, tap the answer, ten in a row.
+    case quickEar(QuickEarConfig)
 }
 
 // MARK: - Blackout (F0.1)

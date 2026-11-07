@@ -14,6 +14,7 @@ import Foundation
 nonisolated enum F2Games {
     typealias F = FKit
 
+    static let earName = "Quick Ear"
     static let lessons: [Lesson] = [f21, f22, f23, f24, f25]
 
     // MARK: Material
@@ -40,59 +41,38 @@ nonisolated enum F2Games {
 
     static let f21 = K.lesson("f2.1", "High or Low?", "The shape of a melody", "arrow.up.and.down", .theory, 15, [
         K.opening("Melodies have a shape",
-                  "You can hear a melody climb and fall before you know a single note name. First you'll see higher notes sit higher in a piano roll. Then you'll fly a glider up and down with the sound."),
+                  "You can hear a melody climb and fall before you know a single note name. First you'll see higher notes sit higher in a piano roll. Then you'll hear two notes and call up or down, ten in a row."),
         K.teach("Up, down, level",
                 "Three notes go up. Three come down. Three stay put. Higher sounds sit higher on the screen, and that's all you need for now.",
                 demo: line([(0, 60, 2), (2, 64, 2), (4, 67, 4), (8, 67, 2), (10, 64, 2), (12, 60, 4)])),
         K.leadRule("Climb in the piano roll",
                    "Each row is a pitch, low at the bottom. Put C, E and G one beat apart: steps 1, 5 and 9. Play it and watch the notes climb. Then try E one row lower on D and hear a smaller rise.",
                    rows: rows, target: K.tune([(0, 60, 4), (4, 64, 4), (8, 67, 4)]), backing: bed),
-        K.game(gliderName, gliderLine, .glider([
-            GliderRound(title: "Two sonic hills", body: "Watch the glider fly up and down with the tune. Then it's your turn: slide your finger to fly the same hills.",
-                        mode: .follow(trail: true), notes: [60, 64, 69, 64, 60]),
-            GliderRound(title: "Follow the ghost", body: "Up, up, down. The path stays faintly lit. Trace it while you hear each note.",
-                        mode: .follow(trail: true), notes: [60, 64, 67, 62]),
-            GliderRound(title: "Fly by ear", body: "A new tune, and the path fades when you take off. Fly the shape from memory.",
-                        mode: .follow(trail: false), notes: [62, 67, 64]),
-        ])),
+        K.game(earName, "Two notes. Up or down?", .quickEar(.higherLower("f2.1", smallest: 4, largest: 9))),
     ])
 
     static let f21Silver: [LessonStep] = [
         L.silver("Navigate without the trail",
-                 "No trail this time. You'll have to remember the shape you heard. First copy a four-note melody in the piano roll. Then fly hidden shapes, spot a changed ending, and lock onto a pitch."),
+                 "No trail this time. You'll have to remember the shape you heard. First copy a four-note melody in the piano roll. Then you'll call up or down when the notes are close together."),
         K.teach("Contour comes first",
                 "The rise and fall of a melody is its contour. Hear this one: up a lot, down a bit, back down home. You can sing that shape before you know any of the notes.",
                 demo: line([(0, 60, 4), (4, 67, 4), (8, 64, 4), (12, 60, 4)])),
         K.leadCopy("Copy the contour",
                    "Play the reference. Four notes: it jumps up, comes down a bit, then lands back where it started.",
                    rows: rows, target: K.tune([(0, 60, 4), (4, 67, 4), (8, 64, 4), (12, 60, 4)]), backing: bed),
-        K.game(gliderName, gliderLine, .glider([
-            GliderRound(title: "Hidden flight", body: "Four notes, no path left behind. Remember the shape and fly it.",
-                        mode: .follow(trail: false), notes: [60, 67, 64, 69]),
-            GliderRound(title: "False altitude", body: "Two tunes that start the same. Only the second one's ending changes. Fly the second one.",
-                        mode: .changed(first: [60, 64, 67, 64]), notes: [60, 64, 67, 72]),
-            GliderRound(title: "Land the note", body: "A guide tone keeps sounding. Slide until your glider sings the same pitch, and hold it there.",
-                        mode: .hold(target: 67), bpm: 76),
-        ])),
+        K.game(earName, "Closer notes now.", .quickEar(.higherLower("f2.1s", smallest: 2, largest: 5))),
     ]
 
     static let f21Gold: [LessonStep] = [
         L.gold("Draw a melody",
-               "Turn a drawing into a melody. First write five notes in the piano roll. Then fly a route that becomes five notes, change its ending, and keep the flight you like."),
+               "Turn a drawing into a melody. First write five notes in the piano roll. Then you'll call up or down on the smallest moves."),
         K.teach("Climb, fall or hold",
                 "A five-note phrase is just five decisions: go up, go down, or stay. This one climbs twice, holds, then falls home.",
                 demo: line([(0, 60, 3), (3, 64, 3), (6, 67, 3), (9, 67, 3), (12, 62, 4)])),
         K.leadMake("Write five notes",
                    "Any five notes in the piano roll. Decide where it climbs, where it falls and where it holds.",
                    rows: rows, backing: bed, notes: 5),
-        K.game(gliderName, "Your flight path becomes a melody.", .glider([
-            GliderRound(title: "Sketch a shape", body: "Five beats of open sky. Fly any route you like. Every beat turns into a note.",
-                        mode: .draw),
-            GliderRound(title: "Fly a new ending", body: "Your first three notes fly themselves. Take over for the last two and land somewhere new.",
-                        mode: .redraw),
-            GliderRound(title: "Save the flight", body: "Pick a backing, hear both flights over it, and keep the one you like.",
-                        mode: .showcase),
-        ])),
+        K.game(earName, "Tiny moves. Listen closely.", .quickEar(.higherLower("f2.1g", count: 12, smallest: 1, largest: 2))),
     ]
 
     // MARK: - F2.2 Meet the Keys → Keyboard Maze
@@ -164,59 +144,38 @@ nonisolated enum F2Games {
 
     static let f23 = K.lesson("f2.3", "Notes Have Distance", "Repeats, steps and leaps", "ruler", .theory, 15, [
         K.opening("The space between notes",
-                  "The distance between two notes has a sound of its own. First you'll measure it in the piano roll. Then you'll tune a radar until its two pings sound the right distance apart."),
+                  "The distance between two notes has a sound of its own. First you'll measure it in the piano roll. Then you'll hear two notes and call same, step or leap."),
         K.teach("Same, step, leap",
                 "C then C again: no distance. C then D: a small step. C then G: a big leap. The bigger the gap, the more dramatic the jump.",
                 demo: line([(0, 60, 2), (2, 60, 2), (4, 60, 2), (6, 62, 2), (8, 60, 2), (10, 67, 6)])),
         K.leadRule("Measure a leap",
                    "C is already on step 1. Put a G on step 5, seven semitones up. Then try D and E there and hear the distance shrink.",
                    rows: rows, target: K.tune([(0, 60, 4), (4, 67, 4)]), backing: bed, start: K.tune([(0, 60, 4)])),
-        K.game(radarName, radarLine, .radar([
-            RadarRound(title: "One point, two pings", body: "Both dots start together: same note. Drag the second dot out and round and hear the gap grow.",
-                       mode: .grow),
-            RadarRound(title: "Step or leap?", body: "Hear each pair, then drag the dot into SAME, NEAR or FAR and let go.",
-                       mode: .zones([0, 2, 7])),
-            RadarRound(title: "Match the sonar", body: "Hear the target. Turn the dial until your two pings sound the same distance apart.",
-                       mode: .match(target: 3, choices: [0, 2, 3, 5, 7], direction: false)),
-        ])),
+        K.game(earName, "Same, step or leap?", .quickEar(.stepLeap("f2.3"))),
     ])
 
     static let f23Silver: [LessonStep] = [
         L.silver("Calibrate the instrument",
-                 "Your radar is losing its hints. First copy jumps up and down in the piano roll. Then match distances by ear, add direction, and lock two jumps in a row."),
+                 "Your radar is losing its hints. First copy jumps up and down in the piano roll. Then you'll call same, step or leap, twelve in a row."),
         K.teach("Size and direction",
                 "C up to G and C down to F are different moves, even though both are leaps. An interval has a size and a direction.",
                 demo: line([(0, 60, 4), (4, 67, 4), (8, 72, 4), (12, 67, 4)])),
         K.leadCopy("Up, then down",
                    "Play the reference. It jumps up twice, then down once. Copy all four notes.",
                    rows: rows, target: K.tune([(0, 60, 4), (4, 64, 4), (8, 72, 4), (12, 67, 4)]), backing: bed),
-        K.game(radarName, radarLine, .radar([
-            RadarRound(title: "Blind distance", body: "Hear two notes. Is the gap 0, 2, 4 or 7? Turn the dial and compare.",
-                       mode: .match(target: 4, choices: [0, 2, 4, 7], direction: false)),
-            RadarRound(title: "Direction matters", body: "Now it can go down. Clockwise is up, counter-clockwise is down.",
-                       mode: .match(target: -5, choices: [-7, -5, -2, 2, 5, 7], direction: true)),
-            RadarRound(title: "Two-target radar", body: "A three-note phrase. Lock the first jump, then the second starts from where you landed.",
-                       mode: .chain([4, -2])),
-        ])),
+        K.game(earName, "Twelve this time.", .quickEar(.stepLeap("f2.3s", count: 12))),
     ]
 
     static let f23Gold: [LessonStep] = [
         L.gold("Make a leap memorable",
-               "A memorable tune often starts with one distinctive jump. First write a three-note motif. Then pick your signature jump, build a motif round it, and answer it."),
+               "A memorable tune often starts with one distinctive jump. First write a three-note motif. Then you'll call same, step or leap, fifteen in a row."),
         K.teach("Hooks repeat a jump",
                 "Hear the same leap twice, then changed once. Repeating a jump makes it stick in your head.",
                 demo: line([(0, 60, 2), (2, 67, 2), (4, 64, 4), (8, 60, 2), (10, 67, 2), (12, 69, 4)])),
         K.leadMake("Write a three-note motif",
                    "Start on C. Use one jump you like, then one more note to finish the idea.",
                    rows: rows, backing: bed, notes: 3, start: [NoteEvent(0, 60, 4)]),
-        K.game(radarName, "Your jump, your motif, your answer.", .radar([
-            RadarRound(title: "Pick a signature jump", body: "Four distances. Tap each to hear it open a melody, then keep the one you like.",
-                       mode: .pick([2, 4, 7, 12])),
-            RadarRound(title: "Build a motif", body: "Set two jumps from C. Up is clockwise, down is counter-clockwise. Your signature jump is loaded first.",
-                       mode: .motif),
-            RadarRound(title: "Make an echo", body: "Change one jump in your motif to answer it. Then hear question and answer together.",
-                       mode: .reply),
-        ])),
+        K.game(earName, "Fifteen. Keep the streak.", .quickEar(.stepLeap("f2.3g", count: 15))),
     ]
 
     // MARK: - F2.4 Stay in a Key → Harmonic Gravity
@@ -226,7 +185,7 @@ nonisolated enum F2Games {
 
     static let f24 = K.lesson("f2.4", "Stay in a Key", "Notes that belong together", "key.fill", .theory, 15, [
         K.opening("Every melody has a home",
-                  "Most tunes have one note that feels like home, and the others pull towards it or away. First you'll see the C major notes in a piano roll. Then you'll steer through a constellation of notes and land back home."),
+                  "Most tunes have one note that feels like home, and the others pull towards it or away. First you'll see the C major notes in a piano roll. Then you'll hear short lines and catch the ones with a wrong note."),
         K.teach("Home feels like rest",
                 "The same phrase twice. Ending on C feels finished. Ending on D feels like it's still waiting for something.",
                 demo: line([(0, 64, 2), (2, 67, 2), (4, 65, 2), (6, 60, 2), (8, 64, 2), (10, 67, 2), (12, 65, 2), (14, 62, 2)], over: drone)),
@@ -234,19 +193,12 @@ nonisolated enum F2Games {
                    "The last note is a D. Move it down to C on step 13 and hear the phrase settle over the drone.",
                    rows: rows, target: K.tune([(0, 60, 4), (4, 64, 4), (8, 67, 4), (12, 60, 4)]), backing: drone,
                    start: K.tune([(0, 60, 4), (4, 64, 4), (8, 67, 4), (12, 62, 4)])),
-        K.game(gravityName, gravityLine, .notes(orbitC, [
-            NoteRound(title: "Hear the gravity", body: "A phrase plays over a drone. Hear it end on C, then on D. Which one rests?",
-                      mode: .ending(lead: [64, 67, 65, 62], options: [60, 62], answer: 60), backing: drone),
-            NoteRound(title: "See the constellation", body: "Tap C, D, E, G, then back to C. Watch home glow when you land.",
-                      mode: .find([60, 62, 64, 67, 60], reveal: false), backing: drone),
-            NoteRound(title: "Guide a landing", body: "Watch the path light up, then fly it yourself and land on home.",
-                      mode: .echo([67, 64, 62, 60], show: true, gapBars: 0), backing: drone),
-        ])),
+        K.game(earName, "Does every note belong?", .quickEar(.inKey("f2.4"))),
     ])
 
     static let f24Silver: [LessonStep] = [
         L.silver("Navigate with your ears",
-                 "In-key notes are a palette, not a law. First match a phrase with one outside note in the piano roll. Then follow hidden routes, catch the note that steps outside, and hear home move."),
+                 "In-key notes are a palette, not a law. First match a phrase with one outside note in the piano roll. Then you'll catch the wrong note, twelve in a row."),
         K.teach("A note from outside",
                 "Same phrase, but the F becomes F sharp. It isn't wrong, it's spicier. Composers do it on purpose.",
                 demo: line([(0, 64, 4), (4, 65, 4), (8, 67, 4), (12, 64, 4)], over: drone)),
@@ -254,33 +206,19 @@ nonisolated enum F2Games {
                    "One note here is F sharp, outside the key. Play the reference and fix it to match, which here means plain F.",
                    rows: sharpRows, target: K.tune([(0, 64, 4), (4, 65, 4), (8, 67, 4), (12, 64, 4)]), backing: drone,
                    start: K.tune([(0, 64, 4), (4, 66, 4), (8, 67, 4), (12, 64, 4)])),
-        K.game(gravityName, gravityLine, .notes(orbitC, [
-            NoteRound(title: "Hidden waypoint", body: "Four notes, no lights. Play the route back.",
-                      mode: .echo([60, 64, 62, 60], show: false, gapBars: 0), backing: drone),
-            NoteRound(title: "Outside orbit", body: "Two versions. In the second, one note leaves the key. Which one?",
-                      mode: .spot(a: [60, 64, 65, 67], b: [60, 64, 66, 67]), surface: orbitCOut, backing: drone),
-            NoteRound(title: "Move the centre", body: "An A minor chord now. Home has moved to A. Play this phrase back and feel it land there.",
-                      mode: .echo([69, 72, 71, 69], show: true, gapBars: 0), surface: orbitA, backing: amBed),
-        ])),
+        K.game(earName, "Catch the note that steps outside.", .quickEar(.inKey("f2.4s", count: 12))),
     ]
 
     static let f24Gold: [LessonStep] = [
         L.gold("Write a homeward journey",
-               "Write a short journey with a clear destination. First write a phrase that leaves home and comes back. Then chart routes round C and A, and try one detour outside the key."),
+               "Write a short journey with a clear destination. First write a phrase that leaves home and comes back. Then you'll catch the wrong note, fifteen in a row."),
         K.teach("Leave, then return",
                 "A melody can wander away and come back. One outside note on the way can make the return feel even better.",
                 demo: line([(0, 60, 2), (2, 64, 2), (4, 69, 2), (6, 66, 2), (8, 67, 4), (12, 60, 4)], over: drone)),
         K.leadMake("Leave and return",
                    "Write five notes over the drone. Leave C, wander, and make the last note C again.",
                    rows: sharpRows, backing: drone, notes: 5),
-        K.game(gravityName, "Chart a route that comes home.", .notes(orbitC, [
-            NoteRound(title: "Home on C", body: "Five notes over a C drone. Use one small step and one leap, and end on C.",
-                      mode: .compose(count: 5, start: nil, end: [60], shape: true), backing: drone),
-            NoteRound(title: "Home on A", body: "Now home is A, over an A minor chord. Same rules: a step, a leap, and end on A.",
-                      mode: .compose(count: 5, start: nil, end: [69], shape: true), surface: orbitA, backing: amBed),
-            NoteRound(title: "Try a detour", body: "F sharp is unlocked, outside the key. Use it on the way if you like, then come home to C.",
-                      mode: .compose(count: 5, start: nil, end: [60], shape: true), surface: orbitCOut, backing: drone),
-        ])),
+        K.game(earName, "Fifteen lines. Stay sharp.", .quickEar(.inKey("f2.4g", count: 15))),
     ]
 
     // MARK: - F2.5 Copy a Melody → Echo Chase

@@ -14,6 +14,7 @@ import Foundation
 nonisolated enum F3Games {
     typealias F = FKit
 
+    static let earName = "Quick Ear"
     static let lessons: [Lesson] = [f31, f32, f33, f34, f35]
 
     // MARK: Material
@@ -95,56 +96,35 @@ nonisolated enum F3Games {
 
     static let f32 = K.lesson("f3.2", "Major and Minor", "One note changes the mood", "circle.lefthalf.filled", .theory, 15, [
         K.opening("One note, a new colour",
-                  "Changing one note can turn a major chord into a minor one. First you'll move that note in a real chord. Then you'll play a shell game and catch the chord with the different third."),
+                  "Changing one note can turn a major chord into a minor one. First you'll move that note in a real chord. Then you'll hear chords and call major or minor."),
         K.teach("The third decides",
                 "C major, then C minor. C and G stay. Only the middle note drops one step, from E to E flat.",
                 demo: Pattern(chords: [K.ch(0, F.c, 6), K.ch(8, F.cm, 6)])),
         K.build("Drop the third", "C and G are in. Put E flat, the black key, in the middle to make C minor.", F.cm, start: [60, 67]),
-        K.game(impostorName, impostorLine, .impostor([
-            ImpostorRound(title: "Watch one note change", body: "Swipe the middle ribbon down and up. Hear C major turn minor and back.",
-                          mode: .morph(.c)),
-            ImpostorRound(title: "Two cups", body: "One major, one minor. Listen, then tap the minor one.",
-                          mode: .lineup([.c, .cm])),
-            ImpostorRound(title: "First impostor", body: "Four chords on C. Three are major and one is minor. Catch it.",
-                          mode: .lineup([.c, .c, .cm, .c])),
-        ])),
+        K.game(earName, "Happy or sad? Major or minor.", .quickEar(.majorMinor("f3.2"))),
     ])
 
     static let f32Silver: [LessonStep] = [
         L.silver("Hear beyond one root",
-                 "Now the chords don't all start on the same note. First build D minor. Then catch the impostor in a mixed line-up, spot an edit, and flip one back."),
+                 "Now the chords don't all start on the same note. First build D minor. Then you'll call major or minor when the notes are played one at a time."),
         K.teach("Any root works",
                 "D major, then D minor. Same trick on a new root: only the middle note moves.",
                 demo: Pattern(chords: [ChordEvent(step: 0, pitches: [62, 66, 69], length: 6), ChordEvent(step: 8, pitches: [62, 65, 69], length: 6)])),
         K.build("Build D minor", "D and A are locked in. Choose the middle note that makes it minor.",
                 ChordShape(name: "Dm", pitches: [62, 65, 69]), start: [62, 69], low: 60, high: 72),
-        K.game(impostorName, impostorLine, .impostor([
-            ImpostorRound(title: "Faster line-up", body: "Six chords on different roots. Only one is minor. Tap any cup to hear it again.",
-                          mode: .lineup([.c, .f, .g, .dm, .d, .a]), bpm: 110),
-            ImpostorRound(title: "Find the edit", body: "Hear version A, then version B. One chord changed its third. Which?",
-                          mode: .edit(a: [.c, .f, .g], b: [.c, Triad(root: 65, minor: true), .g])),
-            ImpostorRound(title: "Reverse the impostor", body: "Four minor chords and one sneaky major. Catch it, then flip its lever to make it minor.",
-                          mode: .reverse([.am, .dm, .e, .em])),
-        ])),
+        K.game(earName, "The notes come one at a time now.", .quickEar(.majorMinor("f3.2s", count: 12, arpeggio: true))),
     ]
 
     static let f32Gold: [LessonStep] = [
         L.gold("Make your own fake-out",
-               "Use the one-note switch to surprise someone. First plant a minor twist in a chord lane. Then choose a phrase, flip one chord's third, and perform the reveal."),
+               "Use the one-note switch to surprise someone. First plant a minor twist in a chord lane. Then you'll call major or minor, fifteen in a row."),
         K.teach("A flavour, not a rule",
                 "C, F, G, C. Then C, F minor, G, C. Borrowing that one minor chord is a classic twist. It's a choice, not a mistake.",
                 demo: Pattern(chords: [K.ch(0, F.c, 3), K.ch(4, F.f, 3), K.ch(8, F.fm, 3), K.ch(12, F.c, 3)])),
         K.lane("Plant a twist", "Four chords are in. Swap one for its minor twin and hear the turn.",
                .create(.chordsAtLeast(4)), palette: [F.c, F.cm, F.f, F.fm, F.g, F.gm], backing: F.beat,
                start: [0: 0, 4: 2, 8: 4, 12: 0], length: 3),
-        K.game(impostorName, "Plant a twist and reveal it.", .impostor([
-            ImpostorRound(title: "Choose a phrase", body: "Tap a phrase to hear it, then keep the one you want to twist.",
-                          mode: .choose([[.c, .f, .g], [.am, .f, .c], [.c, .am, .f]])),
-            ImpostorRound(title: "Plant the twist", body: "Tap exactly one cup to flip its third. Compare pass 1 and pass 2.",
-                          mode: .twist),
-            ImpostorRound(title: "Perform the reveal", body: "Original first, then your twist. Listen to the story change.",
-                          mode: .reveal),
-        ])),
+        K.game(earName, "Fifteen in a row.", .quickEar(.majorMinor("f3.2g", count: 15, arpeggio: true))),
     ]
 
     // MARK: - F3.3 Chords Want to Move → Resolution Run
@@ -154,57 +134,36 @@ nonisolated enum F3Games {
 
     static let f33 = K.lesson("f3.3", "Chords Want to Move", "Home, away and back", "arrow.triangle.2.circlepath", .theory, 15, [
         K.opening("Questions and answers",
-                  "Some chord changes feel like a question and others like the answer. First you'll build a four-chord route in a chord lane. Then you'll run a path of chords and open its gates with the chord that lands."),
+                  "Some chord changes feel like a question and others like the answer. First you'll build a four-chord route in a chord lane. Then you'll hear chord routes and call whether they landed home."),
         K.teach("G pulls to C",
                 "Hear G7, then C. That stretch and release is the strongest pull in a key: away, then home.",
                 demo: Pattern(bass: [NoteEvent(0, 43, 6), NoteEvent(8, 36, 6)], chords: [K.ch(0, F.g7, 6), K.ch(8, F.c, 6)])),
         K.lane("Build C, F, G7, C", "One chord per beat: C, then F, then G7, then back to C.", .rule,
                palette: [F.c, F.f, F.g7], backing: F.beatNoHats, target: [0: 0, 4: 1, 8: 2, 12: 0], length: 3),
-        K.game(runName, runLine, .resolution([
-            RunRound(title: "The unresolved doorway", body: "The run stops on G. Hear C and Dm as the next chord, then pick the one that arrives.",
-                     mode: .gate(lead: [.g], options: [.c, .dm], answer: 0, reference: [])),
-            RunRound(title: "Open the gate", body: "Hear the full route first. Then the run stops at the last gate. Pick the chord that finishes it.",
-                     mode: .gate(lead: [.c, .f, .g], options: [.c, .am], answer: 0, reference: [.c, .f, .g, .c])),
-            RunRound(title: "Follow the route", body: "C, F, G, C. Tap HOME the moment the run comes back to C at the end.",
-                     mode: .follow([.c, .f, .g, .c], home: .c)),
-        ])),
+        K.game(earName, "Did the chords come home?", .quickEar(.homeAway("f3.3"))),
     ])
 
     static let f33Silver: [LessonStep] = [
         L.silver("Predict and repair motion",
-                 "This time the destination isn't shown. First fill a missing chord in a chord lane. Then hear which route lands, repair a missing block, and choose an ending by ear alone."),
+                 "This time the destination isn't shown. First fill a missing chord in a chord lane. Then you'll call home or away, twelve in a row."),
         K.teach("Context decides",
                 "Two routes. One ends on G and hangs there. The other comes back to C and rests. Same chords, different endings.",
                 demo: four(F.c, F.am, F.f, F.g)),
         K.lane("Fill the gap", "C, Am, ?, G. Play the reference and choose the third chord.", .recreate,
                palette: [F.c, F.am, F.f, F.g, F.dm], backing: F.beatNoHats,
                start: [0: 0, 4: 1, 12: 3], target: [0: 0, 4: 1, 8: 2, 12: 3], length: 3),
-        K.game(runName, runLine, .resolution([
-            RunRound(title: "Which path lands?", body: "C, Am, F, and then? One ending hangs and one settles. Pick the settled one.",
-                     mode: .gate(lead: [.c, .am, .f], options: [.g, .c], answer: 1, reference: [])),
-            RunRound(title: "Missing middle gate", body: "One block is missing from C, Am, ?, G. Hear the reference, audition each block in place, then fill it.",
-                     mode: .slot(route: [.c, .am, .f, .g], missing: 2, options: [.f, .dm, .em])),
-            RunRound(title: "Ear-first exit", body: "No names this time. Hear the reference, then pick the ending that matches.",
-                     mode: .gate(lead: [.f, .g], options: [.c, .am], answer: 0, reference: [.f, .g, .c])),
-        ])),
+        K.game(earName, "Twelve routes.", .quickEar(.homeAway("f3.3s", count: 12))),
     ]
 
     static let f33Gold: [LessonStep] = [
         L.gold("Build a tiny harmonic story",
-               "Build a short story with anticipation and arrival. First write a four-chord route. Then choose a home, pick the middle of the journey, and decide whether it ends resolved or open."),
+               "Build a short story with anticipation and arrival. First write a four-chord route. Then you'll call home or away, fifteen in a row."),
         K.teach("A small palette is enough",
                 "C, Am, F, G and Dm are enough for hundreds of songs. The order is what makes the story.",
                 demo: four(F.am, F.f, F.c, F.g)),
         K.lane("Write a four-chord story", "Four chords from the palette. End wherever you like.", .create(.chordsAtLeast(4)),
                palette: [F.c, F.am, F.f, F.g, F.dm], backing: F.beatNoHats, length: 3),
-        K.game(runName, "Your route, your ending.", .resolution([
-            RunRound(title: "Choose the destination", body: "Pick the home chord your story starts and ends on.",
-                     mode: .destination([.c, .am])),
-            RunRound(title: "Create anticipation", body: "Tap the two middle blocks to cycle through chords. Play the route until it feels like a journey.",
-                     mode: .route([.f, .g, .dm, .am, .c])),
-            RunRound(title: "Perform both endings", body: "Hear your route end at home, then end open. Keep the one that tells your story.",
-                     mode: .endings),
-        ])),
+        K.game(earName, "Fifteen routes.", .quickEar(.homeAway("f3.3g", count: 15))),
     ]
 
     // MARK: - F3.4 Bass Gives It Weight → Kick-Bass Tether
