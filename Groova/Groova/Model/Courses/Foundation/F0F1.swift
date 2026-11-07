@@ -10,7 +10,8 @@ import Foundation
 nonisolated enum F0F1 {
     typealias F = FKit
 
-    static let units: [Unit] = [f0, f1]
+    /// F0 is retired: the course starts at F1. Its lessons stay in F0Games, unused.
+    static let units: [Unit] = [f1]
 
     // Loops used across both units.
     static let pulseHats = Pattern(kick: [0, 4, 8, 12], hat: [2, 6, 10, 14])
