@@ -45,6 +45,8 @@ nonisolated enum GameKind: Sendable {
     case cut([CutRound])
     case jigsaw([SongSection], [JigsawRound])
     case live([LiveRound])
+    /// Core game: hear a call on the pads, play it back.
+    case echo(EchoConfig)
 }
 
 // MARK: - Blackout (F0.1)

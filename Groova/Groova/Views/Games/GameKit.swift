@@ -48,6 +48,7 @@ struct GameStepView: View {
         case .jigsaw(let cards, let rounds):
             SongJigsawGame(task: task, cards: cards, rounds: rounds, genre: genre, onComplete: onComplete)
         case .live(let rounds): LiveTakeGame(task: task, rounds: rounds, genre: genre, onComplete: onComplete)
+        case .echo(let config): EchoGame(task: task, config: config, genre: genre, onComplete: onComplete)
         }
     }
 }

@@ -173,31 +173,28 @@ nonisolated enum F1Games {
 
     // MARK: - F1.3 Kick, Snare, Hat → Drum Forensics
 
+    static let echoName = "Echo"
     static let forensicsName = "Drum Forensics"
     static let forensicsLine = "A dark console. Solve which drum is which."
 
     static let f13 = K.lesson("f1.3", "Kick, Snare, Hat", "Three jobs in every kit", "circle.grid.2x2.fill", .rhythm, 15, [
         K.opening("Three suspects",
-                  "Kick, snare and hi-hat each have a different job in a beat. First you'll build them in their own lanes. Then you'll solo mystery channels on a dark mixing console and work out who's who."),
+                  "Kick, snare and hi-hat each have a different job in a beat. First you'll build them in their own lanes. Then I'll play drum calls and you play them back."),
         K.teach("Low, crack, tick",
                 "Tap each pad. The kick is a low thump you feel. The snare is a sharp crack on 2 and 4. The hat is a bright, high tick that keeps time.",
                 pads: [.kick, .clap, .hat], demo: F.beat),
         K.drumRule("One lane per job",
                    "Kick on 1 and 9, snare on 5 and 13, hats on every odd step. Press play and watch which lane flashes for each sound.",
                    tracks: [.kick, .clap, .hat], edit: [.kick, .clap, .hat], target: F.beat),
-        K.game(forensicsName, forensicsLine, .forensics([
-            ForensicsRound(title: "Three fingerprints", body: "Tap each strip to solo it. Watch its shape and meter: low swell, noisy burst, thin flutter.",
-                           mode: .fingerprints, groove: F.beat),
-            ForensicsRound(title: "Find the source", body: "The channels are hidden and shuffled. Tap a strip to solo it, then pick a label and tap the strip it belongs on.",
-                           mode: .identify(kit: 0), groove: F.beat),
-            ForensicsRound(title: "Restore the band", body: "Every strip is muted. Open them in order: kick, then snare, then hat. Hear the beat grow.",
-                           mode: .restore, groove: F.beat),
-        ])),
+        K.game(echoName, "I play the drums, you play them back.", .echo(EchoConfig(
+            pads: EchoPad.drums([.kick, .clap, .hat]),
+            calls: [[0, 1], [0, 1, 2], [0, 2, 1, 2], [0, 0, 1, 2], [0, 2, 1, 2, 0], [0, 2, 1, 0, 2, 1]],
+            showCall: true, bpm: 100))),
     ])
 
     static let f13Silver: [LessonStep] = [
         L.silver("Solve a disguised mix",
-                 "Real kits don't all sound alike, so the job matters more than the sample. First copy a groove where the kick moves around. Then solve mixes with new kits, a hiding filter and a sneaky extra layer."),
+                 "Real kits don't all sound alike, so the job matters more than the sample. First copy a groove where the kick moves around. Then echo my drum calls with the lights off."),
         K.teach("Same job, different sound",
                 "Same pattern, different kit. The kick still sits low, the snare still cracks on 2 and 4, the hats still tick on top.",
                 pads: [.kick, .clap, .hat], demo: Pattern(kick: [0, 3, 8, 11], clap: [4, 12], hat: F.eighths)),
@@ -205,33 +202,26 @@ nonisolated enum F1Games {
                    "Snare and hats are in. The kick lands in four places, two of them between beats. Copy it by ear.",
                    tracks: [.kick, .clap, .hat], edit: [.kick], start: Pattern(clap: [4, 12], hat: F.eighths),
                    target: Pattern(kick: [0, 3, 8, 11], clap: [4, 12], hat: F.eighths)),
-        K.game(forensicsName, forensicsLine, .forensics([
-            ForensicsRound(title: "Different kit, same roles", body: "A boom-bap kit you haven't heard. Solo and label each channel by its job.",
-                           mode: .identify(kit: 1), groove: Pattern(kick: [0, 3, 8, 11], clap: [4, 12], hat: F.eighths), bpm: 88),
-            ForensicsRound(title: "Missing frequencies", body: "A filter is hiding one drum. Work out which one, then lift the filter to check.",
-                           mode: .filtered, groove: F.beat),
-            ForensicsRound(title: "Layer detective", body: "Version A plays for two bars, then version B adds something. Name what's new.",
-                           mode: .added(.perc), groove: Pattern(kick: [0, 8], clap: [4, 12], hat: F.eighths, perc: [3, 7, 11, 14])),
-        ])),
+        K.game(echoName, "No lights this time. Go by ear.", .echo(EchoConfig(
+            pads: EchoPad.drums([.kick, .clap, .hat]),
+            calls: [[0, 1, 2], [2, 0, 1], [0, 2, 1, 2], [0, 0, 1, 2, 1], [0, 2, 1, 2, 0, 1], [0, 2, 0, 1, 2, 2, 1]],
+            showCall: false, bpm: 110))),
     ]
 
     static let f13Gold: [LessonStep] = [
         L.gold("Conduct a drum entrance",
-               "You're casting the rhythm section and bringing it on stage. First write the beat. Then pick each drum's sound from two kits, and bring the drums in one by one."),
+               "You're casting the rhythm section and bringing it on stage. First write the beat. Then echo longer, faster calls on four drums."),
         K.teach("Notes and sounds are separate choices",
                 "The same notes can trigger any sound. Swap the kick sample and the pattern stays, but the whole beat changes character.",
                 pads: [.kick, .clap, .hat], demo: F.beat),
         K.drumMake("Write the beat you'll cast",
                    "Write one bar using kick, snare and hats. In the game you'll choose their sounds and stage their entrance.",
                    tracks: [.kick, .clap, .hat], edit: [.kick, .clap, .hat], goal: .atLeast(.kick, 2)),
-        K.game(forensicsName, "Cast your kit, then stage its entrance.", .forensics([
-            ForensicsRound(title: "Choose a kit", body: "Each strip has an A and a B sound. Mix and match until the beat sounds like yours.",
-                           mode: .chooseKit, groove: F.beat),
-            ForensicsRound(title: "Perform the reveal", body: "Four bars. Every strip starts muted. Tap them open one at a time to build the entrance.",
-                           mode: .entrance, groove: F.beat),
-            ForensicsRound(title: "Try another order", body: "Bring them in a different order this time, then compare it with everything starting at once.",
-                           mode: .entrance, groove: F.groove),
-        ])),
+        K.game(echoName, "Four drums, by ear, and faster.", .echo(EchoConfig(
+            pads: EchoPad.drums([.kick, .clap, .hat, .openHat]),
+            calls: [[0, 1, 2, 3], [0, 2, 1, 3], [0, 0, 1, 2, 3], [2, 2, 1, 0, 3, 1], [0, 2, 1, 2, 0, 3, 1],
+                    [0, 2, 1, 3, 0, 0, 1, 2]],
+            showCall: false, bpm: 120))),
     ]
 
     // MARK: - F1.4 Move Off the Beat → Gravity Groove
