@@ -174,27 +174,26 @@ nonisolated enum F1Games {
     // MARK: - F1.3 Kick, Snare, Hat → Drum Forensics
 
     static let echoName = "Echo"
+    static let playName = "Play Along"
     static let forensicsName = "Drum Forensics"
     static let forensicsLine = "A dark console. Solve which drum is which."
 
     static let f13 = K.lesson("f1.3", "Kick, Snare, Hat", "Three jobs in every kit", "circle.grid.2x2.fill", .rhythm, 15, [
         K.opening("Three suspects",
-                  "Kick, snare and hi-hat each have a different job in a beat. First you'll build them in their own lanes. Then I'll play drum calls and you play them back."),
+                  "Kick, snare and hi-hat each have a different job in a beat. First you'll build them in their own lanes. Then you'll play kick and snare along with the band."),
         K.teach("Low, crack, tick",
                 "Tap each pad. The kick is a low thump you feel. The snare is a sharp crack on 2 and 4. The hat is a bright, high tick that keeps time.",
                 pads: [.kick, .clap, .hat], demo: F.beat),
         K.drumRule("One lane per job",
                    "Kick on 1 and 9, snare on 5 and 13, hats on every odd step. Press play and watch which lane flashes for each sound.",
                    tracks: [.kick, .clap, .hat], edit: [.kick, .clap, .hat], target: F.beat),
-        K.game(echoName, "I play the drums, you play them back.", .echo(EchoConfig(
-            pads: EchoPad.drums([.kick, .clap, .hat]),
-            calls: [[0, 1], [0, 1, 2], [0, 2, 1, 2], [0, 0, 1, 2], [0, 2, 1, 2, 0], [0, 2, 1, 0, 2, 1]],
-            showCall: true, bpm: 100))),
+        K.game(playName, "Notes fall to the line. Hit them as they land.", .playAlong(PlayAlongConfig(
+            lanes: [.kick, .clap], groove: F.beat, bars: 6, bpm: 85))),
     ])
 
     static let f13Silver: [LessonStep] = [
         L.silver("Solve a disguised mix",
-                 "Real kits don't all sound alike, so the job matters more than the sample. First copy a groove where the kick moves around. Then echo my drum calls with the lights off."),
+                 "Real kits don't all sound alike, so the job matters more than the sample. First copy a groove where the kick moves around. Then play along while the kick moves, and keep going when the notes disappear."),
         K.teach("Same job, different sound",
                 "Same pattern, different kit. The kick still sits low, the snare still cracks on 2 and 4, the hats still tick on top.",
                 pads: [.kick, .clap, .hat], demo: Pattern(kick: [0, 3, 8, 11], clap: [4, 12], hat: F.eighths)),
@@ -202,26 +201,23 @@ nonisolated enum F1Games {
                    "Snare and hats are in. The kick lands in four places, two of them between beats. Copy it by ear.",
                    tracks: [.kick, .clap, .hat], edit: [.kick], start: Pattern(clap: [4, 12], hat: F.eighths),
                    target: Pattern(kick: [0, 3, 8, 11], clap: [4, 12], hat: F.eighths)),
-        K.game(echoName, "No lights this time. Go by ear.", .echo(EchoConfig(
-            pads: EchoPad.drums([.kick, .clap, .hat]),
-            calls: [[0, 1, 2], [2, 0, 1], [0, 2, 1, 2], [0, 0, 1, 2, 1], [0, 2, 1, 2, 0, 1], [0, 2, 0, 1, 2, 2, 1]],
-            showCall: false, bpm: 110))),
+        K.game(playName, "The kick moves. Halfway through, the notes vanish.", .playAlong(PlayAlongConfig(
+            lanes: [.kick, .clap], groove: Pattern(kick: [0, 3, 8, 11], clap: [4, 12], hat: F.eighths),
+            bars: 8, bpm: 88, ghostFrom: 5))),
     ]
 
     static let f13Gold: [LessonStep] = [
         L.gold("Conduct a drum entrance",
-               "You're casting the rhythm section and bringing it on stage. First write the beat. Then echo longer, faster calls on four drums."),
+               "You're casting the rhythm section and bringing it on stage. First write the beat. Then play all three drums along with the band, the last bars by feel."),
         K.teach("Notes and sounds are separate choices",
                 "The same notes can trigger any sound. Swap the kick sample and the pattern stays, but the whole beat changes character.",
                 pads: [.kick, .clap, .hat], demo: F.beat),
         K.drumMake("Write the beat you'll cast",
                    "Write one bar using kick, snare and hats. In the game you'll choose their sounds and stage their entrance.",
                    tracks: [.kick, .clap, .hat], edit: [.kick, .clap, .hat], goal: .atLeast(.kick, 2)),
-        K.game(echoName, "Four drums, by ear, and faster.", .echo(EchoConfig(
-            pads: EchoPad.drums([.kick, .clap, .hat, .openHat]),
-            calls: [[0, 1, 2, 3], [0, 2, 1, 3], [0, 0, 1, 2, 3], [2, 2, 1, 0, 3, 1], [0, 2, 1, 2, 0, 3, 1],
-                    [0, 2, 1, 3, 0, 0, 1, 2]],
-            showCall: false, bpm: 120))),
+        K.game(playName, "All three drums. The last bars are yours to feel.", .playAlong(PlayAlongConfig(
+            lanes: [.kick, .clap, .hat], groove: Pattern(kick: [0, 8, 10], clap: [4, 12], hat: [0, 4, 8, 12]),
+            bars: 8, bpm: 92, ghostFrom: 5))),
     ]
 
     // MARK: - F1.4 Move Off the Beat → Gravity Groove

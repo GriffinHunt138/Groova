@@ -44,3 +44,20 @@ nonisolated struct EchoConfig: Sendable {
     var bpm: Double = 110
     var lives: Int = 3
 }
+
+// MARK: - Play Along
+
+/// Core rhythm game: the band loops, notes fall toward a line, and you play your part on the
+/// pads as they land. Later bars can hide the notes so you keep it going by feel.
+nonisolated struct PlayAlongConfig: Sendable {
+    /// The drums you play, one lane each, left to right.
+    var lanes: [DrumTrack]
+    /// The full groove. Your lanes are muted in the band and become the notes you play.
+    var groove: Pattern
+    /// Bars to play after a one-bar count-in.
+    var bars: Int = 8
+    var bpm: Double = 90
+    /// From this bar on (1 is the first bar after the count-in) the notes vanish: play by feel.
+    var ghostFrom: Int? = nil
+    var threshold: Double = 0.6
+}

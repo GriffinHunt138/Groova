@@ -47,6 +47,8 @@ nonisolated enum GameKind: Sendable {
     case live([LiveRound])
     /// Core game: hear a call on the pads, play it back.
     case echo(EchoConfig)
+    /// Core game: notes fall toward a line, play your part in time with the band.
+    case playAlong(PlayAlongConfig)
 }
 
 // MARK: - Blackout (F0.1)
