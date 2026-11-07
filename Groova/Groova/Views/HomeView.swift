@@ -98,7 +98,7 @@ struct HomeView: View {
                     activeRun = LessonRun(lesson: lesson, tier: tier, practice: nil)
                 }
             }
-            .presentationDetents([.height(lesson.isMastery || !app.isCompleted(lesson, in: genre) ? 350 : 470)])
+            .presentationDetents([.height(lesson.isMastery || !app.isCompleted(lesson, in: genre) ? 330 : 400)])
             .presentationBackground(Theme.surface)
             .presentationCornerRadius(32)
         }
@@ -566,70 +566,121 @@ struct LessonSheet: View {
         let earned = app.tier(of: lesson, in: genre)
         let replay = earned >= tier.rawValue
         let color = genre.color
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 14) {
-                Image(systemName: lesson.symbol)
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(Theme.background)
-                    .frame(width: 56, height: 56)
-                    .background(Circle().fill(color))
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(lesson.title).font(.display(22)).foregroundStyle(Theme.text)
-                    Text(lesson.subtitle).font(.label(14, weight: .medium)).foregroundStyle(Theme.textSecondary)
-                }
-            }
-            HStack(spacing: 8) {
-                Pill(symbol: lesson.skill.symbol, text: lesson.skill.name, color: lesson.skill.color)
-                Pill(symbol: "star.fill", text: "+\(AppState.xp(for: lesson, tier: tier, replay: replay)) XP",
-                     color: Theme.brand)
-                if let best = app.bestScore(lesson, in: genre) {
-                    Pill(symbol: "target", text: "\(best)%", color: Theme.successInk)
-                }
-            }
+        VStack(spacing: 0) {
+            Image(systemName: lesson.symbol)
+                .font(.system(size: 22, weight: .bold))
+                .foregroundStyle(Theme.onBrand)
+                .frame(width: 52, height: 52)
+                .background(Circle().fill(color))
+                .padding(.bottom, 14)
+            Text(lesson.title)
+                .font(.display(26))
+                .foregroundStyle(Theme.text)
+                .multilineTextAlignment(.center)
+            Text(meta(replay: replay))
+                .font(.label(14, weight: .semibold))
+                .foregroundStyle(Theme.textTertiary)
+                .padding(.top, 6)
             if done && !lesson.isMastery {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("LEVEL").font(.label(12, weight: .black)).tracking(0.8)
-                        .foregroundStyle(Theme.textTertiary)
-                    HStack(spacing: 10) {
-                        ForEach(LessonTier.allCases) { t in
-                            TierChip(tier: t, earned: earned >= t.rawValue,
-                                     available: app.isTierAvailable(t, for: lesson, in: genre),
-                                     selected: tier == t) {
-                                Haptics.select()
-                                tier = t
-                            }
-                        }
-                    }
+                TierSegment(selected: $tier, earned: earned, color: color) { t in
+                    app.isTierAvailable(t, for: lesson, in: genre)
                 }
+                .padding(.top, 26)
             }
-            Text(description(done: done, replay: replay))
-                .font(.label(14, weight: .medium))
+            Text(description(done: done))
+                .font(.label(15, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
+                .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
+                .padding(.top, 14)
+                .contentTransition(.opacity)
+                .animation(.easeInOut(duration: 0.2), value: tier)
+            Spacer(minLength: 20)
             Button(buttonTitle(done: done, replay: replay)) { onStart(tier) }
                 .buttonStyle(ChunkyButtonStyle(color: color))
         }
-        .padding(24)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 24)
+        .padding(.top, 32)
+        .padding(.bottom, 20)
         .onAppear { tier = app.nextTier(for: lesson, in: genre) }
     }
 
-    private func description(done: Bool, replay: Bool) -> String {
+    /// One quiet line: skill, XP and best score.
+    private func meta(replay: Bool) -> String {
+        var parts = [lesson.skill.name, "+\(AppState.xp(for: lesson, tier: tier, replay: replay)) XP"]
+        if let best = app.bestScore(lesson, in: genre) { parts.append("Best \(best)%") }
+        return parts.joined(separator: "  ·  ")
+    }
+
+    private func description(done: Bool) -> String {
         if lesson.isMastery {
-            if testOut && !done {
-                return "Test out. Already know this? Pass this challenge and everything up to the next unit opens. Lessons you skip stay open to play any time."
-            }
-            return done ? "Replay the challenge any time to keep it sharp."
-                        : "The unit challenge. Pass it to unlock the next unit."
+            if testOut && !done { return "Already know this? Pass to open everything up to the next unit." }
+            return done ? "Replay the challenge to keep it sharp." : "Pass it to unlock the next unit."
         }
-        if !done { return "About \(max(2, lesson.steps.count)) minutes, all hands-on." }
-        return tier.detail + (replay ? " You've earned this one, so it's a replay for half XP." : "")
+        if !done { return lesson.subtitle }
+        switch tier {
+        case .bronze: return "Learn it, with every guide on."
+        case .silver: return "Apply it by ear, with no beat guide."
+        case .gold: return "Master it with more parts, then make your own."
+        }
     }
 
     private func buttonTitle(done: Bool, replay: Bool) -> String {
         if !done { return lesson.isMastery ? (testOut ? "Test out" : "Start challenge") : "Start lesson" }
         if lesson.isMastery { return "Play again" }
         return replay ? "Replay \(tier.name)" : "Go for \(tier.name)"
+    }
+}
+
+/// Bronze, Silver and Gold as one sleek segmented control.
+struct TierSegment: View {
+    @Binding var selected: LessonTier
+    let earned: Int
+    let color: Color
+    let isAvailable: (LessonTier) -> Bool
+    @Namespace private var knob
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(LessonTier.allCases) { t in
+                segment(t)
+            }
+        }
+        .padding(4)
+        .background(Capsule().fill(Theme.surfaceRaised))
+    }
+
+    private func segment(_ t: LessonTier) -> some View {
+        let open = isAvailable(t)
+        let isOn = selected == t
+        let ink: Color = !open ? Theme.textTertiary : (isOn ? Theme.text : Theme.textSecondary)
+        return Button {
+            Haptics.select()
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { selected = t }
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: open ? (earned >= t.rawValue ? "checkmark.circle.fill" : "medal.fill") : "lock.fill")
+                    .font(.system(size: 13, weight: .black))
+                    .foregroundStyle(open ? t.color : Theme.textTertiary)
+                Text(t.name)
+                    .font(.label(14, weight: .heavy))
+                    .foregroundStyle(ink)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 40)
+            .background {
+                if isOn {
+                    Capsule().fill(Theme.surface)
+                        .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
+                        .matchedGeometryEffect(id: "knob", in: knob)
+                }
+            }
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(!open)
+        .accessibilityLabel("\(t.name)\(earned >= t.rawValue ? ", earned" : "")\(open ? "" : ", locked")")
     }
 }
 
