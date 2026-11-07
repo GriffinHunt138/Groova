@@ -304,8 +304,12 @@ final class AppState {
     /// Set by the intro guide's last step; the Learn tab opens your first lesson and clears it.
     var pendingLessonStart = false
 
+    /// Testing switch: opens every unit, lesson and level. Set to false before shipping.
+    static let unlockEverything = true
+
     func unlockedUnitCount(_ g: Genre) -> Int {
-        min(Curriculum.units(for: g).count, frontier(g) + 2)
+        if Self.unlockEverything { return Curriculum.units(for: g).count }
+        return min(Curriculum.units(for: g).count, frontier(g) + 2)
     }
 
     func unitIndex(_ unit: Unit, in g: Genre) -> Int {
@@ -318,7 +322,8 @@ final class AppState {
 
     /// Units behind the frontier: you've tested out of them, so their lessons are open in any order.
     func isUnitSkipped(_ unit: Unit, in g: Genre) -> Bool {
-        unitIndex(unit, in: g) <= frontier(g)
+        if Self.unlockEverything { return true }
+        return unitIndex(unit, in: g) <= frontier(g)
     }
 
     /// The next lesson on the path: the first one not done in the unit after the frontier,
@@ -359,6 +364,7 @@ final class AppState {
 
     func isTierAvailable(_ t: LessonTier, for lesson: Lesson, in g: Genre) -> Bool {
         if lesson.isMastery { return t == .bronze }
+        if Self.unlockEverything { return true }
         return t.rawValue <= tier(of: lesson, in: g) + 1
     }
 

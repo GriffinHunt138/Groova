@@ -98,7 +98,7 @@ struct HomeView: View {
                     activeRun = LessonRun(lesson: lesson, tier: tier, practice: nil)
                 }
             }
-            .presentationDetents([.height(lesson.isMastery || !app.isCompleted(lesson, in: genre) ? 330 : 400)])
+            .presentationDetents([.height(lesson.isMastery || !(app.isCompleted(lesson, in: genre) || AppState.unlockEverything) ? 330 : 400)])
             .presentationBackground(Theme.surface)
             .presentationCornerRadius(32)
         }
@@ -581,7 +581,7 @@ struct LessonSheet: View {
                 .font(.label(14, weight: .semibold))
                 .foregroundStyle(Theme.textTertiary)
                 .padding(.top, 6)
-            if done && !lesson.isMastery {
+            if (done || AppState.unlockEverything) && !lesson.isMastery {
                 TierSegment(selected: $tier, earned: earned, color: color) { t in
                     app.isTierAvailable(t, for: lesson, in: genre)
                 }
