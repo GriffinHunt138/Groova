@@ -129,7 +129,7 @@ struct ChordLockGame: View {
                     .position(x: w / 2, y: h / 2 + 10)
                 // Octave guide lines.
                 ForEach([48, 60, 72, 84], id: \.self) { p in
-                    Rectangle().fill(Color.white.opacity(0.06)).frame(width: w - 20, height: 1).position(x: w / 2, y: yOf(p))
+                    Rectangle().fill(GameStyle.ink.opacity(0.06)).frame(width: w - 20, height: 1).position(x: w / 2, y: yOf(p))
                     Text("C\(p / 12 - 1)").font(.mono(9)).foregroundStyle(GameStyle.nightDim).position(x: 16, y: yOf(p) - 8)
                 }
                 HStack(spacing: 0) {
@@ -139,7 +139,7 @@ struct ChordLockGame: View {
                                 beam(i, x: colW / 2, y: yOf(beams[i]), bottom: bottom, color: beamColor(i))
                             }
                             if ghost, let t = target, i < shown {
-                                Capsule().strokeBorder(Color.white.opacity(0.55), style: StrokeStyle(lineWidth: 2, dash: [5, 4]))
+                                Capsule().strokeBorder(GameStyle.ink.opacity(0.55), style: StrokeStyle(lineWidth: 2, dash: [5, 4]))
                                     .frame(width: colW * 0.62, height: 18)
                                     .position(x: colW / 2, y: yOf(t[i]))
                             }
@@ -196,7 +196,7 @@ struct ChordLockGame: View {
                 .fill(color)
                 .frame(width: 82, height: 34)
                 .overlay(Text(noteName(beams[i], octave: true)).font(.label(13, weight: .black)).foregroundStyle(.white))
-                .overlay(Capsule().strokeBorder(Color.white.opacity(can ? 0.9 : 0.25), lineWidth: can ? 3 : 1.5))
+                .overlay(Capsule().strokeBorder(GameStyle.ink.opacity(can ? 0.9 : 0.25), lineWidth: can ? 3 : 1.5))
                 .shadow(color: color, radius: matched ? 18 : 8)
                 .position(x: x, y: y)
                 .animation(.spring(response: 0.2, dampingFraction: 0.7), value: y)

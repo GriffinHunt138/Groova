@@ -132,7 +132,7 @@ struct SynthSurgeryGame: View {
                 // The veil: everything under it loses brightness.
                 let veil = h * CGFloat(1 - sounding.filter)
                 Rectangle()
-                    .fill(LinearGradient(colors: [Color.black.opacity(0.75), Color.black.opacity(0.35)], startPoint: .top, endPoint: .bottom))
+                    .fill(LinearGradient(colors: [Theme.background.opacity(0.9), Theme.background.opacity(0.55)], startPoint: .top, endPoint: .bottom))
                     .frame(width: w, height: veil)
                 if tools.contains(.filter) {
                     handle("FILTER", color: GameStyle.chords, horizontal: true)

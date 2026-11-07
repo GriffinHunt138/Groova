@@ -120,7 +120,7 @@ struct ResolutionRunGame: View {
                 }
                 // The runner.
                 if let at, at < blocks.count {
-                    Circle().fill(Color.white).frame(width: 22, height: 22)
+                    Circle().fill(accent).frame(width: 22, height: 22)
                         .shadow(color: accent, radius: 14)
                         .position(x: 14 + cell * (CGFloat(at) + 0.5), y: y - 62)
                         .animation(.spring(response: 0.35, dampingFraction: 0.7), value: at)

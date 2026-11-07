@@ -162,7 +162,7 @@ struct PerfectCutGame: View {
                     // Grid.
                     if !gridHidden {
                         ForEach(0...16, id: \.self) { q in
-                            Rectangle().fill(Color.white.opacity(q % 4 == 0 ? 0.3 : 0.08))
+                            Rectangle().fill(GameStyle.ink.opacity(q % 4 == 0 ? 0.3 : 0.08))
                                 .frame(width: q % 4 == 0 ? 2 : 1, height: h - 70)
                                 .position(x: left + sw * CGFloat(q * 4), y: 40 + (h - 70) / 2)
                         }
@@ -207,11 +207,11 @@ struct PerfectCutGame: View {
                             .position(x: left + sw * CGFloat(earMark * 16), y: 24)
                     }
                     if revealed, case .markByEar(let bar) = round.mode {
-                        Rectangle().fill(Color.white).frame(width: 3, height: h - 60)
+                        Rectangle().fill(GameStyle.ink).frame(width: 3, height: h - 60)
                             .position(x: left + sw * CGFloat(bar * 16), y: 40 + (h - 70) / 2)
                     }
                     if pos >= 0 {
-                        Rectangle().fill(Color.white.opacity(0.7)).frame(width: 2, height: h - 60)
+                        Rectangle().fill(GameStyle.ink.opacity(0.7)).frame(width: 2, height: h - 60)
                             .position(x: left + sw * CGFloat(pos), y: 40 + (h - 70) / 2)
                     }
                     StageTag(text: tag, color: playing ? accent : GameStyle.nightDim).padding(12)

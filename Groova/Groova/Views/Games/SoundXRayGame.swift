@@ -45,7 +45,7 @@ struct SoundXRayGame: View {
 
     private var round: XRayRound { rounds[min(game.index, rounds.count - 1)] }
     private var engine: AudioEngine { AudioEngine.shared }
-    private static let colors: [Color] = [GameStyle.lead, GameStyle.chords, GameStyle.snare, GameStyle.kick, Color(hex: 0x5CE0B8)]
+    private static let colors: [Color] = [GameStyle.lead, GameStyle.chords, GameStyle.bass, GameStyle.kick, GameStyle.extraA]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -91,7 +91,7 @@ struct SoundXRayGame: View {
                 Spacer()
                 HStack(spacing: 6) {
                     ForEach(Array(Self.melody.enumerated()), id: \.offset) { i, n in
-                        RoundedRectangle(cornerRadius: 5).fill(Color.white.opacity(0.75))
+                        RoundedRectangle(cornerRadius: 5).fill(GameStyle.ink.opacity(0.75))
                             .frame(width: 30, height: 12)
                             .offset(y: CGFloat(-(n - 60)) * 1.4)
                     }
@@ -122,7 +122,7 @@ struct SoundXRayGame: View {
                     if !hidden { Image(systemName: v.symbol).font(.system(size: 12, weight: .bold)) }
                     Text(label).font(.label(13, weight: .heavy))
                 }
-                .foregroundStyle(heard.contains(i) || selected ? Color.white : GameStyle.nightDim)
+                .foregroundStyle(heard.contains(i) || selected ? GameStyle.nightText : GameStyle.nightDim)
             }
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
@@ -145,9 +145,9 @@ struct SoundXRayGame: View {
                 ForEach(0..<3, id: \.self) { z in
                     let x0 = 16 + w * edges[z], x1 = 16 + w * edges[z + 1]
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(zone == z ? 0.16 : 0.0))
+                        .fill(GameStyle.ink.opacity(zone == z ? 0.16 : 0.0))
                         .overlay(RoundedRectangle(cornerRadius: 12)
-                            .strokeBorder(zones.contains(z) ? Theme.gold.opacity(0.7) : Color.white.opacity(0.15),
+                            .strokeBorder(zones.contains(z) ? Theme.gold.opacity(0.7) : GameStyle.ink.opacity(0.15),
                                           style: StrokeStyle(lineWidth: 2, dash: zones.contains(z) ? [] : [5, 5])))
                         .frame(width: x1 - x0 - 4, height: h + 20)
                         .position(x: (x0 + x1) / 2, y: 50 + h / 2)
@@ -185,12 +185,12 @@ struct SoundXRayGame: View {
                 heard.insert(99)
             } label: {
                 HStack(spacing: 12) {
-                    SoundFingerprint(patch: mystery[0].patch, color: .white, playedAt: playedAt[99], hidden: game.feedback?.kind != .success)
+                    SoundFingerprint(patch: mystery[0].patch, color: accent, playedAt: playedAt[99], hidden: game.feedback?.kind != .success)
                         .frame(width: 120, height: 70)
                     VStack(alignment: .leading, spacing: 4) {
                         Text("MYSTERY SOUND").font(.label(12, weight: .black)).tracking(1).foregroundStyle(accent)
                         Text(heard.contains(99) ? "Tap to hear again" : "Tap to hear it").font(.label(15, weight: .heavy))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(GameStyle.nightText)
                     }
                     Spacer()
                     Image(systemName: "play.circle.fill").font(.system(size: 34)).foregroundStyle(accent)
@@ -313,9 +313,9 @@ struct SoundXRayGame: View {
                     Haptics.select()
                 } label: {
                     Image(systemName: v.symbol).font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(selected == v ? Theme.onBrand : .white)
+                        .foregroundStyle(selected == v ? Theme.onBrand : GameStyle.nightText)
                         .frame(width: 44, height: 34)
-                        .background(RoundedRectangle(cornerRadius: 10).fill(selected == v ? Self.colors[i % 5] : Color.white.opacity(0.08)))
+                        .background(RoundedRectangle(cornerRadius: 10).fill(selected == v ? Self.colors[i % 5] : GameStyle.ink.opacity(0.08)))
                 }
                 .buttonStyle(.plain)
             }
@@ -352,7 +352,7 @@ struct SoundXRayGame: View {
             }
             TextField("Name your sound", text: $name)
                 .font(.label(16, weight: .heavy))
-                .foregroundStyle(.white)
+                .foregroundStyle(GameStyle.nightText)
                 .padding(.horizontal, 14).frame(height: 46)
                 .background(RoundedRectangle(cornerRadius: 14).fill(GameStyle.nightRaised))
         }

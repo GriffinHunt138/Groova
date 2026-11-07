@@ -242,7 +242,7 @@ struct LoopReactorGame: View {
                     }
                     // The clock hand.
                     Capsule()
-                        .fill(Color.white.opacity(phase == .ready ? 0.15 : 0.8))
+                        .fill(GameStyle.ink.opacity(phase == .ready ? 0.15 : 0.8))
                         .frame(width: 3, height: size / 2)
                         .offset(y: -size / 4)
                         .rotationEffect(.degrees(angle * 360))
@@ -313,7 +313,7 @@ struct LoopReactorGame: View {
                 let a = Double(s) / 16
                 let near = on && phase != .ready && (angle - a + 1).truncatingRemainder(dividingBy: 1) < 0.06
                 Circle()
-                    .fill(on ? (near ? Color.white : color) : GameStyle.nightLine)
+                    .fill(on ? (near ? GameStyle.ink : color) : GameStyle.nightLine)
                     .frame(width: near ? 13 : 8, height: near ? 13 : 8)
                     .offset(y: -d / 2)
                     .rotationEffect(.degrees(a * 360))

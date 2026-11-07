@@ -190,7 +190,7 @@ struct IntervalRadarGame: View {
                 .frame(width: 26 + (1 - ping) * 60, height: 26 + (1 - ping) * 60).position(c)
             // Second ping, the one you move.
             Circle().fill(accent).frame(width: 34, height: 34)
-                .overlay(Circle().strokeBorder(Color.white.opacity(0.8), lineWidth: 2))
+                .overlay(Circle().strokeBorder(GameStyle.ink.opacity(0.8), lineWidth: 2))
                 .shadow(color: accent, radius: 12)
                 .position(p)
             Circle().stroke(accent.opacity(ping), lineWidth: 3)

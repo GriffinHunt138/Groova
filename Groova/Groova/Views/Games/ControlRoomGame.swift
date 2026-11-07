@@ -159,7 +159,7 @@ struct ControlRoomGame: View {
         let minor = levers[0] == 1
         let busy = levers[1] == 1
         let bright = levers[2] == 1
-        let light = minor ? Color(hex: 0x4F7BFF) : Color(hex: 0xFFC24A)
+        let light = minor ? Color(hex: 0x4A2EC0) : Theme.brand
         let open = max(0, min(1, (p - 0.5) / 0.12))
         let walk = min(1, p / 0.5)
         let bob = sin(p * .pi * (busy ? 64 : 32)) * (busy ? 5 : 2.5)
@@ -169,7 +169,7 @@ struct ControlRoomGame: View {
             let doorX = w * 0.74
             ZStack(alignment: .topLeading) {
                 // Sky.
-                LinearGradient(colors: [minor ? Color(hex: 0x10162E) : Color(hex: 0x2A1838),
+                LinearGradient(colors: [minor ? Color(hex: 0xE4DEFF) : Theme.brandSoft,
                                         GameStyle.night], startPoint: .top, endPoint: .bottom)
                     .opacity(bright ? 1 : 0.75)
                 // Floor.
@@ -181,7 +181,7 @@ struct ControlRoomGame: View {
                     .shadow(color: light.opacity(open), radius: 30 * open + (bright ? 8 : 0))
                     .offset(x: doorX, y: floorY - 96)
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(Color(hex: 0x3A2F55))
+                    .fill(Theme.surfaceHigh)
                     .frame(width: 54 * (1 - open * 0.85), height: 96)
                     .offset(x: doorX, y: floorY - 96)
                 // Light spilling on the floor.
@@ -192,14 +192,14 @@ struct ControlRoomGame: View {
                     .offset(x: doorX - 50, y: floorY - 6)
                 // The person.
                 VStack(spacing: 2) {
-                    Circle().fill(Color.white.opacity(0.9)).frame(width: 16, height: 16)
-                    Capsule().fill(Color.white.opacity(0.85)).frame(width: 12, height: 34)
+                    Circle().fill(GameStyle.ink.opacity(0.9)).frame(width: 16, height: 16)
+                    Capsule().fill(GameStyle.ink.opacity(0.85)).frame(width: 12, height: 34)
                 }
                 .offset(x: w * 0.08 + (doorX - 30 - w * 0.08) * walk, y: floorY - 52 + bob)
                 // The playhead along the bottom.
                 Capsule().fill(GameStyle.nightLine).frame(width: w - 32, height: 6).offset(x: 16, y: h - 16)
                 Capsule().fill(accent).frame(width: max(6, (w - 32) * p), height: 6).offset(x: 16, y: h - 16)
-                Circle().fill(Color.white).frame(width: 10, height: 10).offset(x: 16 + (w - 32) * 0.5 - 5, y: h - 18)
+                Circle().fill(GameStyle.ink).frame(width: 10, height: 10).offset(x: 16 + (w - 32) * 0.5 - 5, y: h - 18)
                 if let c = cuePos {
                     Capsule().fill(Theme.gold).frame(width: 4, height: 16).offset(x: 16 + (w - 32) * c - 2, y: h - 21)
                 }

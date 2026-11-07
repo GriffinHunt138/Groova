@@ -20,7 +20,7 @@ struct StructureDetectiveGame: View {
     static let laneNames = ["Drums", "Bass", "Chords", "Melody"]
     static let laneColors: [Color] = [GameStyle.kick, GameStyle.bass, GameStyle.chords, GameStyle.lead]
     static let partNames = ["Start", "Main", "Change", "End"]
-    static let sectionColors: [Color] = [GameStyle.chords, GameStyle.kick, GameStyle.lead, GameStyle.snare, Color(hex: 0x5CE0B8)]
+    static let sectionColors: [Color] = [GameStyle.chords, GameStyle.kick, GameStyle.lead, GameStyle.bass, GameStyle.extraA]
 
     @State private var game: GameProgress
     @State private var clock = BeatClock()
@@ -148,7 +148,7 @@ struct StructureDetectiveGame: View {
                             let lit = pos >= Double(b)
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(revealed ? Self.sectionColors[sec % 5].opacity(lit ? 0.6 : 0.35)
-                                               : Color.white.opacity(lit ? 0.18 : 0.06))
+                                               : GameStyle.ink.opacity(lit ? 0.18 : 0.06))
                                 .frame(width: barW - 4, height: 56)
                                 .offset(x: barW * CGFloat(b))
                         }
@@ -159,7 +159,7 @@ struct StructureDetectiveGame: View {
                                     .offset(x: barW * CGFloat(start) + 6, y: 6)
                             }
                             ForEach(boundaries, id: \.self) { b in
-                                Rectangle().fill(Color.white).frame(width: 3, height: 70)
+                                Rectangle().fill(GameStyle.ink).frame(width: 3, height: 70)
                                     .offset(x: barW * CGFloat(b) - 3, y: -7)
                             }
                         }
@@ -171,12 +171,12 @@ struct StructureDetectiveGame: View {
                             .offset(x: barW * CGFloat(m) - 2, y: -14)
                         }
                         if let flash, CACurrentMediaTime() - flash < 0.6, let crash {
-                            Circle().fill(Color.white.opacity(0.8 - (CACurrentMediaTime() - flash)))
+                            Circle().fill(GameStyle.ink.opacity(0.8 - (CACurrentMediaTime() - flash)))
                                 .frame(width: 44, height: 44).blur(radius: 6)
                                 .offset(x: barW * CGFloat(crash.bar) - 10, y: 6)
                         }
                         if pos >= 0 {
-                            Rectangle().fill(Color.white).frame(width: 2, height: 70)
+                            Rectangle().fill(GameStyle.ink).frame(width: 2, height: 70)
                                 .offset(x: barW * CGFloat(pos), y: -7)
                         }
                     }
@@ -198,7 +198,7 @@ struct StructureDetectiveGame: View {
                             let on = song[sectionIndex(b)].layers[lane]
                             let lit = revealed || pos >= Double(b)
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(on ? Self.laneColors[lane].opacity(lit ? 0.85 : 0.25) : Color.white.opacity(0.03))
+                                .fill(on ? Self.laneColors[lane].opacity(lit ? 0.85 : 0.25) : GameStyle.ink.opacity(0.03))
                                 .frame(width: barW - 4, height: 18)
                                 .offset(x: barW * CGFloat(b))
                         }
@@ -212,9 +212,9 @@ struct StructureDetectiveGame: View {
                         Haptics.select()
                     } label: {
                         Text(Self.laneNames[lane]).font(.label(10, weight: .black))
-                            .foregroundStyle(lanePick == lane ? Theme.onBrand : .white)
+                            .foregroundStyle(lanePick == lane ? Theme.onBrand : GameStyle.nightText)
                             .padding(.horizontal, 8).frame(height: 18)
-                            .background(Capsule().fill(lanePick == lane ? Self.laneColors[lane] : Color.black.opacity(0.55)))
+                            .background(Capsule().fill(lanePick == lane ? Self.laneColors[lane] : Theme.surfaceRaised))
                     }
                     .buttonStyle(.plain)
                 }

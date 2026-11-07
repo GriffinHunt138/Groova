@@ -138,7 +138,7 @@ struct DownbeatGame: View {
             return "Lock the 1"
         }()
         return ZStack {
-            Color.black.opacity(inBreak ? 0.4 : 0).animation(.easeInOut(duration: 0.4), value: inBreak)
+            Theme.surfaceRaised.opacity(inBreak ? 0.7 : 0).animation(.easeInOut(duration: 0.4), value: inBreak)
             dial(lit: lit, glow: glow, pulse: isLock && phase == .playing ? glow : 0)
             VStack {
                 HStack {
@@ -159,7 +159,7 @@ struct DownbeatGame: View {
             Circle()
                 .stroke(GameStyle.nightRaised, lineWidth: 34)
             Circle()
-                .stroke(Color.white.opacity(isAlign ? 0.22 : 0.08), style: StrokeStyle(lineWidth: 26, dash: [2, 9]))
+                .stroke(GameStyle.ink.opacity(isAlign ? 0.22 : 0.08), style: StrokeStyle(lineWidth: 26, dash: [2, 9]))
                 .rotationEffect(.degrees(knurl))
                 .padding(4)
             // Four notches.
@@ -173,10 +173,10 @@ struct DownbeatGame: View {
                         .fill(on ? color : GameStyle.night)
                         .frame(width: one ? 46 : 38, height: one ? 46 : 38)
                         .shadow(color: on ? color.opacity(0.9 * max(0.4, glow)) : .clear, radius: 16)
-                        .overlay(Circle().strokeBorder(on ? Color.white.opacity(0.8) : color.opacity(0.45), lineWidth: 2))
+                        .overlay(Circle().strokeBorder(on ? GameStyle.ink.opacity(0.8) : color.opacity(0.45), lineWidth: 2))
                     Text(showLabel ? "\(i + 1)" : "·")
                         .font(.display(one ? 22 : 18))
-                        .foregroundStyle(on ? Color.black.opacity(0.75) : GameStyle.nightText)
+                        .foregroundStyle(on ? Color.white : GameStyle.nightText)
                 }
                 .scaleEffect(on ? 1 + glow * 0.18 : 1)
                 .offset(y: -size / 2 + 2)

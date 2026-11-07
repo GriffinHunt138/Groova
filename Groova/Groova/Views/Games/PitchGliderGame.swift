@@ -135,14 +135,14 @@ struct PitchGliderGame: View {
         return ZStack(alignment: .topLeading) {
             // Faint altitude lines, no names.
             ForEach(0..<Self.rows.count, id: \.self) { r in
-                Rectangle().fill(Color.white.opacity(r == 0 || r == Self.rows.count - 1 ? 0.08 : 0.04))
+                Rectangle().fill(GameStyle.ink.opacity(r == 0 || r == Self.rows.count - 1 ? 0.08 : 0.04))
                     .frame(width: right - left, height: 1)
                     .position(x: (left + right) / 2, y: y(r, h: h))
             }
             // The ghost of the melody you heard.
             if !refPath.isEmpty, (showTrail && phase == .flying) || phase == .done || phase == .listening {
                 trail(refPath, px: px, h: h)
-                    .stroke(Color.white.opacity(phase == .listening ? 0.35 : 0.18),
+                    .stroke(GameStyle.ink.opacity(phase == .listening ? 0.35 : 0.18),
                             style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
             }
             // Your path.
@@ -156,7 +156,7 @@ struct PitchGliderGame: View {
             let gy = y(phase == .flying && autoUntil <= beatIndex(x) ? userRow : row, h: h)
             Image(systemName: "paperplane.fill")
                 .font(.system(size: 26, weight: .black))
-                .foregroundStyle(matched ? Theme.gold : Color.white)
+                .foregroundStyle(matched ? Theme.gold : GameStyle.nightText)
                 .shadow(color: matched ? Theme.gold : accent, radius: matched ? 18 : 10)
                 .rotationEffect(.degrees(-10))
                 .position(x: gx, y: gy)

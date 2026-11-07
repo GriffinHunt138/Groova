@@ -161,7 +161,7 @@ struct SoundCastingGame: View {
                     let isCounter = r == 4
                     let on = isCounter ? counterOn : active[r] && (lineup[r] != nil || !needsCast)
                     let a: Band.Audition? = isCounter ? nil : lineup[r].map { Band.pool(CastRole(rawValue: r)!)[$0] }
-                    let color = isCounter ? Color(hex: 0xFF5C5C) : (a?.color ?? GameStyle.nightDim)
+                    let color = isCounter ? Theme.miss : (a?.color ?? GameStyle.nightDim)
                     let pulse = playing && on ? 0.5 + 0.5 * sin(t * 6 + Double(r)) : 0
                     Button { tapSpotlight(r) } label: {
                         VStack(spacing: 6) {
@@ -178,14 +178,14 @@ struct SoundCastingGame: View {
                                 .frame(width: 56, height: 70)
                                 Image(systemName: isCounter ? "music.note.list" : (a?.symbol ?? "questionmark"))
                                     .font(.system(size: 20, weight: .black))
-                                    .foregroundStyle(on ? .white : GameStyle.nightDim)
+                                    .foregroundStyle(on ? GameStyle.nightText : GameStyle.nightDim)
                                     .scaleEffect(1 + 0.12 * pulse)
                                     .offset(y: 14)
                             }
                             Text(isCounter ? "Extra lead" : Self.roleNames[r]).font(.label(10, weight: .black))
                                 .foregroundStyle(role == r && showsAuditions ? accent : GameStyle.nightDim)
                             Text(isCounter ? (counterOn ? "On" : "Muted") : (a?.name ?? "Empty"))
-                                .font(.label(10, weight: .heavy)).foregroundStyle(on ? .white : GameStyle.nightDim)
+                                .font(.label(10, weight: .heavy)).foregroundStyle(on ? GameStyle.nightText : GameStyle.nightDim)
                                 .lineLimit(1).minimumScaleFactor(0.7)
                         }
                         .frame(maxWidth: .infinity)
@@ -223,7 +223,7 @@ struct SoundCastingGame: View {
                                     .font(.system(size: 16, weight: .bold))
                             }
                         }
-                        .foregroundStyle(chosen ? Theme.onBrand : .white)
+                        .foregroundStyle(chosen ? Theme.onBrand : GameStyle.nightText)
                         .frame(maxWidth: .infinity, minHeight: 110)
                         .background(RoundedRectangle(cornerRadius: 18).fill(chosen ? a.color : a.color.opacity(0.18)))
                         .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(a.color.opacity(0.6), lineWidth: 2))
@@ -252,7 +252,7 @@ struct SoundCastingGame: View {
                         Text(i == 0 ? "An extra part racing on top" : "Just the band").font(.label(11, weight: .semibold))
                             .foregroundStyle(GameStyle.nightDim)
                     }
-                    .foregroundStyle(.white)
+                    .foregroundStyle(GameStyle.nightText)
                     .frame(maxWidth: .infinity, minHeight: 130)
                     .background(RoundedRectangle(cornerRadius: 18).fill(on ? accent.opacity(0.35) : GameStyle.nightRaised))
                     .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(on ? accent : .clear, lineWidth: 2))
@@ -266,7 +266,7 @@ struct SoundCastingGame: View {
         VStack(spacing: 8) {
             ForEach(0..<3, id: \.self) { i in
                 ChoiceTile(title: Self.directions[i], symbol: ["flame.fill", "bolt.fill", "circle.dotted"][i],
-                           color: [Color(hex: 0xFF8A3D), GameStyle.snare, GameStyle.chords][i], selected: direction == i) {
+                           color: [GameStyle.bass, GameStyle.kick, GameStyle.chords][i], selected: direction == i) {
                     direction = i
                     lineup = Self.directionLineups[i].map { Optional($0) }
                     if playing { engine.update(kit: Band.kit(genre, lineup: sounding)) } else { startBand() }

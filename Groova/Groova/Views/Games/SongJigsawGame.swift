@@ -18,7 +18,7 @@ struct SongJigsawGame: View {
     let genre: Genre
     let onComplete: (Double) -> Void
 
-    static let colors: [Color] = [GameStyle.chords, GameStyle.kick, Color(hex: 0x5CE0B8), GameStyle.lead, GameStyle.snare, Color(hex: 0xFF8A3D)]
+    static let colors: [Color] = [GameStyle.chords, GameStyle.kick, GameStyle.extraA, GameStyle.lead, GameStyle.bass, GameStyle.extraB]
     static let symbols = ["sunrise.fill", "flame.fill", "sparkles", "moon.stars.fill", "waveform.path", "bolt.fill"]
 
     @State private var game: GameProgress
@@ -135,7 +135,7 @@ struct SongJigsawGame: View {
                 // Back: the section's layers.
                 HStack(spacing: 4) {
                     ForEach(0..<4, id: \.self) { l in
-                        Capsule().fill(cards[i].layers[l] ? Color.white : Color.white.opacity(0.15))
+                        Capsule().fill(cards[i].layers[l] ? Color.white : Color.white.opacity(0.3))
                             .frame(width: 6, height: isPlaying ? 30 : 18)
                     }
                 }
@@ -146,7 +146,7 @@ struct SongJigsawGame: View {
             .background(RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(LinearGradient(colors: [color, color.opacity(0.55)], startPoint: .topLeading, endPoint: .bottomTrailing)))
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(selectedCard == i ? Color.white : (isPlaying ? Theme.gold : .clear), lineWidth: 3))
+                .strokeBorder(selectedCard == i ? GameStyle.ink : (isPlaying ? Theme.gold : .clear), lineWidth: 3))
             .shadow(color: isPlaying ? color : .clear, radius: 12)
             .rotation3DEffect(.degrees(isFlipped ? 180 : 0), axis: (0, 1, 0), perspective: 0.6)
             .animation(.spring(response: 0.45, dampingFraction: 0.75), value: isFlipped)

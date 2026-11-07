@@ -223,17 +223,17 @@ struct MixTrafficGame: View {
                         Text(Self.names[stem]).font(.label(10, weight: .black))
                     }
                 }
-                .foregroundStyle(solo == slot ? Theme.onBrand : .white)
+                .foregroundStyle(solo == slot ? Theme.onBrand : GameStyle.nightText)
                 .frame(maxWidth: .infinity, minHeight: 26)
-                .background(Capsule().fill(solo == slot ? Self.colors[stem] : Color.white.opacity(0.1)))
+                .background(Capsule().fill(solo == slot ? Self.colors[stem] : GameStyle.ink.opacity(0.1)))
             }
             .buttonStyle(.plain)
             if hidesFaders {
-                RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(0.05))
+                RoundedRectangle(cornerRadius: 14).fill(GameStyle.ink.opacity(0.05))
                     .overlay(Text("?").font(.display(22)).foregroundStyle(GameStyle.nightDim))
             } else {
                 LevelStrip(value: Binding(get: { levels[stem] }, set: { levels[stem] = $0 }),
-                           color: hidesNames ? Color.white.opacity(0.6) : Self.colors[stem],
+                           color: hidesNames ? GameStyle.ink.opacity(0.6) : Self.colors[stem],
                            pocket: levelPocket(stem), locked: hearingOriginal) {
                     if !playing { startLoop() }
                 }

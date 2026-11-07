@@ -117,7 +117,7 @@ struct TimeSlicerGame: View {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(color.opacity(0.35 + glow * 0.65))
                     .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.15 + glow * 0.7), lineWidth: 2))
+                        .strokeBorder(GameStyle.ink.opacity(0.15 + glow * 0.7), lineWidth: 2))
                     .shadow(color: color.opacity(glow), radius: 12)
                     .scaleEffect(y: 1 + glow * 0.04)
             }
@@ -125,7 +125,7 @@ struct TimeSlicerGame: View {
         .frame(height: 170)
         .overlay(
             // The knife flash when you slice.
-            Rectangle().fill(Color.white).frame(width: 3).opacity(cut[b]).blur(radius: 1)
+            Rectangle().fill(accent).frame(width: 3).opacity(cut[b]).blur(radius: 1)
         )
         .contentShape(Rectangle())
         .gesture(

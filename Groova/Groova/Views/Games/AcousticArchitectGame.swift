@@ -238,7 +238,7 @@ struct AcousticArchitectGame: View {
                         let k = age / (tail + 0.1)
                         ForEach(0..<3, id: \.self) { ring in
                             let rr = CGFloat(k) * max(r.width, r.height) * (0.5 + 0.35 * CGFloat(ring))
-                            Circle().stroke(Color.white.opacity((1 - k) * 0.5 / Double(ring + 1)), lineWidth: 2)
+                            Circle().stroke(GameStyle.ink.opacity((1 - k) * 0.5 / Double(ring + 1)), lineWidth: 2)
                                 .frame(width: rr * 2, height: rr * 2)
                                 .position(local)
                         }
@@ -358,15 +358,15 @@ struct AcousticArchitectGame: View {
                             ZStack {
                                 ForEach(0..<3, id: \.self) { ring in
                                     let k = min(1, age / (tail + 0.1))
-                                    Circle().stroke(Color.white.opacity(age < tail + 0.1 ? (1 - k) * 0.6 / Double(ring + 1) : 0.08), lineWidth: 2)
+                                    Circle().stroke(GameStyle.ink.opacity(age < tail + 0.1 ? (1 - k) * 0.6 / Double(ring + 1) : 0.08), lineWidth: 2)
                                         .frame(width: 20 + CGFloat(k) * 50 * CGFloat(ring + 1) / 2, height: 20 + CGFloat(k) * 50 * CGFloat(ring + 1) / 2)
                                 }
-                                Image(systemName: "hands.clap.fill").font(.system(size: 18, weight: .black)).foregroundStyle(.white)
+                                Image(systemName: "hands.clap.fill").font(.system(size: 18, weight: .black)).foregroundStyle(accent)
                             }
                             .frame(height: 90)
                         }
                         Text(pick ? "Clip \(["A", "B", "C", "D"][i % 4])" : "Clip \(i + 1)").font(.label(13, weight: .heavy))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(GameStyle.nightText)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)

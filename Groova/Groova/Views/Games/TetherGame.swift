@@ -139,7 +139,7 @@ struct TetherGame: View {
         return ZStack(alignment: .topLeading) {
             // Bars and chord names.
             ForEach(0..<bars, id: \.self) { b in
-                RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(curBar == b ? 0.05 : 0.02))
+                RoundedRectangle(cornerRadius: 14).fill(GameStyle.ink.opacity(curBar == b ? 0.05 : 0.02))
                     .frame(width: barW - 6, height: floorY - topY + 30)
                     .position(x: left + barW * (CGFloat(b) + 0.5), y: (floorY + topY) / 2)
                 Text(chords[min(b, chords.count - 1)].name)
@@ -198,7 +198,7 @@ struct TetherGame: View {
             }
             // Playhead.
             if cur >= 0 {
-                Rectangle().fill(Color.white.opacity(0.12)).frame(width: 2, height: floorY - topY + 20)
+                Rectangle().fill(GameStyle.ink.opacity(0.12)).frame(width: 2, height: floorY - topY + 20)
                     .position(x: xOf(curBar, 0) - barW / 32 + barW * CGFloat(cur) / 16, y: (floorY + topY) / 2)
             }
             StageTag(text: tag, color: phase == .playing ? accent : GameStyle.nightDim).padding(14)

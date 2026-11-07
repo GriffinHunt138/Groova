@@ -231,7 +231,7 @@ struct ForensicsGame: View {
             ForEach((0..<8).reversed(), id: \.self) { seg in
                 let on = level * 8 > Double(seg)
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(on ? (seg > 5 ? Theme.gold : color) : Color.white.opacity(0.06))
+                    .fill(on ? (seg > 5 ? Theme.gold : color) : GameStyle.ink.opacity(0.06))
                     .frame(height: 7)
             }
         }
@@ -247,7 +247,7 @@ struct ForensicsGame: View {
                     Text(k == 0 ? "A" : "B")
                         .font(.label(14, weight: .black))
                         .frame(maxWidth: .infinity).frame(height: 34)
-                        .background(RoundedRectangle(cornerRadius: 10).fill(on ? accent : GameStyle.night))
+                        .background(RoundedRectangle(cornerRadius: 10).fill(on ? accent : GameStyle.nightRaised))
                         .foregroundStyle(GameStyle.nightText)
                         .onTapGesture { pickKit(t, k) }
                 }
@@ -263,8 +263,8 @@ struct ForensicsGame: View {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .black))
                 .frame(maxWidth: .infinity).frame(height: 34)
-                .background(RoundedRectangle(cornerRadius: 10).fill(on ? Theme.gold : GameStyle.night))
-                .foregroundStyle(on ? Color.black.opacity(0.75) : GameStyle.nightText)
+                .background(RoundedRectangle(cornerRadius: 10).fill(on ? accent : GameStyle.nightRaised))
+                .foregroundStyle(on ? Color.white : GameStyle.nightText)
         }
     }
 

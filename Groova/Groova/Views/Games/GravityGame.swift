@@ -157,7 +157,7 @@ struct GravityGame: View {
                 let beat = s % 4 == 0
                 let zone = showZone && zoneSteps.contains(s)
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(zone ? Theme.gold.opacity(0.35) : Color.white.opacity(beat ? 0.18 : 0.06))
+                    .fill(zone ? Theme.gold.opacity(0.35) : GameStyle.ink.opacity(beat ? 0.18 : 0.06))
                     .frame(width: zone ? 22 : 3, height: zone ? 14 : (beat ? 14 : 7))
                     .position(x: x(Double(s)), y: floorY + 16)
             }
@@ -182,7 +182,7 @@ struct GravityGame: View {
             }
             // Playhead.
             if inBar >= 0 {
-                Rectangle().fill(Color.white.opacity(0.08)).frame(width: 2, height: floorY - 40)
+                Rectangle().fill(GameStyle.ink.opacity(0.08)).frame(width: 2, height: floorY - 40)
                     .position(x: x(inBar), y: (floorY + 40) / 2)
             }
             // Kick puck.

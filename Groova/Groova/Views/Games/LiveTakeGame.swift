@@ -274,7 +274,7 @@ struct LiveTakeGame: View {
                                 Text(showsSceneNames ? Self.sceneNames[s].uppercased() : "SCENE \(s + 1)")
                                     .font(.label(11, weight: .black))
                             }
-                            .foregroundStyle(isOn ? Theme.onBrand : .white)
+                            .foregroundStyle(isOn ? Theme.onBrand : GameStyle.nightText)
                             .frame(maxWidth: .infinity, minHeight: 110)
                             .background(RoundedRectangle(cornerRadius: 18, style: .continuous)
                                 .fill(isOn ? Self.sceneColors[s] : Self.sceneColors[s].opacity(0.18 + 0.4 * blink)))

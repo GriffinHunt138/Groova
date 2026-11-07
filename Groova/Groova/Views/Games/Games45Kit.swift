@@ -75,23 +75,23 @@ enum Band {
 
     static let drums: [Audition] = [
         Audition(name: "Tight kit", symbol: "circle.grid.2x2.fill", color: GameStyle.kick, patch: .stab, flavor: 3),
-        Audition(name: "Warm kit", symbol: "flame.fill", color: Color(hex: 0xFF8A3D), patch: .stab, flavor: 1),
-        Audition(name: "Dusty kit", symbol: "wind", color: Color(hex: 0x9C8F7A), patch: .stab, flavor: 4),
+        Audition(name: "Warm kit", symbol: "flame.fill", color: Theme.brand, patch: .stab, flavor: 1),
+        Audition(name: "Dusty kit", symbol: "wind", color: Theme.brand, patch: .stab, flavor: 4),
     ]
     static let bass: [Audition] = [
         Audition(name: "Sub", symbol: "circle.fill", color: GameStyle.bass, patch: .deepBass),
-        Audition(name: "Round", symbol: "capsule.fill", color: Color(hex: 0xFF8A3D), patch: .popBass),
-        Audition(name: "Buzz", symbol: "bolt.fill", color: Color(hex: 0xFFD23D), patch: .technoBass),
+        Audition(name: "Round", symbol: "capsule.fill", color: Theme.brand, patch: .popBass),
+        Audition(name: "Buzz", symbol: "bolt.fill", color: Theme.brand, patch: .technoBass),
     ]
     static let chords: [Audition] = [
         Audition(name: "Pluck", symbol: "guitars.fill", color: GameStyle.chords, patch: .pluck),
-        Audition(name: "Pad", symbol: "cloud.fill", color: Color(hex: 0x8AA4FF), patch: .softPad),
-        Audition(name: "E-piano", symbol: "pianokeys", color: Color(hex: 0x5CE0B8), patch: .electricPiano),
+        Audition(name: "Pad", symbol: "cloud.fill", color: Theme.brand, patch: .softPad),
+        Audition(name: "E-piano", symbol: "pianokeys", color: Theme.brand, patch: .electricPiano),
     ]
     static let lead: [Audition] = [
         Audition(name: "Synth", symbol: "waveform", color: GameStyle.lead, patch: leadPatch),
-        Audition(name: "Bell", symbol: "bell.fill", color: Color(hex: 0xFFE27A), patch: SoundVoice.bell.patch),
-        Audition(name: "Brass", symbol: "music.mic", color: Color(hex: 0xFF8A3D), patch: SoundVoice.brass.patch),
+        Audition(name: "Bell", symbol: "bell.fill", color: Theme.brand, patch: SoundVoice.bell.patch),
+        Audition(name: "Brass", symbol: "music.mic", color: Theme.brand, patch: SoundVoice.brass.patch),
     ]
 
     static func pool(_ role: CastRole) -> [Audition] {
@@ -206,20 +206,19 @@ struct SoundFingerprint: View {
                             var line = Path()
                             line.move(to: CGPoint(x: x, y: top))
                             line.addLine(to: CGPoint(x: x, y: size.height))
-                            ctx.stroke(line, with: .color(.white.opacity(0.12 + 0.18 * bright)), lineWidth: 1)
+                            ctx.stroke(line, with: .color(GameStyle.ink.opacity(0.12 + 0.18 * bright)), lineWidth: 1)
                         }
                     }
                     .mask(EnvelopeShape(patch: patch, hold: hold, window: window))
                     if elapsed >= 0, elapsed < window {
-                        Capsule().fill(Color.white).frame(width: 3, height: g.size.height)
-                            .shadow(color: .white, radius: 6)
+                        Capsule().fill(GameStyle.ink).frame(width: 3, height: g.size.height)
                             .offset(x: g.size.width * CGFloat(elapsed / window) - 1.5)
                     }
                 }
                 .blur(radius: hidden ? 10 : 0)
                 .overlay {
                     if hidden {
-                        Text("?").font(.display(34)).foregroundStyle(.white.opacity(0.85))
+                        Text("?").font(.display(34)).foregroundStyle(GameStyle.ink.opacity(0.85))
                     }
                 }
             }
@@ -251,7 +250,7 @@ struct ChoiceTile: View {
             .padding(.vertical, 6)
             .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(selected ? color : Theme.surfaceHigh))
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(selected ? Color.white.opacity(0.4) : color.opacity(0.35), lineWidth: 2))
+                .strokeBorder(selected ? GameStyle.ink.opacity(0.4) : color.opacity(0.35), lineWidth: 2))
             .opacity(dim ? 0.45 : 1)
             .scaleEffect(selected ? 1.03 : 1)
         }
@@ -294,7 +293,7 @@ struct LevelStrip: View {
         GeometryReader { g in
             let h = g.size.height
             ZStack(alignment: .bottom) {
-                RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(0.05))
+                RoundedRectangle(cornerRadius: 14).fill(GameStyle.ink.opacity(0.05))
                 if let pocket {
                     RoundedRectangle(cornerRadius: 6)
                         .strokeBorder(Theme.gold.opacity(0.6), style: StrokeStyle(lineWidth: 2, dash: [4, 4]))
@@ -305,7 +304,7 @@ struct LevelStrip: View {
                     .fill(LinearGradient(colors: [color, color.opacity(0.35)], startPoint: .top, endPoint: .bottom))
                     .frame(height: max(10, h * CGFloat(value)))
                     .shadow(color: color.opacity(0.6), radius: 8 * value)
-                Capsule().fill(Color.white).frame(width: 30, height: 6)
+                Capsule().fill(GameStyle.ink).frame(width: 30, height: 6)
                     .offset(y: -max(4, h * CGFloat(value) - 8))
             }
             .contentShape(Rectangle())

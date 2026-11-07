@@ -53,19 +53,26 @@ struct GameStepView: View {
 }
 
 enum GameStyle {
-    static let night = Color(hex: 0x14111F)
-    static let nightRaised = Color(hex: 0x241D38)
-    static let nightLine = Color.white.opacity(0.09)
-    static let nightText = Color.white.opacity(0.92)
-    static let nightDim = Color.white.opacity(0.5)
+    // Games are light now: white stage, gray lines, dark ink, purple for anything lit.
+    // The old "night" names are kept so every game picks up the light look.
+    static let night = Theme.background
+    static let nightRaised = Theme.surfaceRaised
+    static let nightLine = Theme.surfaceHigh
+    static let nightText = Theme.text
+    static let nightDim = Theme.textSecondary
+    /// Lines, playheads and markers drawn on the stage.
+    static let ink = Theme.text
 
     // Part colours, shared by every game so kick, bass, chords and lead look the same everywhere.
-    static let kick = Color(hex: 0x7B5CFA)
-    static let snare = Color(hex: 0xFF5C8A)
-    static let hat = Color(hex: 0x2EC5F2)
-    static let bass = Color(hex: 0xFF5C8A)
-    static let chords = Color(hex: 0x2EC5F2)
-    static let lead = Color(hex: 0xFFB800)
+    // All purple. Drums share the brand purple; other parts are shades so they stay tellable apart.
+    static let kick = Theme.brand
+    static let snare = Theme.brand
+    static let hat = Theme.brand
+    static let bass = Color(hex: 0x4A2EC0)
+    static let chords = Color(hex: 0xA48BFF)
+    static let lead = Color(hex: 0x6A45E8)
+    static let extraA = Color(hex: 0x8F72FF)
+    static let extraB = Color(hex: 0x5B3FD8)
 
     static func color(_ t: DrumTrack) -> Color {
         switch t {
@@ -201,7 +208,7 @@ struct GameHeader: View {
     }
 }
 
-/// The dark stage a game is played on.
+/// The stage a game is played on: no card, straight on the white page.
 struct GameStage<Content: View>: View {
     var height: CGFloat = 330
     /// White stage with a light border, instead of the dark night stage.
@@ -209,14 +216,10 @@ struct GameStage<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        let fill: Color = light ? Theme.surface : GameStyle.night
-        let edge: Color = light ? Theme.stroke : GameStyle.nightLine
-        return content()
+        // No card: the game sits straight on the white page.
+        content()
             .frame(maxWidth: .infinity)
             .frame(height: height)
-            .background(RoundedRectangle(cornerRadius: 28, style: .continuous).fill(fill))
-            .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).strokeBorder(edge, lineWidth: 2))
-            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 }
 
@@ -227,13 +230,11 @@ struct StageTag: View {
     var light = false
 
     var body: some View {
-        let ink: Color = light && color == GameStyle.nightDim ? Theme.textSecondary : color
-        let chip: Color = light ? Theme.surfaceRaised : GameStyle.nightRaised
-        return Text(text.uppercased())
+        // Plain text, no chip.
+        Text(text.uppercased())
             .font(.label(12, weight: .black)).tracking(1)
-            .foregroundStyle(ink)
-            .padding(.horizontal, 12).frame(height: 26)
-            .background(Capsule().fill(chip))
+            .foregroundStyle(color)
+            .frame(height: 26)
             .contentTransition(.opacity)
     }
 }

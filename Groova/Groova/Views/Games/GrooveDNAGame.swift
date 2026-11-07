@@ -159,7 +159,7 @@ struct GrooveDNAGame: View {
                         if s == 0 { p.move(to: pt) } else { p.addLine(to: pt) }
                     }
                 }
-                .stroke(Color.white.opacity(0.14), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                .stroke(GameStyle.ink.opacity(0.14), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
                 ForEach(0..<16, id: \.self) { s in
                     let on = round.groove.hat[s]
                     let accented = usesAccents && s % 4 == 0 && shownAccents.contains(s / 4)
@@ -168,7 +168,7 @@ struct GrooveDNAGame: View {
                     let color = s % 2 == 0 ? GameStyle.hat : accent
                     let y = h / 2 + (s % 2 == 0 ? -1 : 1) * h * 0.22 + CGFloat(sin(Double(s) * 2.1) * wobble)
                     Circle()
-                        .fill(on ? color.opacity(lit ? 1 : 0.7) : Color.white.opacity(0.08))
+                        .fill(on ? color.opacity(lit ? 1 : 0.7) : GameStyle.ink.opacity(0.08))
                         .frame(width: size, height: size)
                         .shadow(color: lit ? color : .clear, radius: 10)
                         .overlay(accented ? Circle().strokeBorder(Theme.gold, lineWidth: 3) : nil)
@@ -223,8 +223,8 @@ struct GrooveDNAGame: View {
                     .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .fill(on ? Theme.gold.opacity(now ? 1 : 0.75) : GameStyle.nightRaised))
                     .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(now ? Color.white.opacity(0.7) : GameStyle.nightLine, lineWidth: 2))
-                    .foregroundStyle(on ? Color.black.opacity(0.8) : GameStyle.nightText)
+                        .strokeBorder(now ? GameStyle.ink.opacity(0.7) : GameStyle.nightLine, lineWidth: 2))
+                    .foregroundStyle(on ? Color.white : GameStyle.nightText)
                 }
                 .buttonStyle(PressScaleStyle(scale: 0.94))
                 .disabled(phase != .playing || hearingTarget)

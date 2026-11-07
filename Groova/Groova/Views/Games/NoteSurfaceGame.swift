@@ -184,11 +184,11 @@ struct NoteSurfaceGame: View {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(bad ? Theme.miss : color.opacity(on ? 1.0 : idleOpacity))
                     .overlay(alignment: .top) {
-                        Circle().fill(Color.white.opacity(on ? 0.95 : 0.2)).frame(width: 16, height: 16).padding(.top, 12)
-                            .shadow(color: .white.opacity(on ? 1 : 0), radius: 10)
+                        Circle().fill(GameStyle.ink.opacity(on ? 0.95 : 0.2)).frame(width: 16, height: 16).padding(.top, 12)
+                            .shadow(color: GameStyle.ink.opacity(on ? 1 : 0), radius: 10)
                     }
                     .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Color.white.opacity(on ? 0.8 : 0.1), lineWidth: 2))
+                        .strokeBorder(GameStyle.ink.opacity(on ? 0.8 : 0.1), lineWidth: 2))
                     .shadow(color: on ? color : .clear, radius: 18)
                     .frame(height: 120 + CGFloat(i) * 26)
                     .scaleEffect(on ? 1.04 : 1, anchor: .bottom)
@@ -219,11 +219,11 @@ struct NoteSurfaceGame: View {
                     let color = [GameStyle.kick, GameStyle.hat, Theme.success, GameStyle.lead, GameStyle.snare][i % 5]
                     ZStack {
                         Circle().fill(wrong == n ? Theme.miss : color.opacity(on ? 1 : 0.35))
-                        Circle().strokeBorder(Color.white.opacity(on ? 0.9 : 0.15), lineWidth: 3)
+                        Circle().strokeBorder(GameStyle.ink.opacity(on ? 0.9 : 0.15), lineWidth: 3)
                         Circle().stroke(color.opacity(on ? 0.6 : 0), lineWidth: 6).scaleEffect(on ? 1.5 : 1)
                         Text(round.labels ? noteName(n) : "")
                             .font(.label(15, weight: .black))
-                            .foregroundStyle(on ? Color.black.opacity(0.7) : GameStyle.nightText)
+                            .foregroundStyle(on ? Color.white : GameStyle.nightText)
                     }
                     .frame(width: 68, height: 68)
                     .scaleEffect(on ? 1.12 : 1)
@@ -250,11 +250,11 @@ struct NoteSurfaceGame: View {
                 ForEach(Array(whites.enumerated()), id: \.offset) { i, n in
                     let on = lit == n && showLights
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(wrong == n ? Theme.miss.opacity(0.8) : (on ? accent : Color.white.opacity(0.9)))
+                        .fill(wrong == n ? Theme.miss.opacity(0.8) : (on ? accent : Theme.surface))
                         .overlay(alignment: .bottom) {
                             if showLabel(n) {
                                 Text(noteName(n)).font(.label(13, weight: .black))
-                                    .foregroundStyle(on ? Color.white : GameStyle.night.opacity(0.7))
+                                    .foregroundStyle(on ? Color.white : Theme.textSecondary)
                                     .padding(.bottom, 10)
                                     .transition(.scale.combined(with: .opacity))
                             }
@@ -268,8 +268,8 @@ struct NoteSurfaceGame: View {
                         let b = n + 1
                         let on = lit == b && showLights
                         RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(wrong == b ? Theme.miss : (on ? accent : GameStyle.night))
-                            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color.white.opacity(0.15), lineWidth: 1))
+                            .fill(wrong == b ? Theme.miss : (on ? accent : GameStyle.nightRaised))
+                            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(GameStyle.ink.opacity(0.15), lineWidth: 1))
                             .frame(width: w * 0.6, height: h * 0.6)
                             .offset(x: CGFloat(i + 1) * w - w * 0.3)
                             .onTapGesture { tap(b) }
@@ -356,7 +356,7 @@ struct NoteSurfaceGame: View {
             Circle().strokeBorder(color.opacity(0.8), style: StrokeStyle(lineWidth: 2, dash: dashed ? [4, 4] : []))
             Text(round.labels || revealed.contains(n) ? label : "")
                 .font(.label(label.count > 3 ? 10 : 14, weight: .black))
-                .foregroundStyle(show ? Color.black.opacity(0.75) : GameStyle.nightText)
+                .foregroundStyle(show ? Color.white : GameStyle.nightText)
                 .lineLimit(1).minimumScaleFactor(0.6)
         }
         .frame(width: size, height: size)

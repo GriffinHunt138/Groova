@@ -120,7 +120,7 @@ struct EnergySurferGame: View {
                 ZStack(alignment: .topLeading) {
                     // Level bands.
                     ForEach(0..<5, id: \.self) { l in
-                        Rectangle().fill(Color.white.opacity(l == level && !hidesWave ? 0.07 : 0.025))
+                        Rectangle().fill(GameStyle.ink.opacity(l == level && !hidesWave ? 0.07 : 0.025))
                             .frame(width: right - left, height: (bottom - top) / 5 - 2)
                             .position(x: (left + right) / 2, y: yOf(Double(l)))
                         Text(Self.levelNames[l].uppercased()).font(.label(9, weight: .black)).tracking(0.6)
@@ -129,7 +129,7 @@ struct EnergySurferGame: View {
                     }
                     // Bar lines.
                     ForEach(0...bars, id: \.self) { b in
-                        Rectangle().fill(Color.white.opacity(0.06)).frame(width: 1, height: bottom - top + 10)
+                        Rectangle().fill(GameStyle.ink.opacity(0.06)).frame(width: 1, height: bottom - top + 10)
                             .position(x: left + barW * CGFloat(b), y: (top + bottom) / 2)
                     }
                     if !hidesWave {
@@ -146,14 +146,14 @@ struct EnergySurferGame: View {
                         if playing || !recorded.isEmpty {
                             let x = left + barW * CGFloat(max(0, pos))
                             let y = yOf(Double(playing ? level : playingLevel))
-                            Capsule().fill(Color.white).frame(width: 34, height: 12)
+                            Capsule().fill(accent).frame(width: 34, height: 12)
                                 .rotationEffect(.degrees(-12))
                                 .shadow(color: accent, radius: 10)
                                 .position(x: playing ? x : left + barW * CGFloat(recorded.count), y: y)
                         }
                     }
                     if pos >= 0 {
-                        Rectangle().fill(Color.white.opacity(0.4)).frame(width: 2, height: bottom - top + 14)
+                        Rectangle().fill(GameStyle.ink.opacity(0.4)).frame(width: 2, height: bottom - top + 14)
                             .position(x: left + barW * CGFloat(pos), y: (top + bottom) / 2)
                     }
                     HStack {
