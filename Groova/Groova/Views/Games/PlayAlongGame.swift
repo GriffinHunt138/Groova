@@ -147,7 +147,7 @@ struct PlayAlongGame: View {
     // MARK: Falling notes
 
     private func highway(pos: Double) -> some View {
-        let n = max(1, config.lanes.count)
+        let n = max(1, config.laneCount)
         let ts = targets
         let gs = grades
         let ink = accent
@@ -201,24 +201,34 @@ struct PlayAlongGame: View {
 
     private var pads: some View {
         HStack(spacing: 8) {
-            ForEach(0..<config.lanes.count, id: \.self) { l in
+            ForEach(0..<config.laneCount, id: \.self) { l in
                 pad(l)
             }
         }
     }
 
+    private func padLabel(_ l: Int) -> (name: String, symbol: String?) {
+        if config.keys.isEmpty {
+            let t = config.lanes[l]
+            return (t.name, t.symbol)
+        }
+        return (EchoPad.letter(config.keys[l]), nil)
+    }
+
     private func pad(_ l: Int) -> some View {
-        let t = config.lanes[l]
+        let label = padLabel(l)
         let on = lit.contains(l)
         let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
         let fill: Color = on ? accent : accent.opacity(0.12)
         let ink: Color = on ? Color.white : accent
         let scale: CGFloat = on ? 0.96 : 1
         return VStack(spacing: 6) {
-            Image(systemName: t.symbol)
-                .font(.system(size: 24, weight: .black))
-            Text(t.name)
-                .font(.label(15, weight: .black))
+            if let symbol = label.symbol {
+                Image(systemName: symbol)
+                    .font(.system(size: 24, weight: .black))
+            }
+            Text(label.name)
+                .font(.label(label.symbol == nil ? 22 : 15, weight: .black))
         }
         .foregroundStyle(ink)
         .frame(maxWidth: .infinity)
@@ -232,7 +242,7 @@ struct PlayAlongGame: View {
         .gesture(DragGesture(minimumDistance: 0)
             .onChanged { _ in press(l) }
             .onEnded { _ in held.remove(l) })
-        .accessibilityLabel(t.name)
+        .accessibilityLabel(label.name)
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { press(l); held.remove(l) }
     }
@@ -242,7 +252,7 @@ struct PlayAlongGame: View {
     private func press(_ l: Int) {
         guard !held.contains(l) else { return }
         held.insert(l)
-        AudioEngine.shared.trigger(config.lanes[l], kit: transport.kit(for: genre), velocity: 1)
+        sound(l)
         Haptics.tap()
         light(l)
         guard phase == .playing, let pos = clock.now() else { return }
@@ -265,6 +275,16 @@ struct PlayAlongGame: View {
         } else if pos >= 16 {
             combo = 0
             say("Off the beat")
+        }
+    }
+
+    private func sound(_ l: Int) {
+        if config.keys.isEmpty {
+            AudioEngine.shared.trigger(config.lanes[l], kit: transport.kit(for: genre), velocity: 1)
+        } else {
+            let key = config.keys[l]
+            let patch: SynthPatch = key < 52 ? .popBass : .electricPiano
+            AudioEngine.shared.playNote(key, seconds: 0.4, patch: patch)
         }
     }
 
@@ -298,15 +318,25 @@ struct PlayAlongGame: View {
     }
 
     private func start() {
-        let backing = config.groove.without(Set(config.lanes))
+        let melodyMode = !config.keys.isEmpty
+        let backing = melodyMode ? config.groove : config.groove.without(Set(config.lanes))
         var seq: [Pattern] = [Self.countIn]
         var ts: [Target] = []
         for b in 1...max(1, config.bars) {
             seq.append(backing)
-            for (l, track) in config.lanes.enumerated() {
-                let row = config.groove[track]
-                for s in 0..<Pattern.steps where row[s] {
-                    ts.append(Target(pos: Double(b * 16 + s), lane: l))
+            if melodyMode {
+                let barOfLine = (b - 1) % config.melodyBars
+                for note in config.melody where note.step / 16 == barOfLine {
+                    if let l = config.keys.firstIndex(of: note.pitch) {
+                        ts.append(Target(pos: Double(b * 16 + note.step % 16), lane: l))
+                    }
+                }
+            } else {
+                for (l, track) in config.lanes.enumerated() {
+                    let row = config.groove[track]
+                    for s in 0..<Pattern.steps where row[s] {
+                        ts.append(Target(pos: Double(b * 16 + s), lane: l))
+                    }
                 }
             }
         }

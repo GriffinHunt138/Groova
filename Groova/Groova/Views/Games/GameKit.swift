@@ -51,6 +51,7 @@ struct GameStepView: View {
         case .echo(let config): EchoGame(task: task, config: config, genre: genre, onComplete: onComplete)
         case .playAlong(let config): PlayAlongGame(task: task, config: config, genre: genre, onComplete: onComplete)
         case .quickEar(let config): QuickEarGame(task: task, config: config, genre: genre, onComplete: onComplete)
+        case .dial(let config): DialGame(task: task, config: config, genre: genre, onComplete: onComplete)
         }
     }
 }

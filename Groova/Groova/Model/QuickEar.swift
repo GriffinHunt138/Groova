@@ -17,6 +17,10 @@ nonisolated enum EarSound: Sendable {
     case chords([[Int]])
     /// Two bars of a drum groove at this swing.
     case groove(Pattern, swing: Double)
+    /// The same note on each sound in turn.
+    case voices([SynthPatch], note: Int)
+    /// One bar of each pattern in turn.
+    case grooves([Pattern])
 }
 
 nonisolated struct EarQuestion: Sendable {
@@ -128,5 +132,79 @@ extension QuickEarConfig {
             qs.append(EarQuestion(sound: .groove(groove, swing: swung ? swing : 0), answer: swung ? 1 : 0))
         }
         return QuickEarConfig(prompt: "Straight or swung?", choices: ["Straight", "Swung"], questions: qs)
+    }
+
+    /// A chord of one, two or three notes: how many do you hear?
+    nonisolated static func noteCount(_ seed: String, count: Int = 10) -> QuickEarConfig {
+        var rng = LevelRNG(seed)
+        var qs: [EarQuestion] = []
+        for _ in 0..<count {
+            let root = 55 + rng.int(8)
+            let triad = rng.int(2) == 0 ? major(root) : minor(root)
+            let n = 1 + rng.int(3)
+            qs.append(EarQuestion(sound: .chord(Array(triad.prefix(n))), answer: n - 1))
+        }
+        return QuickEarConfig(prompt: "How many notes?", choices: ["One", "Two", "Three"], questions: qs)
+    }
+
+    /// The same note on a dark and a bright sound, in either order. `gap` 0...1: smaller is harder.
+    nonisolated static func brighter(_ seed: String, count: Int = 10, gap: Double = 1) -> QuickEarConfig {
+        var rng = LevelRNG(seed)
+        var qs: [EarQuestion] = []
+        for _ in 0..<count {
+            var dark = SynthPatch(saw: 0.7, square: 0.1, sine: 0.3, cutoff: 500, envAmount: 300, filterDecay: 0.3,
+                                  resonance: 0.1, decay: 0.4, sustain: 0.5, release: 0.2, gain: 0.35)
+            var bright = dark
+            dark.cutoff = Float(500 + (1 - gap) * 1200 + Double(rng.int(200)))
+            bright.cutoff = Float(1900 + gap * 3500 + Double(rng.int(400)))
+            let first = rng.int(2) == 0
+            let note = 55 + rng.int(10)
+            qs.append(EarQuestion(sound: .voices(first ? [bright, dark] : [dark, bright], note: note), answer: first ? 0 : 1))
+        }
+        return QuickEarConfig(prompt: "Which was brighter?", choices: ["First", "Second"], questions: qs)
+    }
+
+    /// Three bars of one section, then a fourth that either repeats it or changes.
+    nonisolated static func sameChanged(_ seed: String, sections: [Pattern], count: Int = 10) -> QuickEarConfig {
+        var rng = LevelRNG(seed)
+        var qs: [EarQuestion] = []
+        for _ in 0..<count {
+            let a = rng.int(sections.count)
+            let changed = rng.int(2) == 1
+            var b = a
+            if changed, sections.count > 1 { b = (a + 1 + rng.int(sections.count - 1)) % sections.count }
+            qs.append(EarQuestion(sound: .grooves([sections[a], sections[a], sections[b]]), answer: b == a ? 0 : 1))
+        }
+        return QuickEarConfig(prompt: "Did the section change?", choices: ["Same", "Changed"], questions: qs)
+    }
+
+    /// Two bars from a list ordered sparse to full: which one was fuller?
+    nonisolated static func fuller(_ seed: String, layers: [Pattern], count: Int = 10, closest: Int = 1) -> QuickEarConfig {
+        var rng = LevelRNG(seed)
+        var qs: [EarQuestion] = []
+        let n = layers.count
+        for _ in 0..<count {
+            let d = min(n - 1, closest + rng.int(max(1, n - closest)))
+            let low = rng.int(max(1, n - d))
+            let high = low + d
+            let fullFirst = rng.int(2) == 0
+            let pair = fullFirst ? [layers[high], layers[low]] : [layers[low], layers[high]]
+            qs.append(EarQuestion(sound: .grooves(pair), answer: fullFirst ? 0 : 1))
+        }
+        return QuickEarConfig(prompt: "Which bar was fuller?", choices: ["First", "Second"], questions: qs)
+    }
+
+    /// Three bars that add layers or take them away.
+    nonisolated static func buildDrop(_ seed: String, layers: [Pattern], count: Int = 10) -> QuickEarConfig {
+        var rng = LevelRNG(seed)
+        var qs: [EarQuestion] = []
+        let n = layers.count
+        for _ in 0..<count {
+            let start = rng.int(max(1, n - 2))
+            let run = [layers[start], layers[min(n - 1, start + 1)], layers[min(n - 1, start + 2)]]
+            let building = rng.int(2) == 0
+            qs.append(EarQuestion(sound: .grooves(building ? run : Array(run.reversed())), answer: building ? 0 : 1))
+        }
+        return QuickEarConfig(prompt: "Building up or dropping?", choices: ["Building", "Dropping"], questions: qs)
     }
 }

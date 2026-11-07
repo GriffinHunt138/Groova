@@ -51,6 +51,8 @@ nonisolated enum GameKind: Sendable {
     case playAlong(PlayAlongConfig)
     /// Core game: hear it, tap the answer, ten in a row.
     case quickEar(QuickEarConfig)
+    /// Core game: match a target sound with one slider.
+    case dial(DialConfig)
 }
 
 // MARK: - Blackout (F0.1)

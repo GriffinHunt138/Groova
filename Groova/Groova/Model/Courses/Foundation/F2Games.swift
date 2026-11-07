@@ -14,6 +14,7 @@ import Foundation
 nonisolated enum F2Games {
     typealias F = FKit
 
+    static let playName = "Play Along"
     static let earName = "Quick Ear"
     static let lessons: [Lesson] = [f21, f22, f23, f24, f25]
 
@@ -83,58 +84,37 @@ nonisolated enum F2Games {
 
     static let f22 = K.lesson("f2.2", "Meet the Keys", "Note names on the keyboard", "pianokeys", .theory, 15, [
         K.opening("A map with landmarks",
-                  "The keyboard looks complicated until you spot its landmarks. First you'll play keys and see them land in the piano roll. Then you'll find your way round the map using the groups of black keys."),
+                  "The keyboard looks complicated until you spot its landmarks. First you'll play keys and see them land in the piano roll. Then you'll play C, E and G along with the band as the notes fall."),
         K.teach("Twos and threes",
                 "Black keys come in groups of two and three. C is always the white key just left of a group of two. Find that and you can find every other note.",
                 demo: line([(0, 60, 4), (4, 62, 4), (8, 64, 4), (12, 67, 4)])),
         K.play("Play C, D, E and G", "Start on C, just left of the two black keys. Walk right to D and E, then skip F to land on G.",
                [60, 62, 64, 67], low: 55, high: 74),
-        K.game(mazeName, mazeLine, .notes(keys, [
-            NoteRound(title: "Find the landmark", body: "Find the white key just left of the two black keys. That's C. Its name appears when you find it.",
-                      mode: .find([60], reveal: true)),
-            NoteRound(title: "Step by step", body: "From C, walk right: C, then D, then E. Each name lights up after you land on it.",
-                      mode: .find([60, 62, 64], reveal: true)),
-            NoteRound(title: "Find home again", body: "A different stretch of keyboard, no letters. Find the C using the black keys.",
-                      mode: .find([72], reveal: true), surface: .keyboard(low: 65, high: 83)),
-        ])),
+        K.game(playName, "Three keys. Play them as they land.", .playAlong(PlayAlongConfig(groove: softBeat, bars: 6, bpm: 84, keys: [60, 64, 67], melody: [NoteEvent(0, 60), NoteEvent(4, 64), NoteEvent(8, 67), NoteEvent(12, 64)]))),
     ])
 
     static let f22Silver: [LessonStep] = [
         L.silver("Navigate by sound",
-                 "The labels are fading, but the map is still there. First enter a four-note route in the piano roll. Then find notes by ear and follow directions with no letters at all."),
+                 "The labels are fading, but the map is still there. First enter a four-note route in the piano roll. Then you'll play five keys along with the band."),
         K.teach("Names repeat",
                 "After B the names start again at C, just higher. C, E, G and then C again, an octave up. Same name, higher room.",
                 demo: line([(0, 60, 4), (4, 64, 4), (8, 67, 4), (12, 72, 4)])),
         K.leadCopy("Copy C, E, G, high C",
                    "Play the reference and enter the four notes. The last one is the same letter as the first, just higher.",
                    rows: rows, target: K.tune([(0, 60, 4), (4, 64, 4), (8, 67, 4), (12, 72, 4)]), backing: bed),
-        K.game(mazeName, mazeLine, .notes(keys, [
-            NoteRound(title: "Audio coordinates", body: "Hear C, E and G. Play them back. Start on C and use the map to find the others.",
-                      mode: .echo([60, 64, 67], show: false, gapBars: 0), labels: false),
-            NoteRound(title: "Two identical rooms", body: "There are two Cs here. You'll hear the low one, then the high one. Play them back in order.",
-                      mode: .echo([60, 72], show: false, gapBars: 0), labels: false),
-            NoteRound(title: "The landmark vanishes", body: "Start on C. Go two white keys right, then one left, then two right. Tap each stop.",
-                      mode: .find([64, 62, 65], reveal: false), labels: false),
-        ])),
+        K.game(playName, "Five keys, up and back down.", .playAlong(PlayAlongConfig(groove: softBeat, bars: 8, bpm: 84, keys: [60, 62, 64, 65, 67], melody: [NoteEvent(0, 60), NoteEvent(4, 62), NoteEvent(8, 64), NoteEvent(12, 65), NoteEvent(16, 67), NoteEvent(20, 64), NoteEvent(24, 62), NoteEvent(28, 60)]))),
     ]
 
     static let f22Gold: [LessonStep] = [
         L.gold("Design a keyboard route",
-               "Design a route someone could hear instead of see. First write a five-note phrase in the piano roll. Then build a route across the keys, play it back by ear, and give it a new ending."),
+               "Design a route someone could hear instead of see. First write a five-note phrase in the piano roll. Then you'll play a quicker line, the last bars from memory."),
         K.teach("Geography helps you write",
                 "You don't need perfect fingers to write a tune. Knowing where C and G live is enough to build a phrase that goes somewhere.",
                 demo: line([(0, 60, 3), (3, 62, 3), (6, 64, 3), (9, 65, 3), (12, 67, 4)])),
         K.leadMake("Write a five-note route",
                    "Start on C and write five notes. End on G or high C so it arrives somewhere.",
                    rows: rows, backing: bed, notes: 5, start: [NoteEvent(0, 60, 3)]),
-        K.game(mazeName, "Build a route, then find it again by ear.", .notes(keys, [
-            NoteRound(title: "Create a route", body: "Five stops. Start on C and end on G, A or high C. Each tap plays, so let it sing.",
-                      mode: .compose(count: 5, start: 60, end: [67, 69, 72], shape: false)),
-            NoteRound(title: "Challenge the route", body: "Your route plays with the lights off. Play it back from memory.",
-                      mode: .retrace, labels: false),
-            NoteRound(title: "Revise it", body: "Keep the first two stops, then take a new path to the end.",
-                      mode: .answer(keep: 2)),
-        ])),
+        K.game(playName, "Quicker notes, then by memory.", .playAlong(PlayAlongConfig(groove: softBeat, bars: 8, bpm: 84, ghostFrom: 5, keys: [60, 62, 64, 65, 67], melody: [NoteEvent(0, 60), NoteEvent(2, 62), NoteEvent(4, 64), NoteEvent(8, 67), NoteEvent(10, 65), NoteEvent(12, 64), NoteEvent(14, 62), NoteEvent(16, 60), NoteEvent(20, 64), NoteEvent(24, 62), NoteEvent(28, 60)]))),
     ]
 
     // MARK: - F2.3 Notes Have Distance → Interval Radar
@@ -229,59 +209,38 @@ nonisolated enum F2Games {
 
     static let f25 = K.lesson("f2.5", "Copy a Melody", "Boss: play it back by ear", "crown.fill", .theory, 30, [
         K.opening("Your ears remember",
-                  "Your ears can hold a tune even when the notes vanish. First you'll write a three-note melody in a piano roll. Then you'll hear echoes in the dark and chase them back on five lanes."),
+                  "Your ears can hold a tune even when the notes vanish. First you'll write a three-note melody in a piano roll. Then you'll play a tune along with the band, and keep playing it when the notes vanish."),
         K.teach("Pitch and rhythm",
                 "Remembering a tune means remembering two things: which notes, and when. Two notes, then the same two with a gap. Hear the difference.",
                 demo: line([(0, 60, 2), (2, 64, 2), (8, 60, 2), (12, 64, 2)])),
         K.leadCopy("Copy three notes",
                    "Play the reference: C, E, then D, one beat each. Put them in the piano roll.",
                    rows: rows, target: K.tune([(0, 60, 4), (4, 64, 4), (8, 62, 4)]), backing: bed),
-        K.game(echoName, echoLine, .notes(strip, [
-            NoteRound(title: "Two-note echo", body: "Hear two notes, then tap the lanes in the same order. Taller lanes are higher.",
-                      mode: .echo([60, 67], show: true, gapBars: 0)),
-            NoteRound(title: "Add a repeat", body: "Three notes, with one repeated. Catch them all.",
-                      mode: .echo([60, 64, 64], show: true, gapBars: 0)),
-            NoteRound(title: "Follow, then remember", body: "Four notes, in the dark this time. Replay it as often as you need.",
-                      mode: .echo([60, 64, 67, 64], show: false, gapBars: 0)),
-        ])),
+        K.game(playName, "Learn the tune, then play it without notes.", .playAlong(PlayAlongConfig(groove: softBeat, bars: 8, bpm: 84, ghostFrom: 5, keys: [60, 62, 64, 67, 69], melody: [NoteEvent(0, 64), NoteEvent(4, 67), NoteEvent(8, 69), NoteEvent(12, 67), NoteEvent(16, 64), NoteEvent(20, 62), NoteEvent(24, 60)]))),
     ])
 
     static let f25Silver: [LessonStep] = [
         L.silver("Hunt a moving echo",
-                 "The echoes get quicker and harder to predict. First copy pitch and rhythm in the piano roll. Then catch a five-note phrase, spot a switched note, and hold a tune across a silent bar."),
+                 "The echoes get quicker and harder to predict. First copy pitch and rhythm in the piano roll. Then you'll hear a tune twice and play it back with no notes."),
         K.teach("Anchor notes",
                 "C, D, E, D, C. The repeated notes are anchors: they help you hold the rest in your head.",
                 demo: line([(0, 60, 4), (4, 62, 2), (6, 64, 2), (8, 62, 4), (12, 60, 4)])),
         K.leadCopy("Copy pitch and timing",
                    "Five notes, some long, some short. Play the reference and match both.",
                    rows: rows, target: K.tune([(0, 60, 4), (4, 62, 2), (6, 64, 2), (8, 62, 4), (12, 60, 4)]), backing: bed),
-        K.game(echoName, echoLine, .notes(strip, [
-            NoteRound(title: "Five in the dark", body: "Five notes with the lights off. Catch them all.",
-                      mode: .echo([64, 67, 69, 67, 64], show: false, gapBars: 0), bpm: 96),
-            NoteRound(title: "The switched note", body: "Two phrases, one note different. Which one changed?",
-                      mode: .spot(a: [60, 64, 67, 64], b: [60, 64, 69, 64])),
-            NoteRound(title: "Call across the gap", body: "Hear it, then hold it through a silent bar before you play it back.",
-                      mode: .echo([62, 64, 67, 62], show: false, gapBars: 1)),
-        ])),
+        K.game(playName, "The notes vanish after two bars.", .playAlong(PlayAlongConfig(groove: softBeat, bars: 8, bpm: 88, ghostFrom: 3, keys: [60, 62, 64, 67, 69], melody: [NoteEvent(0, 64), NoteEvent(4, 67), NoteEvent(8, 69), NoteEvent(12, 67), NoteEvent(16, 64), NoteEvent(20, 62), NoteEvent(24, 60)]))),
     ]
 
     static let f25Gold: [LessonStep] = [
         L.gold("Become the echo",
-               "Now you start the conversation. First write a call and answer in the piano roll. Then play your own call on the lanes, answer it, and hear the two together."),
+               "Now you start the conversation. First write a call and answer in the piano roll. Then you'll copy a longer tune after hearing it once."),
         K.teach("Question and answer",
                 "The answer keeps the start of the question and changes the end. Same opening, new destination.",
                 demo: line([(0, 60, 2), (2, 64, 2), (4, 67, 2), (6, 64, 2), (8, 60, 2), (10, 64, 2), (12, 62, 2), (14, 60, 2)])),
         K.leadMake("Write a call and answer",
                    "Write six notes or more: a short call, then an answer that starts the same way and ends differently.",
                    rows: rows, backing: bed, notes: 6),
-        K.game(echoName, "You call, you answer.", .notes(strip, [
-            NoteRound(title: "Record a call", body: "Play any four notes on the lanes. That's your call.",
-                      mode: .compose(count: 4, start: nil, end: [], shape: false), backing: softBeat),
-            NoteRound(title: "Record an answer", body: "Your call plays first. Answer with four notes that start with the same two, then change the ending.",
-                      mode: .answer(keep: 2), backing: softBeat),
-            NoteRound(title: "Play the conversation", body: "Call, answer, call, answer. Eight notes of your own.",
-                      mode: .duet, backing: softBeat),
-        ])),
+        K.game(playName, "A longer tune. Two bars, then it's yours.", .playAlong(PlayAlongConfig(groove: softBeat, bars: 8, bpm: 88, ghostFrom: 3, keys: [60, 62, 64, 67, 69], melody: [NoteEvent(0, 64), NoteEvent(2, 67), NoteEvent(4, 69), NoteEvent(6, 67), NoteEvent(8, 64), NoteEvent(12, 62), NoteEvent(16, 60), NoteEvent(18, 62), NoteEvent(20, 64), NoteEvent(24, 67), NoteEvent(28, 64)]))),
     ]
 
     static let levels: [String: LevelPair] = [

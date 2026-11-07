@@ -195,6 +195,14 @@ struct QuickEarGame: View {
             }
         case .groove(let p, let swing):
             transport.play(p, genre: genre, source: .reference, bars: 2, swing: swing, bpm: 92)
+        case .voices(let patches, let note):
+            for (i, patch) in patches.enumerated() {
+                AudioEngine.shared.playNote(note, seconds: 0.7, patch: patch, delay: Double(i) * 0.95)
+            }
+        case .grooves(let bars):
+            guard let first = bars.first else { return }
+            transport.play(first, genre: genre, source: .reference, bars: bars.count, swing: 0, bpm: 100,
+                           sequence: bars, barsPerSection: 1)
         }
     }
 

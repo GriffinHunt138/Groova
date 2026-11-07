@@ -51,7 +51,7 @@ nonisolated struct EchoConfig: Sendable {
 /// pads as they land. Later bars can hide the notes so you keep it going by feel.
 nonisolated struct PlayAlongConfig: Sendable {
     /// The drums you play, one lane each, left to right.
-    var lanes: [DrumTrack]
+    var lanes: [DrumTrack] = []
     /// The full groove. Your lanes are muted in the band and become the notes you play.
     var groove: Pattern
     /// Bars to play after a one-bar count-in.
@@ -60,4 +60,12 @@ nonisolated struct PlayAlongConfig: Sendable {
     /// From this bar on (1 is the first bar after the count-in) the notes vanish: play by feel.
     var ghostFrom: Int? = nil
     var threshold: Double = 0.6
+    /// Melody mode: one lane per key, in this order. When set, `lanes` is ignored.
+    var keys: [Int] = []
+    /// The line you play in melody mode. Steps past 15 fall in later bars; the line repeats.
+    var melody: [NoteEvent] = []
+
+    var laneCount: Int { keys.isEmpty ? lanes.count : keys.count }
+    /// Bars the melody spans before it repeats.
+    var melodyBars: Int { max(1, ((melody.map(\.step).max() ?? 0) / 16) + 1) }
 }

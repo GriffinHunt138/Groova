@@ -14,6 +14,7 @@ import Foundation
 nonisolated enum F3Games {
     typealias F = FKit
 
+    static let playName = "Play Along"
     static let earName = "Quick Ear"
     static let lessons: [Lesson] = [f31, f32, f33, f34, f35]
 
@@ -39,54 +40,33 @@ nonisolated enum F3Games {
 
     static let f31 = K.lesson("f3.1", "Stack the Sound", "Build a triad", "square.stack.3d.up.fill", .theory, 15, [
         K.opening("Notes that sound as one",
-                  "A chord is what happens when several notes sound together as one shape. First you'll stack C, E and G as a real chord. Then you'll slide three glowing beams until a chord lock clicks open."),
+                  "A chord is what happens when several notes sound together as one shape. First you'll stack C, E and G as a real chord. Then you'll hear chords and count their notes."),
         K.teach("One note, then three",
                 "First a single C. Then C, E and G together. Root, third and fifth: three notes that ring as one chord, a triad.",
                 demo: Pattern(chords: [ChordEvent(step: 0, pitches: [60], length: 6), K.ch(8, F.c, 7)])),
         K.build("Stack C major", "C is in. Add E and G above it and hear the chord fill out.", F.c, start: [60]),
-        K.game(lockName, lockLine, .chordLock([
-            LockRound(title: "One beam versus three", body: "Hear one beam on its own. Then reveal the other two and hear them as one sound.",
-                      mode: .reveal(.c)),
-            LockRound(title: "Build a shown shape", body: "C is locked at the bottom. Slide the other two beams into the dashed outlines.",
-                      mode: .build(.c, locked: [true, false, false], ghost: true)),
-            LockRound(title: "Fill the missing voice", body: "C and G are in. Find the middle note by ear until the lock opens.",
-                      mode: .build(.c, locked: [true, false, true], ghost: false)),
-        ])),
+        K.game(earName, "One, two or three notes?", .quickEar(.noteCount("f3.1"))),
     ])
 
     static let f31Silver: [LessonStep] = [
         L.silver("Unlock by listening",
-                 "The chord's shape isn't shown any more. First repair a chord with a missing note. Then find a beam that's out of place, build A minor blind, and open three locks in a row."),
+                 "The chord's shape isn't shown any more. First repair a chord with a missing note. Then you'll count chord notes, twelve in a row."),
         K.teach("Move one note, change the colour",
                 "Hear G major, then the same chord with one note nudged. The other two stay put, but the whole chord feels different.",
                 demo: Pattern(chords: [K.ch(0, F.g, 6), ChordEvent(step: 8, pitches: [55, 58, 62], length: 6)])),
         K.build("Repair F major", "Two of F major's notes are in. Find the one that's missing.", F.f, start: [60, 65]),
-        K.game(lockName, lockLine, .chordLock([
-            LockRound(title: "Find the shifted voice", body: "One beam is a little off from G major. Hear the target, tap the wrong beam, then slide it home.",
-                      mode: .wrongBeam(.g, wrong: 1, by: -1)),
-            LockRound(title: "Blind construction", body: "Only the root, A, is locked. Build A minor by ear. Compare with the target whenever you like.",
-                      mode: .build(.am, locked: [true, false, false], ghost: false)),
-            LockRound(title: "Three locks in a row", body: "C, then F, then G. Each is missing one note. Open all three and hear them as a progression.",
-                      mode: .chain([.c, .f, .g], missing: [1, 2, 0])),
-        ])),
+        K.game(earName, "Twelve chords.", .quickEar(.noteCount("f3.1s", count: 12))),
     ]
 
     static let f31Gold: [LessonStep] = [
         L.gold("Design a harmonic shape",
-               "One chord can take several shapes and stay the same chord. First build a second voicing of C. Then build a chord of your own, reshape it, and keep the version you like."),
+               "One chord can take several shapes and stay the same chord. First build a second voicing of C. Then you'll count chord notes, fifteen in a row."),
         K.teach("Same chord, new shape",
                 "C, E, G. Then E, G and C on top. The same three notes, stacked differently. That's a voicing.",
                 demo: Pattern(chords: [K.ch(0, F.c, 6), ChordEvent(step: 8, pitches: [64, 67, 72], length: 6)])),
         K.build("Build E, G, high C", "Same C major, new shape: move the C to the top.",
                 ChordShape(name: "C", pitches: [64, 67, 72]), start: [64, 67], low: 60, high: 74, exact: true),
-        K.game(lockName, "Your chord, your shape.", .chordLock([
-            LockRound(title: "Choose a root", body: "Pick C, F or A, and major or minor. Then slide the beams to build it.",
-                      mode: .voicing),
-            LockRound(title: "Make a second voicing", body: "Move one beam up or down a whole octave. Same notes, different shape.",
-                      mode: .revoice),
-            LockRound(title: "Save your harmonic fingerprint", body: "Both shapes alternate over a gentle pulse. Keep the one you like.",
-                      mode: .alternate),
-        ])),
+        K.game(earName, "Fifteen chords.", .quickEar(.noteCount("f3.1g", count: 15))),
     ]
 
     // MARK: - F3.2 Major and Minor → Chord Impostor
@@ -173,58 +153,37 @@ nonisolated enum F3Games {
 
     static let f34 = K.lesson("f3.4", "Bass Gives It Weight", "Roots under chords", "waveform.path", .theory, 15, [
         K.opening("The low end is shared",
-                  "Bass gives harmony weight, but it has to share the low end with the kick. First you'll line up a bass with a kick in the piano roll. Then you'll stretch an elastic tether between them and hear the groove change."),
+                  "Bass gives harmony weight, but it has to share the low end with the kick. First you'll line up a bass with a kick in the piano roll. Then you'll play the bass roots along with the drums."),
         K.teach("Together, then between",
                 "Kick and bass on the same beats sound like one big thump. Move the bass between the kicks and they start talking to each other.",
                 demo: Pattern(kick: F.quarters, bass: [NoteEvent(0, 36, 2), NoteEvent(6, 36, 2), NoteEvent(8, 36, 2), NoteEvent(14, 36, 2)])),
         K.bassRule("Bass on the root", "Kicks are on every beat. Put C on step 1 and on step 7, the \"and\" after beat 2.",
                    rows: F.bassRows, target: [NoteEvent(0, 36, 2), NoteEvent(6, 36, 2)], backing: kickChordC),
-        K.game(tetherName, tetherLine, .tether([
-            TetherRound(title: "Hear the foundation", body: "Kick and bass land together. Watch the tethers stay tight and gold.",
-                        mode: .together),
-            TetherRound(title: "Move the bass between kicks", body: "Drag the second bass note half a beat earlier, between the kicks. Compare locked and offset.",
-                        mode: .slide(from: 8, to: 6)),
-            TetherRound(title: "Follow the harmony", body: "C, then F. Drag each bar's bass up or down to its chord's root, the gold outline.",
-                        mode: .roots, chords: [.c, .f]),
-        ])),
+        K.game(playName, "Play the roots: C, F, G, C.", .playAlong(PlayAlongConfig(groove: Pattern(kick: F.quarters, hat: F.offbeats), bars: 8, bpm: 84, keys: [36, 41, 43], melody: [NoteEvent(0, 36), NoteEvent(8, 36), NoteEvent(16, 41), NoteEvent(24, 41), NoteEvent(32, 43), NoteEvent(40, 43), NoteEvent(48, 36), NoteEvent(56, 36)]))),
     ])
 
     static let f34Silver: [LessonStep] = [
         L.silver("Match a groove",
-                 "A bassline can fit the chords and still fight the kick. First copy a bass rhythm in the piano roll. Then match a groove, follow roots, and shorten notes to make room."),
+                 "A bassline can fit the chords and still fight the kick. First copy a bass rhythm in the piano roll. Then you'll play a four-chord bassline, the last bars by feel."),
         K.teach("Roots and room",
                 "The bass follows the chord's root as it changes, and a shorter note leaves space for the next kick.",
                 demo: Pattern(kick: F.quarters, bass: [NoteEvent(0, 36, 3), NoteEvent(6, 36, 2), NoteEvent(16 - 4, 36, 2)],
                               chords: [K.ch(0, F.c, 14)])),
         K.bassCopy("Copy the bass rhythm", "Three hits on C: beat 1, the \"and\" of 2, and beat 4.",
                    rows: F.bassRows, target: [NoteEvent(0, 36, 2), NoteEvent(6, 36, 2), NoteEvent(12, 36, 2)], backing: kickChordC),
-        K.game(tetherName, tetherLine, .tether([
-            TetherRound(title: "Rhythm matching", body: "Hear the target. Drag the three bass pulses to beat 1, the \"and\" of 2, and beat 4.",
-                        mode: .rhythm([0, 6, 12])),
-            TetherRound(title: "Root switch", body: "Am, then F. Move each bar's bass to the new root.",
-                        mode: .roots, chords: [.am, .f]),
-            TetherRound(title: "Space the low end", body: "This bass rings over the kicks. Drag its end handle until it matches the tighter target.",
-                        mode: .length(6)),
-        ])),
+        K.game(playName, "C, G, A, F. Later by feel.", .playAlong(PlayAlongConfig(groove: Pattern(kick: F.quarters, hat: F.offbeats), bars: 8, bpm: 88, ghostFrom: 5, keys: [36, 41, 43, 45], melody: [NoteEvent(0, 36), NoteEvent(8, 36), NoteEvent(16, 43), NoteEvent(24, 43), NoteEvent(32, 45), NoteEvent(40, 45), NoteEvent(48, 41), NoteEvent(56, 41)]))),
     ]
 
     static let f34Gold: [LessonStep] = [
         L.gold("Play a bass response",
-               "Now you play the part that holds the track together. First write a bassline of your own. Then pick a chord loop, perform four bars on bass pads, and compare it with a plain version."),
+               "Now you play the part that holds the track together. First write a bassline of your own. Then you'll play a bassline with pickups, the last bars by feel."),
         K.teach("No single right answer",
                 "Some basslines sit with the kick, some dodge it. A good one follows the chords, leaves space and has a little movement.",
                 demo: Pattern(kick: F.quarters, bass: [NoteEvent(0, 36, 3), NoteEvent(6, 43, 2), NoteEvent(10, 36, 2), NoteEvent(14, 48, 2)],
                               chords: [K.ch(0, F.c, 14)])),
         K.bassMake("Write a bass response", "At least four notes over the kick. Use the root and slip one note between the beats.",
                    rows: F.bassRows, backing: kickChordC, notes: 4),
-        K.game(tetherName, "Your bassline, locked to the kick.", .tether([
-            TetherRound(title: "Choose a harmonic loop", body: "Tap a loop to hear it with roots, then keep one.",
-                        mode: .chooseLoop([[.c, .am], [.c, .f]])),
-            TetherRound(title: "Perform a bassline", body: "One bar count-in, then four bars. Play the pads: root, fifth or high root. Get one note between the beats.",
-                        mode: .perform, kick: Pattern(kick: F.quarters, clap: [4, 12])),
-            TetherRound(title: "Lock and save", body: "Hear your take, then a version with roots only on the beat. Keep the one you prefer.",
-                        mode: .compare, kick: Pattern(kick: F.quarters, clap: [4, 12])),
-        ])),
+        K.game(playName, "A pushier bassline with pickups.", .playAlong(PlayAlongConfig(groove: Pattern(kick: F.quarters, hat: F.offbeats), bars: 8, bpm: 90, ghostFrom: 5, keys: [36, 41, 43, 45], melody: [NoteEvent(0, 36), NoteEvent(3, 36), NoteEvent(8, 36), NoteEvent(16, 43), NoteEvent(19, 43), NoteEvent(24, 43), NoteEvent(32, 45), NoteEvent(35, 45), NoteEvent(40, 45), NoteEvent(48, 41), NoteEvent(51, 41), NoteEvent(56, 41)]))),
     ]
 
     // MARK: - F3.5 Topline Meets Harmony → Hook Hotline
@@ -234,58 +193,37 @@ nonisolated enum F3Games {
 
     static let f35 = K.lesson("f3.5", "Topline Meets Harmony", "Boss: a melody over chords", "crown.fill", .theory, 30, [
         K.opening("A hook talks to the chords",
-                  "A memorable hook feels like a conversation with the chords under it. First you'll write a short melody over a chord. Then the band calls on a hotline and you answer on five pads."),
+                  "A memorable hook feels like a conversation with the chords under it. First you'll write a short melody over a chord. Then you'll play a hook over the chords as the notes fall."),
         K.teach("Settled or leaning",
                 "E, G, E over C feels settled. Change the last note to D and it leans, like it wants to keep going.",
                 demo: line([(0, 64, 2), (2, 67, 2), (4, 64, 4), (8, 64, 2), (10, 67, 2), (12, 62, 4)], over: held(F.c))),
         K.leadRule("Change the landing", "E, G, E over C. Move the last note down to D and hear it lean.",
                    rows: rows, target: K.tune([(0, 64, 4), (4, 67, 4), (8, 62, 8)]), backing: held(F.c),
                    start: K.tune([(0, 64, 4), (4, 67, 4), (8, 64, 8)])),
-        K.game(hookName, hookLine, .notes(pads, [
-            NoteRound(title: "Let the band call", body: "The band plays a three-note hook and the pads light up. Play it back.",
-                      mode: .echo([64, 67, 64], show: true, gapBars: 0), backing: bandCAm),
-            NoteRound(title: "Answer in time", body: "Same hook, no lights. Answer it on the pads.",
-                      mode: .echo([64, 67, 62], show: false, gapBars: 0), backing: bandCAm),
-            NoteRound(title: "Hear the landing", body: "Over a held C, try ending on E and on D. Both work, they just feel different.",
-                      mode: .ending(lead: [64, 67], options: [64, 62], answer: nil), backing: held(F.c)),
-        ])),
+        K.game(playName, "Play the hook over the chords.", .playAlong(PlayAlongConfig(groove: bandCAm, bars: 8, bpm: 84, keys: [60, 62, 64, 67, 69], melody: [NoteEvent(0, 64), NoteEvent(2, 64), NoteEvent(4, 67), NoteEvent(8, 69), NoteEvent(12, 67), NoteEvent(16, 64), NoteEvent(20, 62), NoteEvent(24, 60)]))),
     ])
 
     static let f35Silver: [LessonStep] = [
         L.silver("Make the line move",
-                 "Your answers have to follow the chords as they change. First fix a topline's ending over F. Then find hook endings by ear and answer with no lights."),
+                 "Your answers have to follow the chords as they change. First fix a topline's ending over F. Then you'll play the hook and keep it going from memory."),
         K.teach("Same start, new ending",
                 "A hook can keep its opening and change only its last note to fit the next chord.",
                 demo: line([(0, 64, 2), (2, 67, 2), (4, 64, 4), (8, 64, 2), (10, 67, 2), (12, 69, 4)], over: two(F.c, F.f))),
         K.leadCopy("Fit the F chord", "The first three notes are in. Play the reference and choose the last note over F.",
                    rows: rows, target: K.tune([(0, 64, 2), (2, 67, 2), (4, 64, 4), (8, 69, 8)]), backing: two(F.c, F.f),
                    start: K.tune([(0, 64, 2), (2, 67, 2), (4, 64, 4)])),
-        K.game(hookName, hookLine, .notes(pads, [
-            NoteRound(title: "Find the hook's last note", body: "The phrase ends over F. Hear both endings and choose the one that fits.",
-                      mode: .ending(lead: [64, 67, 64], options: [69, 67], answer: 0), backing: bandCF),
-            NoteRound(title: "Follow changing chords", body: "Over C then F. Choose the ending that sits with the new chord.",
-                      mode: .ending(lead: [60, 64, 67], options: [69, 62], answer: 0), backing: bandCF),
-            NoteRound(title: "Answer without lights", body: "A new three-note call. Play it back with the lights off.",
-                      mode: .echo([67, 64, 62], show: false, gapBars: 0), backing: bandCAm),
-        ])),
+        K.game(playName, "Same hook. Later from memory.", .playAlong(PlayAlongConfig(groove: bandCAm, bars: 8, bpm: 88, ghostFrom: 5, keys: [60, 62, 64, 67, 69], melody: [NoteEvent(0, 64), NoteEvent(2, 64), NoteEvent(4, 67), NoteEvent(8, 69), NoteEvent(12, 67), NoteEvent(16, 64), NoteEvent(20, 62), NoteEvent(24, 60)]))),
     ]
 
     static let f35Gold: [LessonStep] = [
         L.gold("Write a hook",
-               "Time to write your own hook. First write a call and answer in the piano roll. Then record a hook on the pads, answer it, and hear the whole conversation with the band."),
+               "Time to write your own hook. First write a call and answer in the piano roll. Then you'll play a busier hook, the last bars from memory."),
         K.teach("Repeat to remember",
                 "Repeat part of the hook and people will remember it, even if the ending changes.",
                 demo: line([(0, 64, 2), (2, 67, 2), (4, 69, 4), (8, 64, 2), (10, 67, 2), (12, 64, 4)], over: two(F.c, F.f))),
         K.leadMake("Write a call and answer", "Six notes or more over C and F. Repeat your opening in the second half.",
                    rows: rows, backing: two(F.c, F.f), notes: 6),
-        K.game(hookName, "Your hook, your reply.", .notes(pads, [
-            NoteRound(title: "Record the hook", body: "Play any four notes on the pads over the band. That's your hook.",
-                      mode: .compose(count: 4, start: nil, end: [], shape: false), backing: bandCF),
-            NoteRound(title: "Build the reply", body: "Your hook plays. Reply with four notes that start the same way and end somewhere new.",
-                      mode: .answer(keep: 2), backing: bandCF),
-            NoteRound(title: "Play the conversation", body: "Hook, reply, hook, reply, with the band underneath.",
-                      mode: .duet, backing: bandCF),
-        ])),
+        K.game(playName, "A busier hook, then from memory.", .playAlong(PlayAlongConfig(groove: bandCAm, bars: 8, bpm: 88, ghostFrom: 5, keys: [60, 62, 64, 67, 69], melody: [NoteEvent(0, 64), NoteEvent(2, 67), NoteEvent(4, 69), NoteEvent(6, 67), NoteEvent(8, 64), NoteEvent(10, 62), NoteEvent(12, 60), NoteEvent(16, 62), NoteEvent(18, 64), NoteEvent(20, 67), NoteEvent(24, 64), NoteEvent(28, 60)]))),
     ]
 
     static let levels: [String: LevelPair] = [
