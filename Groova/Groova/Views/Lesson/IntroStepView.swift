@@ -27,7 +27,7 @@ struct IntroStepView: View {
                         StepPrompt(title: step.title, detail: step.body, badge: step.badge ?? "New sound")
                     }
                     if !step.pads.isEmpty {
-                        HStack(spacing: 16) {
+                        HStack(spacing: 12) {
                             ForEach(step.pads) { track in
                                 DrumPad(track: track, kit: Transport.shared.kit(for: genre), large: step.pads.count == 1) {
                                     tapped.insert(track)
@@ -164,7 +164,8 @@ struct DrumPad: View {
             .foregroundStyle(pressed ? Theme.onBrand : color)
             .offset(y: pressed ? 2 : 0)
         }
-        .frame(width: size, height: size)
+        .frame(maxWidth: size)
+        .aspectRatio(1, contentMode: .fit)
         .animation(.easeOut(duration: 0.07), value: pressed)
         .contentShape(Rectangle())
         .gesture(

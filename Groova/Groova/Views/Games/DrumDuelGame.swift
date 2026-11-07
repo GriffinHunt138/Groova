@@ -53,7 +53,9 @@ struct DrumDuelGame: View {
             ScrollView {
                 VStack(spacing: 18) {
                     GameHeader(task: task, round: game.index, total: rounds.count, title: round.title, detail: round.body)
-                    GameStage(height: 360) { stage }
+                    stage
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 380)
                     if phase == .done, !targets.isEmpty { strip }
                 }
                 .padding(20)
@@ -80,7 +82,7 @@ struct DrumDuelGame: View {
 
     private var primaryTitle: String {
         switch (round.mode, phase) {
-        case (.free, .playing): return "I've met them all"
+        case (.free, _): return allTried ? "Continue" : "Tap all three pads"
         case (_, .playing): return "Listening…"
         case (.duet, _): return "Play the duet"
         case (.invent, _), (.answer, _): return "Record"
@@ -89,51 +91,64 @@ struct DrumDuelGame: View {
     }
 
     private var primaryEnabled: Bool {
-        if round.mode == .free, phase == .playing { return pads.allSatisfy { (tried[$0] ?? 0) >= 2 } }
+        if round.mode == .free { return phase != .done && allTried }
         return phase == .ready
     }
+
+    private var allTried: Bool { pads.allSatisfy { (tried[$0] ?? 0) >= 1 } }
 
     // MARK: Stage
 
     private var currentBar: Int { clock.bar }
     private var inAnswer: Bool { phase == .playing && answerBars.contains(currentBar) }
 
-    private var stageTag: String {
-        guard phase == .playing else { return phase == .done ? "Duel over" : "Ready" }
+    /// One big word above the pads that says what to do right now.
+    private func status(_ pos: Double) -> String {
+        if round.mode == .free { return allTried ? "That's all three" : "Tap each pad" }
+        switch phase {
+        case .ready: return "Press start"
+        case .done: return "Done"
+        case .playing: break
+        }
+        if pos < 0 { return "Get ready" }
+        if currentBar == 0 && round.mode != .duet {
+            let beat = Int(pos / 4)
+            return beat <= 0 ? "Ready" : "\(max(1, 4 - beat))"
+        }
         switch round.mode {
-        case .free: return "Play freely"
-        case .invent: return currentBar == 0 ? "Count-in" : "Recording"
-        case .duet: return "Your duet"
-        default:
-            if currentBar == 0 { return "Count-in" }
-            return inAnswer ? "Your answer" : "Listen"
+        case .invent: return "Play your call"
+        case .duet: return "Your beat"
+        default: return inAnswer ? "Your turn" : "Listen"
         }
     }
 
     private var stage: some View {
         TimelineView(.animation(paused: phase != .playing)) { _ in
             let pos = clock.now() ?? -1
-            VStack(spacing: 16) {
-                HStack {
-                    StageTag(text: stageTag, color: inAnswer || round.mode == .invent ? accent : GameStyle.nightDim)
-                    Spacer()
-                    beatDots(pos: pos)
+            let text = status(pos)
+            let yours = inAnswer || (phase == .playing && round.mode == .invent && currentBar > 0)
+            VStack(spacing: 22) {
+                VStack(spacing: 10) {
+                    Text(text)
+                        .font(.display(32))
+                        .foregroundStyle(yours ? accent : Theme.text)
+                        .contentTransition(.opacity)
+                        .animation(.easeOut(duration: 0.15), value: text)
+                    if round.mode != .free { beatDots(pos: pos) }
                 }
-                Spacer(minLength: 0)
+                .frame(height: 70)
                 HStack(spacing: 12) {
                     ForEach(pads, id: \.self) { t in pad(t, pos: pos) }
                 }
-                Spacer(minLength: 0)
             }
-            .padding(16)
         }
     }
 
     private func beatDots(pos: Double) -> some View {
-        let beat = pos >= 0 ? Int(pos / 4) % 4 : -1
-        return HStack(spacing: 6) {
+        let beat = phase == .playing && pos >= 0 ? Int(pos / 4) % 4 : -1
+        return HStack(spacing: 8) {
             ForEach(0..<4, id: \.self) { i in
-                Circle().fill(beat == i ? Color.white : GameStyle.nightLine).frame(width: 9, height: 9)
+                Circle().fill(beat == i ? accent : Theme.surfaceHigh).frame(width: 10, height: 10)
             }
         }
     }
@@ -160,27 +175,37 @@ struct DrumDuelGame: View {
     }
 
     private func padFace(_ t: DrumTrack, color: Color, lit: Double, cue: Bool, hideName: Bool) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 24, style: .continuous)
-        let textOpacity: Double = 0.9 + lit * 0.1
-        let fillOpacity: Double = 0.32 + lit * 0.68
-        let border: Color = cue ? Color.white : color.opacity(0.6)
-        let borderWidth: CGFloat = cue ? 4 : 2
-        let scale: CGFloat = 1 - CGFloat(lit) * 0.05
-        let label = VStack(spacing: 10) {
+        let shape = RoundedRectangle(cornerRadius: 26, style: .continuous)
+        let fillOpacity: Double = (cue ? 0.3 : 0.13) + lit * 0.87
+        let ink: Color = lit > 0.3 ? Color.white : color
+        let scale: CGFloat = 1 - CGFloat(lit) * 0.04
+        let done: Bool = round.mode == .free && (tried[t] ?? 0) > 0
+        let label = VStack(spacing: 12) {
             Image(systemName: t.symbol)
-                .font(.system(size: 30, weight: .black))
-            Text(hideName ? "?" : t.name.uppercased())
-                .font(.label(14, weight: .black)).tracking(0.6)
+                .font(.system(size: 34, weight: .black))
+            Text(hideName ? "?" : t.name)
+                .font(.label(17, weight: .black))
         }
         return label
-            .foregroundStyle(Color.white.opacity(textOpacity))
+            .foregroundStyle(ink)
             .frame(maxWidth: .infinity)
-            .frame(height: 210)
+            .frame(height: 260)
             .background(shape.fill(color.opacity(fillOpacity)))
-            .overlay(shape.strokeBorder(border, lineWidth: borderWidth))
-            .background(shape.fill(color.opacity(0.5)).offset(y: 6))
-            .shadow(color: color.opacity(lit), radius: 24)
+            .background(shape.fill(Theme.surface))
+            .background(shape.fill(color.opacity(0.22)).offset(y: 6))
+            .overlay(shape.strokeBorder(color, lineWidth: cue ? 4 : 0))
+            .overlay(alignment: .topTrailing) {
+                if done {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 20, weight: .black))
+                        .foregroundStyle(color)
+                        .padding(10)
+                        .transition(.scale.combined(with: .opacity))
+                }
+            }
+            .shadow(color: color.opacity(lit * 0.6), radius: 18)
             .scaleEffect(scale)
+            .animation(.spring(response: 0.3), value: done)
     }
 
     @State private var held: Set<DrumTrack> = []
@@ -221,7 +246,7 @@ struct DrumDuelGame: View {
     }
 
     private func primary() {
-        if round.mode == .free, phase == .playing {
+        if round.mode == .free {
             transport.stop()
             withAnimation { phase = .done }
             game.pass(1, "Low thump, sharp crack, bright tick. Those three jobs make most beats.")
@@ -374,6 +399,7 @@ struct DrumDuelGame: View {
             phase = .ready
             taps = []
             targets = []
+            tried = [:]
         }
     }
 }
