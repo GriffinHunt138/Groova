@@ -275,7 +275,12 @@ final class AppState {
         let units = Curriculum.units(for: g)
         var f = -1
         for (i, unit) in units.enumerated() {
-            if let m = unit.mastery, isCompleted(m, in: g) { f = i }
+            if let m = unit.mastery {
+                if isCompleted(m, in: g) { f = i }
+            } else if !unit.lessons.isEmpty, unit.lessons.allSatisfy({ isCompleted($0, in: g) }) {
+                // Units without a challenge open the next one once every lesson is done.
+                f = i
+            }
         }
         let core = units.filter { $0.part == .foundations }.count
         if progress.skippedFoundations {
