@@ -44,9 +44,6 @@ struct LessonPlayerView: View {
             } else {
                 VStack(spacing: 0) {
                     topBar
-                    if let phases = TierPhase.map(steps) {
-                        PhaseStrip(current: phases[min(index, phases.count - 1)], accent: genre.color)
-                    }
                     stepView
                         .id(index)
                         .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),

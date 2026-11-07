@@ -173,12 +173,12 @@ struct GameHeader: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: "gamecontroller.fill")
-                    .font(.system(size: 12, weight: .black))
-                Text("GAME · \(task.name.uppercased())")
-                    .font(.label(13, weight: .black)).tracking(0.8)
-                Spacer()
+            HStack(alignment: .top, spacing: 12) {
+                Text("Round \(round + 1): \(title)")
+                    .font(.display(25))
+                    .foregroundStyle(Theme.text)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
                 HStack(spacing: 5) {
                     ForEach(0..<total, id: \.self) { i in
                         Capsule()
@@ -186,12 +186,8 @@ struct GameHeader: View {
                             .frame(width: i == round ? 20 : 8, height: 8)
                     }
                 }
+                .padding(.top, 12)
             }
-            .foregroundStyle(accent)
-            Text("Round \(round + 1): \(title)")
-                .font(.display(25))
-                .foregroundStyle(Theme.text)
-                .fixedSize(horizontal: false, vertical: true)
             if !detail.isEmpty {
                 Text(detail)
                     .font(.label(15, weight: .semibold))
@@ -208,14 +204,18 @@ struct GameHeader: View {
 /// The dark stage a game is played on.
 struct GameStage<Content: View>: View {
     var height: CGFloat = 330
+    /// White stage with a light border, instead of the dark night stage.
+    var light = false
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        content()
+        let fill: Color = light ? Theme.surface : GameStyle.night
+        let edge: Color = light ? Theme.stroke : GameStyle.nightLine
+        return content()
             .frame(maxWidth: .infinity)
             .frame(height: height)
-            .background(RoundedRectangle(cornerRadius: 28, style: .continuous).fill(GameStyle.night))
-            .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).strokeBorder(GameStyle.nightLine, lineWidth: 2))
+            .background(RoundedRectangle(cornerRadius: 28, style: .continuous).fill(fill))
+            .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).strokeBorder(edge, lineWidth: 2))
             .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 }
@@ -224,13 +224,16 @@ struct GameStage<Content: View>: View {
 struct StageTag: View {
     let text: String
     var color: Color = GameStyle.nightDim
+    var light = false
 
     var body: some View {
-        Text(text.uppercased())
+        let ink: Color = light && color == GameStyle.nightDim ? Theme.textSecondary : color
+        let chip: Color = light ? Theme.surfaceRaised : GameStyle.nightRaised
+        return Text(text.uppercased())
             .font(.label(12, weight: .black)).tracking(1)
-            .foregroundStyle(color)
+            .foregroundStyle(ink)
             .padding(.horizontal, 12).frame(height: 26)
-            .background(Capsule().fill(GameStyle.nightRaised))
+            .background(Capsule().fill(chip))
             .contentTransition(.opacity)
     }
 }

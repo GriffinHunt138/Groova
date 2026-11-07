@@ -48,7 +48,7 @@ struct BlackoutGame: View {
                 VStack(spacing: 18) {
                     GameHeader(task: task, round: game.index, total: rounds.count, title: round.title, detail: round.body)
                     if !round.paces.isEmpty && phase == .ready { pacePicker }
-                    GameStage { stage }
+                    GameStage(light: true) { stage }
                     if phase == .done {
                         TimingStrip(targets: targets.map { $0 * 4 }, hits: hits, taps: taps.map { $0 * 4 },
                                     length: Double(totalBars * 16))
@@ -100,23 +100,23 @@ struct BlackoutGame: View {
         }()
         return ZStack {
             // The room dims when the guide goes out.
-            Color.black.opacity(dark ? 0.35 : 0).animation(.easeInOut(duration: 0.6), value: dark)
+            Theme.surfaceRaised.opacity(dark ? 1 : 0).animation(.easeInOut(duration: 0.6), value: dark)
             ZStack {
                 // Segments: one per beat you need to keep.
                 ForEach(0..<round.beats, id: \.self) { i in
                     let gap = 0.012
                     Circle()
                         .trim(from: Double(i) / Double(round.beats) + gap, to: Double(i + 1) / Double(round.beats) - gap)
-                        .stroke(hits.contains(i) ? accent : GameStyle.nightLine,
+                        .stroke(hits.contains(i) ? accent : Theme.surfaceHigh,
                                 style: StrokeStyle(lineWidth: 18, lineCap: .round))
                         .rotationEffect(.degrees(-90))
-                        .shadow(color: hits.contains(i) ? accent.opacity(0.9) : .clear, radius: 10)
+                        .shadow(color: hits.contains(i) ? accent.opacity(0.45) : .clear, radius: 8)
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: hits.contains(i))
                 }
                 .frame(width: 230, height: 230)
                 // The guide light.
                 Circle()
-                    .stroke(Color.white.opacity(0.15 + pulse * 0.7), lineWidth: 4 + pulse * 6)
+                    .stroke(pulse > 0 ? accent.opacity(0.25 + pulse * 0.75) : Theme.stroke, lineWidth: 4 + pulse * 6)
                     .frame(width: 186 + pulse * 10, height: 186 + pulse * 10)
                     .shadow(color: accent.opacity(pulse), radius: 20 * pulse)
                 if decoy {
@@ -127,14 +127,14 @@ struct BlackoutGame: View {
                 }
                 // The pad.
                 Circle()
-                    .fill(RadialGradient(colors: [accent.opacity(0.35 + tapFlash * 0.65), GameStyle.nightRaised],
+                    .fill(RadialGradient(colors: [accent.opacity(0.18 + tapFlash * 0.6), Theme.surfaceRaised],
                                          center: .center, startRadius: 4, endRadius: 90))
                     .frame(width: 160, height: 160)
                     .scaleEffect(1 - tapFlash * 0.06)
                     .overlay(
                         Text(label)
                             .font(.display(label.count > 3 ? 22 : 40))
-                            .foregroundStyle(GameStyle.nightText)
+                            .foregroundStyle(Theme.text)
                             .contentTransition(.numericText())
                     )
             }
@@ -142,9 +142,9 @@ struct BlackoutGame: View {
             .gesture(DragGesture(minimumDistance: 0).onChanged { _ in if !touching { touchDown() } }.onEnded { _ in touching = false })
             VStack {
                 HStack {
-                    StageTag(text: dark ? "Blackout" : (phase == .playing ? "Guided" : task.name))
+                    StageTag(text: dark ? "Blackout" : (phase == .playing ? "Guided" : task.name), light: true)
                     Spacer()
-                    if round.decoys { StageTag(text: "Ignore the gold", color: Theme.gold) }
+                    if round.decoys { StageTag(text: "Ignore the gold", color: Theme.gold, light: true) }
                 }
                 Spacer()
             }
